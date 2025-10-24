@@ -1,0 +1,29 @@
+{
+  "tests": [
+    {
+      "name": "Generate story with prompt",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "prompt": "Напиши короткую историю о тёмном страже",
+        "genre": "фэнтези"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "story": "string",
+        "model": "deepseek-chat"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Handle missing prompt",
+      "method": "POST",
+      "path": "/",
+      "body": {},
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "Prompt is required"
+      }
+    }
+  ]
+}

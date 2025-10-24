@@ -32,6 +32,10 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState('characters');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedStory, setGeneratedStory] = useState('');
+  const [isStoryDialogOpen, setIsStoryDialogOpen] = useState(false);
+  const [storyPrompt, setStoryPrompt] = useState('');
 
   const carouselImages = [
     'https://cdn.poehali.dev/files/11a64f46-796a-4ce6-9051-28d80e0c7bdd.jpg',
@@ -71,6 +75,34 @@ const Index = () => {
   const prevImage = () => {
     playSound(600);
     setCurrentImageIndex((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
+  };
+
+  const generateStory = async () => {
+    if (!storyPrompt.trim()) return;
+    
+    setIsGenerating(true);
+    try {
+      const response = await fetch('https://functions.poehali.dev/52ab4d94-b7a4-4399-ab17-b239ff31342a', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: storyPrompt,
+          genre: 'фэнтези'
+        })
+      });
+      
+      const data = await response.json();
+      if (data.story) {
+        playSound(1200, 0.5);
+        setGeneratedStory(data.story);
+      }
+    } catch (error) {
+      console.error('Error generating story:', error);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const sampleCharacters: Character[] = [
@@ -215,6 +247,62 @@ const Index = () => {
             Профиль
           </Button>
         </nav>
+
+        <div className="flex justify-center mb-8">
+          <Dialog open={isStoryDialogOpen} onOpenChange={setIsStoryDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="lg" className="gap-3 text-lg py-6 px-8">
+                <Icon name="Sparkles" size={24} />
+                Создать историю с ИИ
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-serif">Генератор историй</DialogTitle>
+                <DialogDescription>
+                  Опиши сюжет, и DeepSeek создаст уникальную историю без цензуры
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="story-prompt">Сюжет истории</Label>
+                  <Textarea
+                    id="story-prompt"
+                    placeholder="Напиши о тёмном страже, который встречает загадочную эльфийку в заброшенном замке..."
+                    className="min-h-[120px]"
+                    value={storyPrompt}
+                    onChange={(e) => setStoryPrompt(e.target.value)}
+                  />
+                </div>
+                <Button 
+                  onClick={generateStory} 
+                  disabled={isGenerating || !storyPrompt.trim()}
+                  className="w-full gap-2"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Icon name="Loader2" size={20} className="animate-spin" />
+                      Генерирую историю...
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="Wand2" size={20} />
+                      Сгенерировать
+                    </>
+                  )}
+                </Button>
+                {generatedStory && (
+                  <div className="space-y-2 mt-6">
+                    <Label>Сгенерированная история</Label>
+                    <div className="p-4 bg-muted rounded-lg">
+                      <p className="whitespace-pre-wrap text-sm leading-relaxed">{generatedStory}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
