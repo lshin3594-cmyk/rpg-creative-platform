@@ -8,6 +8,7 @@ import { StoryGenerator } from '@/components/StoryGenerator';
 import { CharactersTab } from '@/components/CharactersTab';
 import { WorldsTab } from '@/components/WorldsTab';
 import { StoriesTab } from '@/components/StoriesTab';
+import { ProfileTab } from '@/components/ProfileTab';
 
 interface Character {
   id: string;
@@ -40,6 +41,12 @@ interface Story {
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('characters');
+  const [profileStats, setProfileStats] = useState({
+    charactersCreated: 0,
+    worldsCreated: 0,
+    storiesGenerated: 0,
+    totalWords: 0
+  });
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -102,6 +109,14 @@ const Index = () => {
       const data = await response.json();
       if (data.stories) {
         setSavedStories(data.stories);
+        const totalWords = data.stories.reduce((sum: number, story: Story) => {
+          return sum + (story.content?.split(' ').length || 0);
+        }, 0);
+        setProfileStats(prev => ({ 
+          ...prev, 
+          storiesGenerated: data.stories.length,
+          totalWords 
+        }));
       }
     } catch (error) {
       console.error('Error loading stories:', error);
@@ -119,6 +134,7 @@ const Index = () => {
         ...c,
         id: String(c.id)
       })));
+      setProfileStats(prev => ({ ...prev, charactersCreated: data.length }));
     } catch (error) {
       console.error('Error loading characters:', error);
     } finally {
@@ -135,6 +151,7 @@ const Index = () => {
         ...w,
         id: String(w.id)
       })));
+      setProfileStats(prev => ({ ...prev, worldsCreated: data.length }));
     } catch (error) {
       console.error('Error loading worlds:', error);
     } finally {
@@ -334,11 +351,19 @@ const Index = () => {
           </header>
 
           <nav className="mb-12 flex justify-center gap-6">
-            <Button variant="ghost" className="gap-2 hover:text-primary transition-colors">
+            <Button 
+              variant="ghost" 
+              className="gap-2 hover:text-primary transition-colors"
+              onClick={() => setActiveTab('characters')}
+            >
               <Icon name="Home" size={20} />
               Главная
             </Button>
-            <Button variant="ghost" className="gap-2 hover:text-primary transition-colors">
+            <Button 
+              variant="ghost" 
+              className="gap-2 hover:text-primary transition-colors"
+              onClick={() => setActiveTab('profile')}
+            >
               <Icon name="User" size={20} />
               Профиль
             </Button>
@@ -361,7 +386,7 @@ const Index = () => {
           />
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 mb-8">
+            <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 mb-8">
               <TabsTrigger value="characters" className="gap-2">
                 <Icon name="Users" size={18} />
                 Персонажи
@@ -373,6 +398,10 @@ const Index = () => {
               <TabsTrigger value="stories" className="gap-2">
                 <Icon name="BookOpen" size={18} />
                 Сюжеты
+              </TabsTrigger>
+              <TabsTrigger value="profile" className="gap-2">
+                <Icon name="User" size={18} />
+                Профиль
               </TabsTrigger>
             </TabsList>
 
@@ -405,6 +434,13 @@ const Index = () => {
                 onCreateNew={() => setIsStoryDialogOpen(true)}
                 onCardClick={playCardSound}
                 onDelete={deleteStory}
+              />
+            </TabsContent>
+
+            <TabsContent value="profile">
+              <ProfileTab 
+                stats={profileStats}
+                onPlaySound={playCardSound}
               />
             </TabsContent>
           </Tabs>
