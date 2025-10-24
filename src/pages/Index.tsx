@@ -350,25 +350,6 @@ const Index = () => {
             </p>
           </header>
 
-          <nav className="mb-12 flex justify-center gap-6">
-            <Button 
-              variant="ghost" 
-              className="gap-2 hover:text-primary transition-colors"
-              onClick={() => setActiveTab('characters')}
-            >
-              <Icon name="Home" size={20} />
-              Главная
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="gap-2 hover:text-primary transition-colors"
-              onClick={() => setActiveTab('profile')}
-            >
-              <Icon name="User" size={20} />
-              Профиль
-            </Button>
-          </nav>
-
           <StoryGenerator
             isOpen={isStoryDialogOpen}
             onOpenChange={setIsStoryDialogOpen}
