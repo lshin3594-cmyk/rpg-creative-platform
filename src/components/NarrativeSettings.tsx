@@ -51,10 +51,10 @@ export const NarrativeSettings = ({
                 <div className="flex flex-col items-start">
                   <div className="flex items-center gap-2 font-medium">
                     <Icon name="Users" size={16} />
-                    Смешанный (Игрок + NPC)
+                    Смешанный (Многоперсонажный)
                   </div>
                   <span className="text-xs text-muted-foreground">
-                    "Ты идёшь по лесу. Эльф говорит: 'Опасность близко!'"
+                    Узнавайте мысли и чувства всех персонажей
                   </span>
                 </div>
               </SelectItem>
@@ -116,9 +116,9 @@ export const NarrativeSettings = ({
           <div className="flex items-start gap-2 text-xs text-muted-foreground">
             <Icon name="Info" size={14} className="mt-0.5 flex-shrink-0" />
             <p>
-              {narrativeMode === 'mixed' && 'NPC персонажи будут управляться нейросетью и взаимодействовать с вашим персонажем'}
-              {narrativeMode === 'first_person' && 'История будет рассказываться от лица вашего персонажа'}
-              {narrativeMode === 'third_person' && 'История будет описывать события со стороны наблюдателя'}
+              {narrativeMode === 'mixed' && 'Повествование ведётся от разных персонажей в разные моменты. Вы узнаете мысли, чувства и мотивы действий как вашего персонажа, так и NPC. Это позволяет видеть что другие думают о вас и понимать их скрытые намерения.'}
+              {narrativeMode === 'first_person' && 'История будет рассказываться от лица вашего персонажа. Вы видите мир его глазами и знаете только то, что знает он.'}
+              {narrativeMode === 'third_person' && 'История будет описывать события со стороны наблюдателя. Нейтральное повествование без погружения во внутренний мир персонажей.'}
             </p>
           </div>
         </div>

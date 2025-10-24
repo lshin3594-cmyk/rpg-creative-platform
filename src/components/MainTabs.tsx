@@ -29,6 +29,7 @@ interface MainTabsProps {
   onCreateCharacter: (data: Omit<Character, 'id'>) => void;
   onCreateWorld: (data: Omit<World, 'id'>) => void;
   onUpdateCharacter?: (id: string, data: Partial<Character>) => void;
+  onUpdateWorld?: (id: string, data: Partial<World>) => void;
 }
 
 export const MainTabs = ({
@@ -48,7 +49,8 @@ export const MainTabs = ({
   onDeleteStory,
   onCreateCharacter,
   onCreateWorld,
-  onUpdateCharacter
+  onUpdateCharacter,
+  onUpdateWorld
 }: MainTabsProps) => {
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -91,6 +93,7 @@ export const MainTabs = ({
           onCardClick={onCardClick}
           onDelete={onDeleteWorld}
           onCreate={onCreateWorld}
+          onUpdate={onUpdateWorld}
         />
       </TabsContent>
 

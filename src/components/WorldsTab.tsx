@@ -23,6 +23,7 @@ interface WorldsTabProps {
   onCardClick: () => void;
   onDelete?: (id: string) => void;
   onCreate?: (data: Omit<World, 'id'>) => Promise<void>;
+  onUpdate?: (id: string, data: Partial<World>) => Promise<void>;
 }
 
 export const WorldsTab = ({ 
@@ -31,10 +32,13 @@ export const WorldsTab = ({
   setIsCreateDialogOpen,
   onCardClick,
   onDelete,
-  onCreate
+  onCreate,
+  onUpdate
 }: WorldsTabProps) => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [editingWorld, setEditingWorld] = useState<World | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -65,6 +69,37 @@ export const WorldsTab = ({
         image: ''
       });
       setIsCreateDialogOpen(false);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleEdit = (e: React.MouseEvent, world: World) => {
+    e.stopPropagation();
+    setEditingWorld(world);
+    setFormData({
+      name: world.name,
+      description: world.description,
+      genre: world.genre,
+      image: world.image
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdate = async () => {
+    if (!onUpdate || !editingWorld || !formData.name || !formData.description) return;
+    
+    setIsCreating(true);
+    try {
+      await onUpdate(editingWorld.id, formData);
+      setIsEditDialogOpen(false);
+      setEditingWorld(null);
+      setFormData({
+        name: '',
+        description: '',
+        genre: '',
+        image: ''
+      });
     } finally {
       setIsCreating(false);
     }
@@ -145,21 +180,33 @@ export const WorldsTab = ({
               animation: 'fade-in 0.5s ease-out forwards'
             }}
           >
-            {onDelete && (
-              <Button
-                variant="destructive"
-                size="icon"
-                className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                onClick={(e) => handleDelete(e, world.id)}
-                disabled={deletingId === world.id}
-              >
-                {deletingId === world.id ? (
-                  <Icon name="Loader2" size={16} className="animate-spin" />
-                ) : (
-                  <Icon name="Trash2" size={16} />
-                )}
-              </Button>
-            )}
+            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              {onUpdate && (
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="h-8 w-8 backdrop-blur-sm bg-background/80"
+                  onClick={(e) => handleEdit(e, world)}
+                >
+                  <Icon name="Pencil" size={16} />
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  className="h-8 w-8 backdrop-blur-sm"
+                  onClick={(e) => handleDelete(e, world.id)}
+                  disabled={deletingId === world.id}
+                >
+                  {deletingId === world.id ? (
+                    <Icon name="Loader2" size={16} className="animate-spin" />
+                  ) : (
+                    <Icon name="Trash2" size={16} />
+                  )}
+                </Button>
+              )}
+            </div>
             <div className="relative h-48 overflow-hidden">
               <img 
                 src={world.image} 
@@ -189,6 +236,59 @@ export const WorldsTab = ({
           </Card>
         ))}
       </div>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-serif">Редактирование мира</DialogTitle>
+            <DialogDescription>
+              Обнови описание и параметры мира
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-world-name">Название мира</Label>
+              <Input 
+                id="edit-world-name" 
+                placeholder="Замок Теней" 
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-world-genre">Жанр</Label>
+              <Input 
+                id="edit-world-genre" 
+                placeholder="Фэнтези, Киберпанк, Постапокалипсис..." 
+                value={formData.genre}
+                onChange={(e) => setFormData({...formData, genre: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-world-description">Описание мира</Label>
+              <Textarea 
+                id="edit-world-description" 
+                placeholder="Древний замок, скрытый в туманах..." 
+                className="min-h-[120px]"
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+              />
+            </div>
+            <Button 
+              className="w-full gap-2" 
+              onClick={handleUpdate}
+              disabled={isCreating || !formData.name || !formData.description}
+            >
+              {isCreating ? (
+                <Icon name="Loader2" size={20} className="animate-spin" />
+              ) : (
+                <Icon name="Save" size={20} />
+              )}
+              {isCreating ? 'Сохранение...' : 'Сохранить изменения'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -184,6 +184,27 @@ export const useDataManagement = () => {
     }
   };
 
+  const updateWorld = async (id: string, data: Partial<World>) => {
+    try {
+      const response = await fetch(`https://functions.poehali.dev/f3c359fd-06ee-4643-bf4c-c6d7a7155696?type=worlds&id=${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (response.ok) {
+        await loadWorlds();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error updating world:', error);
+      return false;
+    }
+  };
+
   const deleteWorld = async (id: string) => {
     try {
       const response = await fetch(`https://functions.poehali.dev/f3c359fd-06ee-4643-bf4c-c6d7a7155696?type=worlds&id=${id}`, {
@@ -232,6 +253,7 @@ export const useDataManagement = () => {
     createCharacter,
     createWorld,
     updateCharacter,
+    updateWorld,
     deleteCharacter,
     deleteWorld,
     deleteStory

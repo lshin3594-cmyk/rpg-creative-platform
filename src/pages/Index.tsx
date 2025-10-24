@@ -34,6 +34,7 @@ const Index = () => {
     createCharacter,
     createWorld,
     updateCharacter,
+    updateWorld,
     deleteCharacter,
     deleteWorld,
     deleteStory
@@ -117,6 +118,11 @@ const Index = () => {
 
   const handleUpdateCharacter = async (id: string, data: any) => {
     const success = await updateCharacter(id, data);
+    if (success) playCreateSound();
+  };
+
+  const handleUpdateWorld = async (id: string, data: any) => {
+    const success = await updateWorld(id, data);
     if (success) playCreateSound();
   };
 
@@ -210,6 +216,7 @@ const Index = () => {
         onCreateCharacter={handleCreateCharacter}
         onCreateWorld={handleCreateWorld}
         onUpdateCharacter={handleUpdateCharacter}
+        onUpdateWorld={handleUpdateWorld}
       />
     </PageLayout>
   );
