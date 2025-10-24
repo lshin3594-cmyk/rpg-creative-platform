@@ -1,11 +1,352 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import Icon from '@/components/ui/icon';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+
+interface Character {
+  id: string;
+  name: string;
+  role: string;
+  avatar: string;
+  stats: string;
+  personality: string;
+  backstory: string;
+}
+
+interface World {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  genre: string;
+}
 
 const Index = () => {
+  const [activeTab, setActiveTab] = useState('characters');
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+  const sampleCharacters: Character[] = [
+    {
+      id: '1',
+      name: 'Тёмный Страж',
+      role: 'Воин',
+      avatar: 'https://cdn.poehali.dev/projects/c21ad508-1761-44f1-bdd8-2abd832bea95/files/8a4f7878-b4ca-4762-b15c-5879af2c116e.jpg',
+      stats: 'Сила: 18, Ловкость: 14, Интеллект: 10',
+      personality: 'Суровый, молчаливый защитник древних тайн',
+      backstory: 'Последний из ордена Ночных Стражей, поклявшийся защищать врата между мирами'
+    },
+    {
+      id: '2',
+      name: 'Элария',
+      role: 'Маг',
+      avatar: 'https://cdn.poehali.dev/projects/c21ad508-1761-44f1-bdd8-2abd832bea95/files/e7080da7-04de-430d-ab30-58d0c54ffef0.jpg',
+      stats: 'Сила: 8, Ловкость: 12, Интеллект: 20',
+      personality: 'Мудрая, загадочная хранительница древней магии',
+      backstory: 'Эльфийская архимагиня, изучающая забытые заклинания тысячелетней давности'
+    }
+  ];
+
+  const sampleWorlds: World[] = [
+    {
+      id: '1',
+      name: 'Замок Теней',
+      description: 'Древняя крепость, пронизанная тёмной магией и хранящая секреты прошлого',
+      image: 'https://cdn.poehali.dev/projects/c21ad508-1761-44f1-bdd8-2abd832bea95/files/d7267011-d16c-486a-b7f3-2eaacc6f6499.jpg',
+      genre: 'Тёмное фэнтези'
+    }
+  ];
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4 color-black text-black">Добро пожаловать!</h1>
-        <p className="text-xl text-gray-600">тут будет отображаться ваш проект</p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-purple-950/20">
+      <div className="container mx-auto px-4 py-8">
+        <header className="mb-12 text-center animate-fade-in">
+          <h1 className="text-5xl md:text-6xl font-serif font-bold mb-4 bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
+            Мир Без Границ
+          </h1>
+          <p className="text-xl text-muted-foreground">
+            Создавай персонажей, миры и сюжеты без ограничений
+          </p>
+        </header>
+
+        <nav className="mb-8 flex justify-center gap-4">
+          <Button variant="ghost" className="gap-2">
+            <Icon name="Home" size={20} />
+            Главная
+          </Button>
+          <Button variant="ghost" className="gap-2">
+            <Icon name="User" size={20} />
+            Профиль
+          </Button>
+          <Button variant="ghost" className="gap-2">
+            <Icon name="Settings" size={20} />
+            Настройки
+          </Button>
+        </nav>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+            <TabsTrigger value="characters" className="gap-2">
+              <Icon name="Users" size={18} />
+              Персонажи
+            </TabsTrigger>
+            <TabsTrigger value="worlds" className="gap-2">
+              <Icon name="Globe" size={18} />
+              Миры
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="characters" className="animate-fade-in">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl font-serif font-semibold">Библиотека персонажей</h2>
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2">
+                    <Icon name="Plus" size={20} />
+                    Создать персонажа
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-serif">Создание персонажа</DialogTitle>
+                    <DialogDescription>
+                      Опиши своего персонажа, и ИИ сгенерирует его портрет
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="char-name">Имя персонажа</Label>
+                      <Input id="char-name" placeholder="Введите имя..." />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="char-role">Роль/Класс</Label>
+                      <Input id="char-role" placeholder="Воин, маг, вор..." />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="char-appearance">Внешность</Label>
+                      <Textarea 
+                        id="char-appearance" 
+                        placeholder="Опиши внешний вид для генерации портрета..."
+                        rows={3}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="char-stats">Характеристики</Label>
+                      <Input id="char-stats" placeholder="Сила: 15, Ловкость: 12..." />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="char-personality">Характер</Label>
+                      <Textarea 
+                        id="char-personality" 
+                        placeholder="Опиши личность персонажа..."
+                        rows={3}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="char-backstory">Предыстория</Label>
+                      <Textarea 
+                        id="char-backstory" 
+                        placeholder="Расскажи историю персонажа..."
+                        rows={4}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="char-behavior">Поведенческие правила</Label>
+                      <Textarea 
+                        id="char-behavior" 
+                        placeholder="Как персонаж должен реагировать на события? Какие у него запреты и принципы?"
+                        rows={4}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2 justify-end">
+                    <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                      Отмена
+                    </Button>
+                    <Button className="gap-2">
+                      <Icon name="Sparkles" size={18} />
+                      Создать с ИИ
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sampleCharacters.map((character) => (
+                <Card 
+                  key={character.id} 
+                  className="group hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-[1.02] border-2 hover:border-primary/50"
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start gap-4">
+                      <Avatar className="w-20 h-20 border-2 border-primary/50 ring-2 ring-primary/20">
+                        <AvatarImage src={character.avatar} alt={character.name} />
+                        <AvatarFallback>{character.name[0]}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <CardTitle className="font-serif text-xl mb-2">{character.name}</CardTitle>
+                        <Badge variant="secondary" className="mb-2">
+                          {character.role}
+                        </Badge>
+                        <p className="text-sm text-muted-foreground">{character.stats}</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div>
+                        <h4 className="font-semibold text-sm mb-1 text-primary">Характер:</h4>
+                        <p className="text-sm text-muted-foreground">{character.personality}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-sm mb-1 text-primary">История:</h4>
+                        <p className="text-sm text-muted-foreground">{character.backstory}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button variant="outline" size="sm" className="flex-1 gap-1">
+                        <Icon name="Edit" size={16} />
+                        Редактировать
+                      </Button>
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <Icon name="Play" size={16} />
+                        Играть
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+
+              <Card className="border-dashed border-2 hover:border-primary/50 transition-colors flex items-center justify-center min-h-[300px] cursor-pointer group">
+                <div className="text-center p-6" onClick={() => setIsCreateDialogOpen(true)}>
+                  <Icon name="Plus" size={48} className="mx-auto mb-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <p className="text-lg font-semibold text-muted-foreground group-hover:text-primary transition-colors">
+                    Создать персонажа
+                  </p>
+                </div>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="worlds" className="animate-fade-in">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl font-serif font-semibold">Библиотека миров</h2>
+              <Button className="gap-2">
+                <Icon name="Plus" size={20} />
+                Создать мир
+              </Button>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sampleWorlds.map((world) => (
+                <Card 
+                  key={world.id}
+                  className="group hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-[1.02] border-2 hover:border-primary/50 overflow-hidden"
+                >
+                  <div className="relative h-48 overflow-hidden">
+                    <img 
+                      src={world.image} 
+                      alt={world.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
+                    <Badge className="absolute top-4 right-4" variant="secondary">
+                      {world.genre}
+                    </Badge>
+                  </div>
+                  <CardHeader>
+                    <CardTitle className="font-serif text-xl">{world.name}</CardTitle>
+                    <CardDescription className="text-sm">
+                      {world.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" className="flex-1 gap-1">
+                        <Icon name="Edit" size={16} />
+                        Редактировать
+                      </Button>
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <Icon name="Eye" size={16} />
+                        Открыть
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+
+              <Card className="border-dashed border-2 hover:border-primary/50 transition-colors flex items-center justify-center min-h-[300px] cursor-pointer group">
+                <div className="text-center p-6">
+                  <Icon name="Plus" size={48} className="mx-auto mb-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                  <p className="text-lg font-semibold text-muted-foreground group-hover:text-primary transition-colors">
+                    Создать мир
+                  </p>
+                </div>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        <div className="mt-12 grid md:grid-cols-3 gap-6">
+          <Card className="border-primary/30 bg-card/50 backdrop-blur">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-lg bg-primary/10">
+                  <Icon name="Brain" size={24} className="text-primary" />
+                </div>
+                <CardTitle className="font-serif">Лора-память</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                ИИ запоминает всю историю сюжета и детали твоего мира для длинных арок
+              </CardDescription>
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/30 bg-card/50 backdrop-blur">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-lg bg-secondary/10">
+                  <Icon name="Shield" size={24} className="text-secondary" />
+                </div>
+                <CardTitle className="font-serif">Без цензуры</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                Полная свобода творчества — создавай любые сюжеты без ограничений
+              </CardDescription>
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/30 bg-card/50 backdrop-blur">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-lg bg-accent/10">
+                  <Icon name="Wand2" size={24} className="text-accent" />
+                </div>
+                <CardTitle className="font-serif">ИИ-генерация</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CardDescription>
+                Автоматическое создание портретов персонажей и изображений локаций
+              </CardDescription>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <div className="fixed top-4 right-4 animate-glow">
+        <div className="w-2 h-2 bg-primary rounded-full" />
       </div>
     </div>
   );
