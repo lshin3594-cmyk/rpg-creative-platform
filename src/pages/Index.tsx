@@ -13,6 +13,7 @@ const Index = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isStoryDialogOpen, setIsStoryDialogOpen] = useState(false);
+  const [selectedNarrativeCharacters, setSelectedNarrativeCharacters] = useState<string[]>([]);
 
   const carouselImages = [
     'https://cdn.poehali.dev/files/11a64f46-796a-4ce6-9051-28d80e0c7bdd.jpg',
@@ -158,6 +159,8 @@ const Index = () => {
           playerCharacterId={playerCharacterId}
           setPlayerCharacterId={setPlayerCharacterId}
           characters={characters}
+          selectedNarrativeCharacters={selectedNarrativeCharacters}
+          setSelectedNarrativeCharacters={setSelectedNarrativeCharacters}
         />
       </div>
 

@@ -36,17 +36,26 @@ export const NarrativeSettings = ({
   const playerCharacters = characters.filter(c => c.character_type === 'player');
   const [showExample, setShowExample] = useState(false);
 
+  const toggleCharacterNarrative = (charId: string) => {
+    if (!setSelectedNarrativeCharacters) return;
+    
+    if (selectedNarrativeCharacters.includes(charId)) {
+      setSelectedNarrativeCharacters(selectedNarrativeCharacters.filter(id => id !== charId));
+    } else {
+      setSelectedNarrativeCharacters([...selectedNarrativeCharacters, charId]);
+    }
+  };
+
   const narrativeExamples = {
     mixed: {
       title: 'Смешанный (Многоперсонажный)',
       parts: [
-        { type: 'normal', text: 'Ты медленно подходишь к древнему алтарю, чувствуя как воздух становится тяжелее. Твоя рука тянется к светящемуся кристаллу.' },
-        { type: 'thought', text: 'Эльфийка Лира напрягается, наблюдая за тобой. "Нет... если он прикоснётся к артефакту, печать сломается. Но я не могу остановить его силой — он мне доверяет. Что мне делать?"' },
-        { type: 'normal', text: 'Её пальцы незаметно скользят к мешочку с защитными рунами.' },
-        { type: 'normal', text: 'Ты оборачиваешься и видишь её бледное лицо. "Лира, всё в порядке?" — спрашиваешь ты, не подозревая о её внутренней борьбе.' },
-        { type: 'thought', text: '"Он не знает правды, — думает она, борясь с желанием всё рассказать. — Я должна защитить его... даже если это будет стоить мне его доверия."' }
+        { type: 'hero', text: 'Я медленно подхожу к древнему алтарю, чувствуя как воздух становится тяжелее. Моя рука тянется к светящемуся кристаллу.' },
+        { type: 'npc', text: 'Она напрягается, наблюдая за мной. "Нет... если он прикоснётся к артефакту, печать сломается. Но я не могу остановить его силой — он мне доверяет. Что мне делать?" — её пальцы незаметно скользят к мешочку с рунами.' },
+        { type: 'hero', text: 'Я оборачиваюсь и вижу её бледное лицо. "Лира, всё в порядке?" — спрашиваю я, не подозревая о её внутренней борьбе.' },
+        { type: 'npc', text: '"Он не знает правды, — думает она, борясь с желанием всё рассказать. — Я должна защитить его... даже если это будет стоить мне его доверия."' }
       ],
-      description: 'Вы видите мысли и чувства всех персонажей, понимаете скрытые мотивы и конфликты'
+      description: 'Повествование переключается между выбранными персонажами, показывая их мысли и действия'
     },
     first_person: {
       title: 'От первого лица',
@@ -154,11 +163,55 @@ export const NarrativeSettings = ({
           </div>
         )}
 
+        {narrativeMode === 'mixed' && characters.length > 0 && setSelectedNarrativeCharacters && (
+          <div className="space-y-3 pt-2">
+            <div className="flex items-start justify-between">
+              <div>
+                <Label>Персонажи для повествования</Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  От чьего лица показывать историю в смешанном режиме
+                </p>
+              </div>
+            </div>
+            <div className="grid gap-2">
+              {characters.map(char => (
+                <div
+                  key={char.id}
+                  className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer"
+                  onClick={() => toggleCharacterNarrative(char.id)}
+                >
+                  <Checkbox
+                    id={`narrative-${char.id}`}
+                    checked={selectedNarrativeCharacters.includes(char.id)}
+                    onCheckedChange={() => toggleCharacterNarrative(char.id)}
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <Icon name={char.character_type === 'player' ? 'User' : 'Users'} size={16} />
+                      <span className="font-medium text-sm">{char.name}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {char.character_type === 'player' ? 'Игрок' : 'NPC'}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">{char.role}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {selectedNarrativeCharacters.length === 0 && (
+              <p className="text-xs text-amber-600 dark:text-amber-500 flex items-center gap-1.5 bg-amber-50 dark:bg-amber-950/30 p-2 rounded">
+                <Icon name="AlertCircle" size={14} />
+                Выберите хотя бы одного персонажа для повествования
+              </p>
+            )}
+          </div>
+        )}
+
         <div className="pt-4 border-t border-border space-y-3">
           <div className="flex items-start gap-2 text-xs text-muted-foreground">
             <Icon name="Info" size={14} className="mt-0.5 flex-shrink-0" />
             <p>
-              {narrativeMode === 'mixed' && 'Повествование ведётся от разных персонажей в разные моменты. Вы узнаете мысли, чувства и мотивы действий как вашего персонажа, так и NPC. Это позволяет видеть что другие думают о вас и понимать их скрытые намерения.'}
+              {narrativeMode === 'mixed' && 'Повествование переключается между выбранными персонажами. Вы видите события их глазами: "Я(Лира) шла за ним, думая о том, что ещё недавно он..." → "Я(Герой) чувствовал её взгляд спиной..."'}
               {narrativeMode === 'first_person' && 'История будет рассказываться от лица вашего персонажа. Вы видите мир его глазами и знаете только то, что знает он.'}
               {narrativeMode === 'third_person' && 'История будет описывать события со стороны наблюдателя. Нейтральное повествование без погружения во внутренний мир персонажей.'}
             </p>
@@ -191,11 +244,15 @@ export const NarrativeSettings = ({
                     <p
                       key={index}
                       className={`text-sm leading-relaxed ${
-                        part.type === 'thought'
-                          ? 'italic text-primary/90 pl-4 border-l-2 border-primary/50 bg-primary/10 py-2 rounded-r'
+                        part.type === 'hero'
+                          ? 'italic text-blue-600 dark:text-blue-400 pl-4 border-l-2 border-blue-500/50 bg-blue-50 dark:bg-blue-950/30 py-2 rounded-r'
+                          : part.type === 'npc'
+                          ? 'italic text-purple-600 dark:text-purple-400 pl-4 border-l-2 border-purple-500/50 bg-purple-50 dark:bg-purple-950/30 py-2 rounded-r'
                           : 'text-foreground/90'
                       }`}
                     >
+                      {part.type === 'hero' && <strong className="font-semibold">Я(Герой): </strong>}
+                      {part.type === 'npc' && <strong className="font-semibold">Я(Лира): </strong>}
                       {part.text}
                     </p>
                   ))}
