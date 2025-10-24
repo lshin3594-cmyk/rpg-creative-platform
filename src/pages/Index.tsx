@@ -213,7 +213,7 @@ const Index = () => {
           />
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+            <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 mb-8">
               <TabsTrigger value="characters" className="gap-2">
                 <Icon name="Users" size={18} />
                 Персонажи
@@ -221,6 +221,10 @@ const Index = () => {
               <TabsTrigger value="worlds" className="gap-2">
                 <Icon name="Globe" size={18} />
                 Миры
+              </TabsTrigger>
+              <TabsTrigger value="stories" className="gap-2">
+                <Icon name="BookOpen" size={18} />
+                Сюжеты
               </TabsTrigger>
             </TabsList>
 
@@ -240,6 +244,20 @@ const Index = () => {
                 setIsCreateDialogOpen={setIsCreateDialogOpen}
                 onCardClick={playCardSound}
               />
+            </TabsContent>
+
+            <TabsContent value="stories">
+              <div className="animate-fade-in text-center py-16">
+                <Icon name="BookMarked" size={64} className="mx-auto mb-6 text-primary/50" />
+                <h2 className="text-3xl font-serif font-semibold mb-4">Библиотека сюжетов</h2>
+                <p className="text-muted-foreground max-w-md mx-auto mb-8">
+                  Здесь будут храниться все твои сгенерированные истории и сюжеты
+                </p>
+                <Button size="lg" className="gap-2" onClick={() => setIsStoryDialogOpen(true)}>
+                  <Icon name="Sparkles" size={20} />
+                  Создать первую историю
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
