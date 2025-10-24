@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Character {
   id: string;
@@ -17,6 +18,7 @@ interface Character {
   stats: string;
   personality: string;
   backstory: string;
+  character_type?: string;
 }
 
 interface CharactersTabProps {
@@ -44,7 +46,8 @@ export const CharactersTab = ({
     stats: '',
     personality: '',
     backstory: '',
-    avatar: ''
+    avatar: '',
+    character_type: 'player'
   });
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
@@ -69,7 +72,8 @@ export const CharactersTab = ({
         stats: '',
         personality: '',
         backstory: '',
-        avatar: ''
+        avatar: '',
+        character_type: 'player'
       });
       setIsCreateDialogOpen(false);
     } finally {
@@ -96,6 +100,36 @@ export const CharactersTab = ({
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="char-type">Тип персонажа</Label>
+                <Select 
+                  value={formData.character_type} 
+                  onValueChange={(value) => setFormData({...formData, character_type: value})}
+                >
+                  <SelectTrigger id="char-type">
+                    <SelectValue placeholder="Выберите тип" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="player">
+                      <div className="flex items-center gap-2">
+                        <Icon name="User" size={16} />
+                        <span>Игрок (вы управляете)</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="npc">
+                      <div className="flex items-center gap-2">
+                        <Icon name="Bot" size={16} />
+                        <span>NPC (управляет ИИ)</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {formData.character_type === 'player' 
+                    ? 'Персонаж, за которого вы играете в историях' 
+                    : 'Персонаж, которым управляет нейросеть'}
+                </p>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="char-name">Имя персонажа</Label>
                 <Input 
@@ -193,8 +227,15 @@ export const CharactersTab = ({
                 </Avatar>
               </div>
               <CardTitle className="text-2xl font-serif">{character.name}</CardTitle>
-              <div className="flex justify-center mt-2">
+              <div className="flex justify-center gap-2 mt-2">
                 <Badge variant="secondary" className="text-sm">{character.role}</Badge>
+                <Badge 
+                  variant={character.character_type === 'player' ? 'default' : 'outline'}
+                  className="text-xs gap-1"
+                >
+                  <Icon name={character.character_type === 'player' ? 'User' : 'Bot'} size={12} />
+                  {character.character_type === 'player' ? 'Игрок' : 'NPC'}
+                </Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">

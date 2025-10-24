@@ -9,6 +9,7 @@ import { CharactersTab } from '@/components/CharactersTab';
 import { WorldsTab } from '@/components/WorldsTab';
 import { StoriesTab } from '@/components/StoriesTab';
 import { ProfileTab } from '@/components/ProfileTab';
+import { NarrativeSettings } from '@/components/NarrativeSettings';
 
 interface Character {
   id: string;
@@ -57,6 +58,8 @@ const Index = () => {
   const [selectedWorld, setSelectedWorld] = useState<string>('');
   const [savedStories, setSavedStories] = useState<Story[]>([]);
   const [isLoadingStories, setIsLoadingStories] = useState(false);
+  const [narrativeMode, setNarrativeMode] = useState('mixed');
+  const [playerCharacterId, setPlayerCharacterId] = useState('');
   const [characters, setCharacters] = useState<Character[]>([]);
   const [worlds, setWorlds] = useState<World[]>([]);
   const [isLoadingCharacters, setIsLoadingCharacters] = useState(false);
@@ -130,11 +133,19 @@ const Index = () => {
     try {
       const response = await fetch('https://functions.poehali.dev/f3c359fd-06ee-4643-bf4c-c6d7a7155696?type=characters');
       const data = await response.json();
-      setCharacters(data.map((c: any) => ({
+      const loadedChars = data.map((c: any) => ({
         ...c,
         id: String(c.id)
-      })));
+      }));
+      setCharacters(loadedChars);
       setProfileStats(prev => ({ ...prev, charactersCreated: data.length }));
+      
+      if (!playerCharacterId && loadedChars.length > 0) {
+        const firstPlayer = loadedChars.find((c: any) => c.character_type === 'player');
+        if (firstPlayer) {
+          setPlayerCharacterId(firstPlayer.id);
+        }
+      }
     } catch (error) {
       console.error('Error loading characters:', error);
     } finally {
@@ -283,8 +294,13 @@ const Index = () => {
     
     setIsGenerating(true);
     try {
-      const character = selectedCharacter ? characters.find(c => c.id === selectedCharacter) : null;
+      const playerChar = playerCharacterId ? characters.find(c => c.id === playerCharacterId) : null;
+      const npcChars = characters.filter(c => c.character_type === 'npc');
       const world = selectedWorld ? worlds.find(w => w.id === selectedWorld) : null;
+      
+      const npcCharactersText = npcChars.map(c => 
+        `${c.name} (${c.role}) - ${c.personality}`
+      ).join('; ');
       
       const response = await fetch('https://functions.poehali.dev/52ab4d94-b7a4-4399-ab17-b239ff31342a', {
         method: 'POST',
@@ -293,9 +309,11 @@ const Index = () => {
         },
         body: JSON.stringify({
           prompt: storyPrompt,
-          character: character ? `${character.name} (${character.role}) - ${character.personality}` : '',
+          character: playerChar ? `${playerChar.name} (${playerChar.role}) - ${playerChar.personality}` : '',
+          npc_characters: npcCharactersText,
           world: world ? `${world.name} - ${world.description}` : '',
-          genre: world?.genre || 'фэнтези'
+          genre: world?.genre || 'фэнтези',
+          narrative_mode: narrativeMode
         })
       });
       
@@ -349,6 +367,16 @@ const Index = () => {
               это твоё путешествие без границ и цензуры
             </p>
           </header>
+
+          <div className="max-w-4xl mx-auto mb-8">
+            <NarrativeSettings 
+              narrativeMode={narrativeMode}
+              setNarrativeMode={setNarrativeMode}
+              playerCharacterId={playerCharacterId}
+              setPlayerCharacterId={setPlayerCharacterId}
+              characters={characters}
+            />
+          </div>
 
           <StoryGenerator
             isOpen={isStoryDialogOpen}

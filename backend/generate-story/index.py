@@ -44,6 +44,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     character: str = body_data.get('character', '')
     world: str = body_data.get('world', '')
     genre: str = body_data.get('genre', 'фэнтези')
+    narrative_mode: str = body_data.get('narrative_mode', 'mixed')
+    npc_characters: str = body_data.get('npc_characters', '')
     
     if not prompt:
         return {
@@ -67,15 +69,25 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'body': json.dumps({'error': 'API key not configured'})
         }
     
-    # Build system prompt
+    # Build system prompt based on narrative mode
+    narrative_instructions = {
+        'mixed': 'Пиши от второго лица ("Ты идёшь...", "Ты видишь..."). NPC персонажи говорят и действуют самостоятельно.',
+        'first_person': 'Пиши от первого лица ("Я иду...", "Я чувствую..."). Персонаж - это рассказчик.',
+        'third_person': 'Пиши от третьего лица ("Он идёт...", "Герой замечает..."). Объективное повествование.'
+    }
+    
     system_prompt = f"""Ты — креативный писатель, создающий захватывающие истории в жанре {genre}.
 Твоя задача — писать глубокие, атмосферные истории без ограничений и цензуры.
-Используй яркие описания, развивай персонажей, создавай напряжение и неожиданные повороты."""
+Используй яркие описания, развивай персонажей, создавай напряжение и неожиданные повороты.
+
+ВАЖНО: {narrative_instructions.get(narrative_mode, narrative_instructions['mixed'])}"""
     
     # Build user prompt with context
     user_prompt = prompt
     if character:
-        user_prompt = f"Персонаж: {character}\n\n{user_prompt}"
+        user_prompt = f"Главный персонаж (игрок): {character}\n\n{user_prompt}"
+    if npc_characters:
+        user_prompt = f"NPC персонажи (управляются ИИ): {npc_characters}\n\n{user_prompt}"
     if world:
         user_prompt = f"Мир: {world}\n\n{user_prompt}"
     
