@@ -28,6 +28,7 @@ interface MainTabsProps {
   onDeleteStory: (id: number) => void;
   onCreateCharacter: (data: Omit<Character, 'id'>) => void;
   onCreateWorld: (data: Omit<World, 'id'>) => void;
+  onUpdateCharacter?: (id: string, data: Partial<Character>) => void;
 }
 
 export const MainTabs = ({
@@ -46,30 +47,31 @@ export const MainTabs = ({
   onDeleteWorld,
   onDeleteStory,
   onCreateCharacter,
-  onCreateWorld
+  onCreateWorld,
+  onUpdateCharacter
 }: MainTabsProps) => {
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 mb-8">
-        <TabsTrigger value="characters" className="gap-2">
+        <TabsTrigger value="characters" className="gap-2 tab-trigger-active transition-all">
           <Icon name="Users" size={18} />
           Персонажи
         </TabsTrigger>
-        <TabsTrigger value="worlds" className="gap-2">
+        <TabsTrigger value="worlds" className="gap-2 tab-trigger-active transition-all">
           <Icon name="Globe" size={18} />
           Миры
         </TabsTrigger>
-        <TabsTrigger value="stories" className="gap-2">
+        <TabsTrigger value="stories" className="gap-2 tab-trigger-active transition-all">
           <Icon name="BookOpen" size={18} />
           Сюжеты
         </TabsTrigger>
-        <TabsTrigger value="profile" className="gap-2">
+        <TabsTrigger value="profile" className="gap-2 tab-trigger-active transition-all">
           <Icon name="User" size={18} />
           Профиль
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="characters">
+      <TabsContent value="characters" className="tab-content-enter">
         <CharactersTab 
           characters={characters}
           isCreateDialogOpen={isCreateDialogOpen}
@@ -77,10 +79,11 @@ export const MainTabs = ({
           onCardClick={onCardClick}
           onDelete={onDeleteCharacter}
           onCreate={onCreateCharacter}
+          onUpdate={onUpdateCharacter}
         />
       </TabsContent>
 
-      <TabsContent value="worlds">
+      <TabsContent value="worlds" className="tab-content-enter">
         <WorldsTab 
           worlds={worlds}
           isCreateDialogOpen={isCreateDialogOpen}
@@ -91,7 +94,7 @@ export const MainTabs = ({
         />
       </TabsContent>
 
-      <TabsContent value="stories">
+      <TabsContent value="stories" className="tab-content-enter">
         <StoriesTab
           stories={stories}
           isLoading={isLoadingStories}
@@ -101,7 +104,7 @@ export const MainTabs = ({
         />
       </TabsContent>
 
-      <TabsContent value="profile">
+      <TabsContent value="profile" className="tab-content-enter">
         <ProfileTab 
           stats={profileStats}
           onPlaySound={onCardClick}

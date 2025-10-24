@@ -146,6 +146,27 @@ export const useDataManagement = () => {
     }
   };
 
+  const updateCharacter = async (id: string, data: Partial<Character>) => {
+    try {
+      const response = await fetch(`https://functions.poehali.dev/f3c359fd-06ee-4643-bf4c-c6d7a7155696?type=characters&id=${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (response.ok) {
+        await loadCharacters();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error updating character:', error);
+      return false;
+    }
+  };
+
   const deleteCharacter = async (id: string) => {
     try {
       const response = await fetch(`https://functions.poehali.dev/f3c359fd-06ee-4643-bf4c-c6d7a7155696?type=characters&id=${id}`, {
@@ -210,6 +231,7 @@ export const useDataManagement = () => {
     loadStories,
     createCharacter,
     createWorld,
+    updateCharacter,
     deleteCharacter,
     deleteWorld,
     deleteStory

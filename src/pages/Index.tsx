@@ -33,6 +33,7 @@ const Index = () => {
     loadStories,
     createCharacter,
     createWorld,
+    updateCharacter,
     deleteCharacter,
     deleteWorld,
     deleteStory
@@ -112,6 +113,11 @@ const Index = () => {
   const handleDeleteWorld = async (id: string) => {
     const success = await deleteWorld(id);
     if (success) playDeleteSound();
+  };
+
+  const handleUpdateCharacter = async (id: string, data: any) => {
+    const success = await updateCharacter(id, data);
+    if (success) playCreateSound();
   };
 
   const handleDeleteStory = async (id: number) => {
@@ -203,6 +209,7 @@ const Index = () => {
         onDeleteStory={handleDeleteStory}
         onCreateCharacter={handleCreateCharacter}
         onCreateWorld={handleCreateWorld}
+        onUpdateCharacter={handleUpdateCharacter}
       />
     </PageLayout>
   );

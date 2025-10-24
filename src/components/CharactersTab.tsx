@@ -28,6 +28,7 @@ interface CharactersTabProps {
   onCardClick: () => void;
   onDelete?: (id: string) => void;
   onCreate?: (data: Omit<Character, 'id'>) => Promise<void>;
+  onUpdate?: (id: string, data: Partial<Character>) => Promise<void>;
 }
 
 export const CharactersTab = ({ 
@@ -36,10 +37,13 @@ export const CharactersTab = ({
   setIsCreateDialogOpen,
   onCardClick,
   onDelete,
-  onCreate
+  onCreate,
+  onUpdate
 }: CharactersTabProps) => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [editingCharacter, setEditingCharacter] = useState<Character | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     role: '',
@@ -76,6 +80,43 @@ export const CharactersTab = ({
         character_type: 'player'
       });
       setIsCreateDialogOpen(false);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleEdit = (e: React.MouseEvent, character: Character) => {
+    e.stopPropagation();
+    setEditingCharacter(character);
+    setFormData({
+      name: character.name,
+      role: character.role,
+      stats: character.stats,
+      personality: character.personality,
+      backstory: character.backstory,
+      avatar: character.avatar,
+      character_type: character.character_type || 'player'
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdate = async () => {
+    if (!onUpdate || !editingCharacter || !formData.name || !formData.role) return;
+    
+    setIsCreating(true);
+    try {
+      await onUpdate(editingCharacter.id, formData);
+      setIsEditDialogOpen(false);
+      setEditingCharacter(null);
+      setFormData({
+        name: '',
+        role: '',
+        stats: '',
+        personality: '',
+        backstory: '',
+        avatar: '',
+        character_type: 'player'
+      });
     } finally {
       setIsCreating(false);
     }
@@ -204,21 +245,33 @@ export const CharactersTab = ({
               animation: 'fade-in 0.5s ease-out forwards'
             }}
           >
-            {onDelete && (
-              <Button
-                variant="destructive"
-                size="icon"
-                className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                onClick={(e) => handleDelete(e, character.id)}
-                disabled={deletingId === character.id}
-              >
-                {deletingId === character.id ? (
-                  <Icon name="Loader2" size={16} className="animate-spin" />
-                ) : (
-                  <Icon name="Trash2" size={16} />
-                )}
-              </Button>
-            )}
+            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              {onUpdate && (
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => handleEdit(e, character)}
+                >
+                  <Icon name="Pencil" size={16} />
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => handleDelete(e, character.id)}
+                  disabled={deletingId === character.id}
+                >
+                  {deletingId === character.id ? (
+                    <Icon name="Loader2" size={16} className="animate-spin" />
+                  ) : (
+                    <Icon name="Trash2" size={16} />
+                  )}
+                </Button>
+              )}
+            </div>
             <CardHeader className="text-center pb-2">
               <div className="flex justify-center mb-4">
                 <Avatar className="w-32 h-32 border-4 border-primary/30 shadow-lg shadow-primary/20">
@@ -254,6 +307,102 @@ export const CharactersTab = ({
           </Card>
         ))}
       </div>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-serif">Редактирование персонажа</DialogTitle>
+            <DialogDescription>
+              Обнови данные персонажа
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-char-type">Тип персонажа</Label>
+              <Select 
+                value={formData.character_type} 
+                onValueChange={(value) => setFormData({...formData, character_type: value})}
+              >
+                <SelectTrigger id="edit-char-type">
+                  <SelectValue placeholder="Выберите тип" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="player">
+                    <div className="flex items-center gap-2">
+                      <Icon name="User" size={16} />
+                      <span>Игрок (вы управляете)</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="npc">
+                    <div className="flex items-center gap-2">
+                      <Icon name="Bot" size={16} />
+                      <span>NPC (управляет ИИ)</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-char-name">Имя персонажа</Label>
+              <Input 
+                id="edit-char-name" 
+                placeholder="Тёмный Страж" 
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-char-role">Роль</Label>
+              <Input 
+                id="edit-char-role" 
+                placeholder="Воин, Маг, Вор..." 
+                value={formData.role}
+                onChange={(e) => setFormData({...formData, role: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-char-stats">Характеристики</Label>
+              <Input 
+                id="edit-char-stats" 
+                placeholder="Сила: 18, Ловкость: 14..." 
+                value={formData.stats}
+                onChange={(e) => setFormData({...formData, stats: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-char-personality">Характер</Label>
+              <Textarea 
+                id="edit-char-personality" 
+                placeholder="Суровый защитник древних тайн..." 
+                value={formData.personality}
+                onChange={(e) => setFormData({...formData, personality: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-char-backstory">Предыстория</Label>
+              <Textarea 
+                id="edit-char-backstory" 
+                placeholder="Последний из ордена..." 
+                className="min-h-[100px]" 
+                value={formData.backstory}
+                onChange={(e) => setFormData({...formData, backstory: e.target.value})}
+              />
+            </div>
+            <Button 
+              className="w-full gap-2" 
+              onClick={handleUpdate}
+              disabled={isCreating || !formData.name || !formData.role}
+            >
+              {isCreating ? (
+                <Icon name="Loader2" size={20} className="animate-spin" />
+              ) : (
+                <Icon name="Save" size={20} />
+              )}
+              {isCreating ? 'Сохранение...' : 'Сохранить изменения'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

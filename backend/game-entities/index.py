@@ -1,6 +1,6 @@
 '''
-Business: Manage RPG game entities (characters and worlds) - CRUD operations
-Args: event with httpMethod, path (/characters or /worlds), body, queryStringParameters
+Business: Manage RPG game entities (characters and worlds) - full CRUD operations
+Args: event with httpMethod (GET/POST/PUT/DELETE), entity type, body, queryStringParameters
 Returns: HTTP response with entities data or operation status
 '''
 
@@ -24,7 +24,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type',
                 'Access-Control-Max-Age': '86400'
             },
@@ -45,7 +45,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         if method == 'GET':
             if entity_type == 'characters':
                 cur.execute('''
-                    SELECT id, name, role, avatar, stats, personality, backstory, created_at 
+                    SELECT id, name, role, avatar, stats, personality, backstory, character_type, created_at 
                     FROM t_p56538376_rpg_creative_platfor.characters 
                     ORDER BY created_at DESC
                 ''')
@@ -79,12 +79,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 personality = body.get('personality', '')
                 backstory = body.get('backstory', '')
                 
+                character_type = body.get('character_type', 'player')
+                
                 cur.execute('''
                     INSERT INTO t_p56538376_rpg_creative_platfor.characters 
-                    (name, role, avatar, stats, personality, backstory)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                    RETURNING id, name, role, avatar, stats, personality, backstory, created_at
-                ''', (name, role, avatar, stats, personality, backstory))
+                    (name, role, avatar, stats, personality, backstory, character_type)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id, name, role, avatar, stats, personality, backstory, character_type, created_at
+                ''', (name, role, avatar, stats, personality, backstory, character_type))
             else:
                 name = body.get('name', '')
                 description = body.get('description', '')
@@ -103,6 +105,86 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             return {
                 'statusCode': 201,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'isBase64Encoded': False,
+                'body': json.dumps(dict(entity), default=str)
+            }
+        
+        elif method == 'PUT':
+            entity_id = params.get('id')
+            body = json.loads(event.get('body', '{}'))
+            
+            if not entity_id:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Missing id parameter'})
+                }
+            
+            if entity_type == 'characters':
+                update_fields = []
+                update_values = []
+                
+                for field in ['name', 'role', 'avatar', 'stats', 'personality', 'backstory', 'character_type']:
+                    if field in body:
+                        update_fields.append(f'{field} = %s')
+                        update_values.append(body[field])
+                
+                if not update_fields:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'No fields to update'})
+                    }
+                
+                update_values.append(entity_id)
+                query = f'''
+                    UPDATE t_p56538376_rpg_creative_platfor.characters 
+                    SET {', '.join(update_fields)}
+                    WHERE id = %s
+                    RETURNING id, name, role, avatar, stats, personality, backstory, character_type, created_at
+                '''
+                cur.execute(query, update_values)
+            else:
+                update_fields = []
+                update_values = []
+                
+                for field in ['name', 'description', 'image', 'genre']:
+                    if field in body:
+                        update_fields.append(f'{field} = %s')
+                        update_values.append(body[field])
+                
+                if not update_fields:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'No fields to update'})
+                    }
+                
+                update_values.append(entity_id)
+                query = f'''
+                    UPDATE t_p56538376_rpg_creative_platfor.worlds 
+                    SET {', '.join(update_fields)}
+                    WHERE id = %s
+                    RETURNING id, name, description, image, genre, created_at
+                '''
+                cur.execute(query, update_values)
+            
+            entity = cur.fetchone()
+            conn.commit()
+            
+            if not entity:
+                return {
+                    'statusCode': 404,
+                    'headers': {'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Entity not found'})
+                }
+            
+            return {
+                'statusCode': 200,
                 'headers': {
                     'Content-Type': 'application/json',
                     'Access-Control-Allow-Origin': '*'
