@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import Icon from '@/components/ui/icon';
 import { Badge } from '@/components/ui/badge';
 
@@ -19,6 +20,8 @@ interface NarrativeSettingsProps {
   playerCharacterId: string;
   setPlayerCharacterId: (id: string) => void;
   characters: Character[];
+  selectedNarrativeCharacters?: string[];
+  setSelectedNarrativeCharacters?: (ids: string[]) => void;
 }
 
 export const NarrativeSettings = ({
@@ -26,7 +29,9 @@ export const NarrativeSettings = ({
   setNarrativeMode,
   playerCharacterId,
   setPlayerCharacterId,
-  characters
+  characters,
+  selectedNarrativeCharacters = [],
+  setSelectedNarrativeCharacters
 }: NarrativeSettingsProps) => {
   const playerCharacters = characters.filter(c => c.character_type === 'player');
   const [showExample, setShowExample] = useState(false);
