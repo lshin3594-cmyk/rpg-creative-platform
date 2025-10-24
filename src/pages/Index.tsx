@@ -64,29 +64,42 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-purple-950/20">
-      <div className="container mx-auto px-4 py-8">
-        <header className="mb-12 text-center animate-fade-in">
-          <h1 className="text-5xl md:text-6xl font-serif font-bold mb-4 bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
-            Мир Без Границ
+    <div className="min-h-screen bg-gradient-to-br from-background via-[#1a3d3d] to-background relative overflow-hidden">
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-20 left-10 w-64 h-64 bg-primary/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl" />
+      </div>
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        <header className="mb-16 text-center animate-fade-in relative">
+          <div className="inline-block mb-6">
+            <div className="w-16 h-1 bg-primary mx-auto mb-8" />
+          </div>
+          <h1 className="text-6xl md:text-7xl font-serif font-bold mb-6 tracking-wide">
+            <span className="text-foreground">Amazing</span>{' '}
+            <span className="text-primary font-bold">ADVENTURES</span>
           </h1>
-          <p className="text-xl text-muted-foreground">
-            Создавай персонажей, миры и сюжеты без ограничений
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Освободись от рутины. Создавай персонажей, миры и истории — 
+            это твоё путешествие без границ и цензуры
           </p>
         </header>
 
-        <nav className="mb-8 flex justify-center gap-4">
-          <Button variant="ghost" className="gap-2">
+        <nav className="mb-12 flex justify-center gap-6">
+          <Button variant="ghost" className="gap-2 hover:text-primary transition-colors">
             <Icon name="Home" size={20} />
             Главная
           </Button>
-          <Button variant="ghost" className="gap-2">
+          <Button variant="ghost" className="gap-2 hover:text-primary transition-colors">
+            <Icon name="Map" size={20} />
+            Приключения
+          </Button>
+          <Button variant="ghost" className="gap-2 hover:text-primary transition-colors">
+            <Icon name="BookOpen" size={20} />
+            Сюжеты
+          </Button>
+          <Button variant="ghost" className="gap-2 hover:text-primary transition-colors">
             <Icon name="User" size={20} />
             Профиль
-          </Button>
-          <Button variant="ghost" className="gap-2">
-            <Icon name="Settings" size={20} />
-            Настройки
           </Button>
         </nav>
 
@@ -182,11 +195,12 @@ const Index = () => {
               {sampleCharacters.map((character) => (
                 <Card 
                   key={character.id} 
-                  className="group hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-[1.02] border-2 hover:border-primary/50"
+                  className="group hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-1 border border-border hover:border-primary/70 relative overflow-hidden"
                 >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 clip-path-polygon" />
                   <CardHeader className="pb-3">
                     <div className="flex items-start gap-4">
-                      <Avatar className="w-20 h-20 border-2 border-primary/50 ring-2 ring-primary/20">
+                      <Avatar className="w-20 h-20 border-2 border-primary ring-4 ring-primary/10 clip-path-hexagon">
                         <AvatarImage src={character.avatar} alt={character.name} />
                         <AvatarFallback>{character.name[0]}</AvatarFallback>
                       </Avatar>
@@ -211,11 +225,11 @@ const Index = () => {
                       </div>
                     </div>
                     <div className="flex gap-2 mt-4">
-                      <Button variant="outline" size="sm" className="flex-1 gap-1">
+                      <Button variant="outline" size="sm" className="flex-1 gap-1 hover:bg-primary hover:text-primary-foreground transition-colors">
                         <Icon name="Edit" size={16} />
                         Редактировать
                       </Button>
-                      <Button variant="outline" size="sm" className="gap-1">
+                      <Button size="sm" className="gap-1 bg-primary text-primary-foreground hover:bg-primary/90">
                         <Icon name="Play" size={16} />
                         Играть
                       </Button>
@@ -224,7 +238,7 @@ const Index = () => {
                 </Card>
               ))}
 
-              <Card className="border-dashed border-2 hover:border-primary/50 transition-colors flex items-center justify-center min-h-[300px] cursor-pointer group">
+              <Card className="border-dashed border-2 border-border hover:border-primary transition-all duration-300 flex items-center justify-center min-h-[300px] cursor-pointer group hover:bg-card/50">
                 <div className="text-center p-6" onClick={() => setIsCreateDialogOpen(true)}>
                   <Icon name="Plus" size={48} className="mx-auto mb-4 text-muted-foreground group-hover:text-primary transition-colors" />
                   <p className="text-lg font-semibold text-muted-foreground group-hover:text-primary transition-colors">
@@ -248,8 +262,9 @@ const Index = () => {
               {sampleWorlds.map((world) => (
                 <Card 
                   key={world.id}
-                  className="group hover:shadow-xl hover:shadow-primary/20 transition-all duration-300 hover:scale-[1.02] border-2 hover:border-primary/50 overflow-hidden"
+                  className="group hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-1 border border-border hover:border-primary/70 overflow-hidden relative"
                 >
+                  <div className="absolute top-4 left-4 w-20 h-20 border-2 border-primary/20 rotate-45" />
                   <div className="relative h-48 overflow-hidden">
                     <img 
                       src={world.image} 
@@ -282,7 +297,7 @@ const Index = () => {
                 </Card>
               ))}
 
-              <Card className="border-dashed border-2 hover:border-primary/50 transition-colors flex items-center justify-center min-h-[300px] cursor-pointer group">
+              <Card className="border-dashed border-2 border-border hover:border-primary transition-all duration-300 flex items-center justify-center min-h-[300px] cursor-pointer group hover:bg-card/50">
                 <div className="text-center p-6">
                   <Icon name="Plus" size={48} className="mx-auto mb-4 text-muted-foreground group-hover:text-primary transition-colors" />
                   <p className="text-lg font-semibold text-muted-foreground group-hover:text-primary transition-colors">
@@ -294,8 +309,9 @@ const Index = () => {
           </TabsContent>
         </Tabs>
 
-        <div className="mt-12 grid md:grid-cols-3 gap-6">
-          <Card className="border-primary/30 bg-card/50 backdrop-blur">
+        <div className="mt-16 grid md:grid-cols-3 gap-8">
+          <Card className="border border-border bg-card/80 backdrop-blur hover:border-primary/50 transition-all duration-300 group relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full" />
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="p-3 rounded-lg bg-primary/10">
@@ -311,7 +327,8 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-primary/30 bg-card/50 backdrop-blur">
+          <Card className="border border-border bg-card/80 backdrop-blur hover:border-primary/50 transition-all duration-300 group relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full" />
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="p-3 rounded-lg bg-secondary/10">
@@ -327,7 +344,8 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-primary/30 bg-card/50 backdrop-blur">
+          <Card className="border border-border bg-card/80 backdrop-blur hover:border-primary/50 transition-all duration-300 group relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full" />
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="p-3 rounded-lg bg-accent/10">
@@ -345,8 +363,11 @@ const Index = () => {
         </div>
       </div>
 
-      <div className="fixed top-4 right-4 animate-glow">
-        <div className="w-2 h-2 bg-primary rounded-full" />
+      <div className="fixed bottom-8 right-8">
+        <Button size="lg" className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all px-8">
+          <Icon name="Sparkles" size={20} />
+          Начать путешествие
+        </Button>
       </div>
     </div>
   );
