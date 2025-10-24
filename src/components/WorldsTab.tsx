@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -20,14 +21,28 @@ interface WorldsTabProps {
   isCreateDialogOpen: boolean;
   setIsCreateDialogOpen: (open: boolean) => void;
   onCardClick: () => void;
+  onDelete?: (id: string) => void;
 }
 
 export const WorldsTab = ({ 
   worlds, 
   isCreateDialogOpen, 
   setIsCreateDialogOpen,
-  onCardClick 
+  onCardClick,
+  onDelete
 }: WorldsTabProps) => {
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (!onDelete) return;
+    if (!confirm('Удалить этот мир?')) return;
+    
+    setDeletingId(id);
+    await onDelete(id);
+    setDeletingId(null);
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">
@@ -76,13 +91,28 @@ export const WorldsTab = ({
         {worlds.map((world, index) => (
           <Card 
             key={world.id}
-            className="border-2 border-primary/20 hover:border-primary/50 transition-all duration-300 hover:scale-105 cursor-pointer backdrop-blur-sm bg-card/80 overflow-hidden"
+            className="border-2 border-primary/20 hover:border-primary/50 transition-all duration-300 hover:scale-105 cursor-pointer backdrop-blur-sm bg-card/80 overflow-hidden relative group"
             onClick={onCardClick}
             style={{
               animationDelay: `${index * 100}ms`,
               animation: 'fade-in 0.5s ease-out forwards'
             }}
           >
+            {onDelete && (
+              <Button
+                variant="destructive"
+                size="icon"
+                className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                onClick={(e) => handleDelete(e, world.id)}
+                disabled={deletingId === world.id}
+              >
+                {deletingId === world.id ? (
+                  <Icon name="Loader2" size={16} className="animate-spin" />
+                ) : (
+                  <Icon name="Trash2" size={16} />
+                )}
+              </Button>
+            )}
             <div className="relative h-48 overflow-hidden">
               <img 
                 src={world.image} 

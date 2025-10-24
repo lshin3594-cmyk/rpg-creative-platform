@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -23,14 +24,28 @@ interface CharactersTabProps {
   isCreateDialogOpen: boolean;
   setIsCreateDialogOpen: (open: boolean) => void;
   onCardClick: () => void;
+  onDelete?: (id: string) => void;
 }
 
 export const CharactersTab = ({ 
   characters, 
   isCreateDialogOpen, 
   setIsCreateDialogOpen,
-  onCardClick 
+  onCardClick,
+  onDelete
 }: CharactersTabProps) => {
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (!onDelete) return;
+    if (!confirm('Удалить этого персонажа?')) return;
+    
+    setDeletingId(id);
+    await onDelete(id);
+    setDeletingId(null);
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">
@@ -83,13 +98,28 @@ export const CharactersTab = ({
         {characters.map((character, index) => (
           <Card 
             key={character.id}
-            className="border-2 border-primary/20 hover:border-primary/50 transition-all duration-300 hover:scale-105 cursor-pointer backdrop-blur-sm bg-card/80"
+            className="border-2 border-primary/20 hover:border-primary/50 transition-all duration-300 hover:scale-105 cursor-pointer backdrop-blur-sm bg-card/80 relative group"
             onClick={onCardClick}
             style={{
               animationDelay: `${index * 100}ms`,
               animation: 'fade-in 0.5s ease-out forwards'
             }}
           >
+            {onDelete && (
+              <Button
+                variant="destructive"
+                size="icon"
+                className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                onClick={(e) => handleDelete(e, character.id)}
+                disabled={deletingId === character.id}
+              >
+                {deletingId === character.id ? (
+                  <Icon name="Loader2" size={16} className="animate-spin" />
+                ) : (
+                  <Icon name="Trash2" size={16} />
+                )}
+              </Button>
+            )}
             <CardHeader className="text-center pb-2">
               <div className="flex justify-center mb-4">
                 <Avatar className="w-32 h-32 border-4 border-primary/30 shadow-lg shadow-primary/20">

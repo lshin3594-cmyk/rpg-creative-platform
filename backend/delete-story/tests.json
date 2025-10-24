@@ -1,0 +1,13 @@
+{
+  "tests": [
+    {
+      "name": "Delete story by ID",
+      "method": "DELETE",
+      "path": "/?id=999",
+      "expectedStatus": 404,
+      "expectedBody": {
+        "error": "Story not found"
+      }
+    }
+  ]
+}

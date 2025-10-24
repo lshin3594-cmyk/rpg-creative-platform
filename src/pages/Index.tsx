@@ -106,6 +106,29 @@ const Index = () => {
     }
   };
 
+  const deleteStory = async (id: number) => {
+    try {
+      const response = await fetch(`https://functions.poehali.dev/aaff4c60-19e2-4410-a5a6-48560de30278?id=${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        playSound(400, 0.3);
+        await loadStories();
+      }
+    } catch (error) {
+      console.error('Error deleting story:', error);
+    }
+  };
+
+  const deleteCharacter = async (id: string) => {
+    playSound(400, 0.3);
+  };
+
+  const deleteWorld = async (id: string) => {
+    playSound(400, 0.3);
+  };
+
   useEffect(() => {
     loadStories();
   }, []);
@@ -298,6 +321,7 @@ const Index = () => {
                 isCreateDialogOpen={isCreateDialogOpen}
                 setIsCreateDialogOpen={setIsCreateDialogOpen}
                 onCardClick={playCardSound}
+                onDelete={deleteCharacter}
               />
             </TabsContent>
 
@@ -307,6 +331,7 @@ const Index = () => {
                 isCreateDialogOpen={isCreateDialogOpen}
                 setIsCreateDialogOpen={setIsCreateDialogOpen}
                 onCardClick={playCardSound}
+                onDelete={deleteWorld}
               />
             </TabsContent>
 
@@ -316,6 +341,7 @@ const Index = () => {
                 isLoading={isLoadingStories}
                 onCreateNew={() => setIsStoryDialogOpen(true)}
                 onCardClick={playCardSound}
+                onDelete={deleteStory}
               />
             </TabsContent>
           </Tabs>

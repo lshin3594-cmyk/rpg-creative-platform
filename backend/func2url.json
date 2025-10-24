@@ -1,4 +1,5 @@
 {
+  "delete-story": "https://functions.poehali.dev/aaff4c60-19e2-4410-a5a6-48560de30278",
   "save-story": "https://functions.poehali.dev/71ffaad1-3e69-422c-ad49-81aec9f550de",
   "get-stories": "https://functions.poehali.dev/4edb076b-0c05-4d7c-853b-526d0c476653",
   "generate-story": "https://functions.poehali.dev/52ab4d94-b7a4-4399-ab17-b239ff31342a"

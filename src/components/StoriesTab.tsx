@@ -21,10 +21,21 @@ interface StoriesTabProps {
   isLoading: boolean;
   onCreateNew: () => void;
   onCardClick: () => void;
+  onDelete: (id: number) => void;
 }
 
-export const StoriesTab = ({ stories, isLoading, onCreateNew, onCardClick }: StoriesTabProps) => {
+export const StoriesTab = ({ stories, isLoading, onCreateNew, onCardClick, onDelete }: StoriesTabProps) => {
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  const handleDelete = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    if (!confirm('Удалить эту историю?')) return;
+    
+    setDeletingId(id);
+    await onDelete(id);
+    setDeletingId(null);
+  };
 
   if (isLoading) {
     return (
@@ -65,7 +76,7 @@ export const StoriesTab = ({ stories, isLoading, onCreateNew, onCardClick }: Sto
         {stories.map((story, index) => (
           <Card 
             key={story.id}
-            className="border-2 border-primary/20 hover:border-primary/50 transition-all duration-300 hover:scale-105 cursor-pointer backdrop-blur-sm bg-card/80"
+            className="border-2 border-primary/20 hover:border-primary/50 transition-all duration-300 hover:scale-105 cursor-pointer backdrop-blur-sm bg-card/80 relative group"
             onClick={() => {
               onCardClick();
               setSelectedStory(story);
@@ -75,6 +86,19 @@ export const StoriesTab = ({ stories, isLoading, onCreateNew, onCardClick }: Sto
               animation: 'fade-in 0.5s ease-out forwards'
             }}
           >
+            <Button
+              variant="destructive"
+              size="icon"
+              className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              onClick={(e) => handleDelete(e, story.id)}
+              disabled={deletingId === story.id}
+            >
+              {deletingId === story.id ? (
+                <Icon name="Loader2" size={16} className="animate-spin" />
+              ) : (
+                <Icon name="Trash2" size={16} />
+              )}
+            </Button>
             <CardHeader>
               <div className="flex items-start justify-between mb-2">
                 <Badge variant="secondary" className="text-xs">{story.genre}</Badge>
