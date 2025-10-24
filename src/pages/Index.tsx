@@ -31,6 +31,23 @@ interface World {
 const Index = () => {
   const [activeTab, setActiveTab] = useState('characters');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const carouselImages = [
+    'https://cdn.poehali.dev/files/11a64f46-796a-4ce6-9051-28d80e0c7bdd.jpg',
+    'https://cdn.poehali.dev/files/b8e36227-587c-4816-8a2b-9039de9a03b1.jpeg',
+    'https://cdn.poehali.dev/files/7b8ad11e-21c5-441e-99ca-9c54c2c89171.jpg',
+    'https://cdn.poehali.dev/files/e3766a2e-6760-4742-a80e-e08c62084f78.jpeg',
+    'https://cdn.poehali.dev/files/0b50d103-c351-486e-b78d-d92a1e56d99b.jpeg'
+  ];
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % carouselImages.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
+  };
 
   const sampleCharacters: Character[] = [
     {
@@ -63,40 +80,85 @@ const Index = () => {
     }
   ];
 
-  const backgroundImages = [
-    { url: 'https://cdn.poehali.dev/files/c0c213ea-484f-4591-b119-132cfa275a8c.jpg', top: '5%', left: '5%', rotation: 45 },
-    { url: 'https://cdn.poehali.dev/files/7ffd2d83-38e4-4488-ae85-fa91c20c5b08.jpg', top: '15%', left: '75%', rotation: -30 },
-    { url: 'https://cdn.poehali.dev/files/977e0c87-064d-44e3-a97f-edc60eed53bf.jpg', top: '50%', left: '10%', rotation: 60 },
-    { url: 'https://cdn.poehali.dev/files/c65b4c8f-07cb-45a7-9998-cd06feb02a7e.jpeg', top: '60%', left: '80%', rotation: -45 },
-    { url: 'https://cdn.poehali.dev/files/2b8776fa-a9d0-4364-9e82-43f9061aef46.jpg', top: '85%', left: '50%', rotation: 15 }
+  const veins = [
+    { x1: '10%', y1: '20%', x2: '30%', y2: '50%', color: 'rgba(236, 72, 153, 0.3)', delay: '0s' },
+    { x1: '70%', y1: '10%', x2: '90%', y2: '40%', color: 'rgba(168, 85, 247, 0.3)', delay: '1s' },
+    { x1: '20%', y1: '60%', x2: '50%', y2: '90%', color: 'rgba(236, 72, 153, 0.3)', delay: '2s' },
+    { x1: '60%', y1: '50%', x2: '85%', y2: '80%', color: 'rgba(168, 85, 247, 0.3)', delay: '1.5s' },
+    { x1: '40%', y1: '30%', x2: '60%', y2: '60%', color: 'rgba(236, 72, 153, 0.3)', delay: '0.5s' },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-[#1a3d3d] to-background relative overflow-hidden">
-      <div className="absolute inset-0 opacity-10">
-        {backgroundImages.map((img, index) => (
-          <div
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 1 }}>
+        <defs>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        {veins.map((vein, index) => (
+          <line
             key={index}
-            className="absolute w-48 h-48 md:w-64 md:h-64"
+            x1={vein.x1}
+            y1={vein.y1}
+            x2={vein.x2}
+            y2={vein.y2}
+            stroke={vein.color}
+            strokeWidth="3"
+            filter="url(#glow)"
             style={{
-              top: img.top,
-              left: img.left,
-              transform: `rotate(${img.rotation}deg)`
+              animation: `pulse-slow 3s ease-in-out infinite`,
+              animationDelay: vein.delay
             }}
-          >
-            <div 
-              className="w-full h-full bg-cover bg-center"
-              style={{
-                backgroundImage: `url(${img.url})`,
-                clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
-                filter: 'blur(1px)',
-                opacity: 0.4
-              }}
-            />
-          </div>
+          />
         ))}
-      </div>
-      <div className="container mx-auto px-4 py-8 relative z-10 backdrop-blur-[1px]">
+      </svg>
+      
+      <div className="relative z-10">
+        <div className="w-full h-64 md:h-96 relative overflow-hidden mb-8">
+          <div 
+            className="absolute inset-0 bg-cover bg-center transition-all duration-700"
+            style={{
+              backgroundImage: `url(${carouselImages[currentImageIndex]})`,
+              filter: 'blur(0px)'
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black" />
+          
+          <button
+            onClick={prevImage}
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 backdrop-blur-sm p-3 rounded-full transition-all z-20"
+          >
+            <Icon name="ChevronLeft" size={24} className="text-primary" />
+          </button>
+          
+          <button
+            onClick={nextImage}
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 backdrop-blur-sm p-3 rounded-full transition-all z-20"
+          >
+            <Icon name="ChevronRight" size={24} className="text-primary" />
+          </button>
+          
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+            {carouselImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentImageIndex(index)}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  index === currentImageIndex 
+                    ? 'bg-primary w-8' 
+                    : 'bg-white/30 hover:bg-white/50'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+        
+        <div className="container mx-auto px-4 py-8">
         <header className="mb-16 text-center animate-fade-in relative">
           <div className="inline-block mb-6">
             <div className="w-16 h-1 bg-primary mx-auto mb-8" />
@@ -222,12 +284,14 @@ const Index = () => {
               {sampleCharacters.map((character) => (
                 <Card 
                   key={character.id} 
-                  className="group hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-1 border border-border hover:border-primary/70 relative overflow-hidden"
+                  className="group hover:shadow-2xl hover:shadow-primary/50 transition-all duration-500 hover:scale-105 border border-primary/30 hover:border-primary bg-card/40 backdrop-blur-xl relative overflow-hidden"
+                  style={{ filter: 'blur(0px)', transition: 'all 0.5s ease' }}
+                  onMouseEnter={(e) => e.currentTarget.style.filter = 'blur(0px)'}
                 >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 clip-path-polygon" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
                   <CardHeader className="pb-3">
                     <div className="flex items-start gap-4">
-                      <Avatar className="w-20 h-20 border-2 border-primary ring-4 ring-primary/10 clip-path-hexagon">
+                      <Avatar className="w-20 h-20 border-2 border-primary/50 ring-4 ring-primary/20 shadow-lg shadow-primary/30">
                         <AvatarImage src={character.avatar} alt={character.name} />
                         <AvatarFallback>{character.name[0]}</AvatarFallback>
                       </Avatar>
@@ -289,9 +353,11 @@ const Index = () => {
               {sampleWorlds.map((world) => (
                 <Card 
                   key={world.id}
-                  className="group hover:shadow-2xl hover:shadow-primary/30 transition-all duration-300 hover:-translate-y-1 border border-border hover:border-primary/70 overflow-hidden relative"
+                  className="group hover:shadow-2xl hover:shadow-primary/50 transition-all duration-500 hover:scale-105 border border-primary/30 hover:border-primary bg-card/40 backdrop-blur-xl overflow-hidden relative"
+                  style={{ filter: 'blur(0px)', transition: 'all 0.5s ease' }}
+                  onMouseEnter={(e) => e.currentTarget.style.filter = 'blur(0px)'}
                 >
-                  <div className="absolute top-4 left-4 w-20 h-20 border-2 border-primary/20 rotate-45" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 via-transparent to-primary/5" />
                   <div className="relative h-48 overflow-hidden">
                     <img 
                       src={world.image} 
@@ -337,8 +403,8 @@ const Index = () => {
         </Tabs>
 
         <div className="mt-16 grid md:grid-cols-3 gap-8">
-          <Card className="border border-border bg-card/80 backdrop-blur hover:border-primary/50 transition-all duration-300 group relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full" />
+          <Card className="border border-primary/30 bg-card/40 backdrop-blur-xl hover:border-primary hover:scale-105 transition-all duration-500 group relative overflow-hidden hover:shadow-xl hover:shadow-primary/30">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="p-3 rounded-lg bg-primary/10">
@@ -354,8 +420,8 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="border border-border bg-card/80 backdrop-blur hover:border-primary/50 transition-all duration-300 group relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full" />
+          <Card className="border border-primary/30 bg-card/40 backdrop-blur-xl hover:border-primary hover:scale-105 transition-all duration-500 group relative overflow-hidden hover:shadow-xl hover:shadow-primary/30">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="p-3 rounded-lg bg-secondary/10">
@@ -371,8 +437,8 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="border border-border bg-card/80 backdrop-blur hover:border-primary/50 transition-all duration-300 group relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full" />
+          <Card className="border border-primary/30 bg-card/40 backdrop-blur-xl hover:border-primary hover:scale-105 transition-all duration-500 group relative overflow-hidden hover:shadow-xl hover:shadow-primary/30">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="p-3 rounded-lg bg-accent/10">
@@ -388,13 +454,14 @@ const Index = () => {
             </CardContent>
           </Card>
         </div>
+        
+        <div className="fixed bottom-8 right-8 z-50">
+          <Button size="lg" className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all px-8">
+            <Icon name="Sparkles" size={20} />
+            Начать путешествие
+          </Button>
+        </div>
       </div>
-
-      <div className="fixed bottom-8 right-8">
-        <Button size="lg" className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all px-8">
-          <Icon name="Sparkles" size={20} />
-          Начать путешествие
-        </Button>
       </div>
     </div>
   );
