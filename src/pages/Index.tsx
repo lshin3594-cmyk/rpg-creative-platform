@@ -36,6 +36,8 @@ const Index = () => {
   const [generatedStory, setGeneratedStory] = useState('');
   const [isStoryDialogOpen, setIsStoryDialogOpen] = useState(false);
   const [storyPrompt, setStoryPrompt] = useState('');
+  const [selectedCharacter, setSelectedCharacter] = useState<string>('');
+  const [selectedWorld, setSelectedWorld] = useState<string>('');
 
   const carouselImages = [
     'https://cdn.poehali.dev/files/11a64f46-796a-4ce6-9051-28d80e0c7bdd.jpg',
@@ -82,6 +84,9 @@ const Index = () => {
     
     setIsGenerating(true);
     try {
+      const character = selectedCharacter ? sampleCharacters.find(c => c.id === selectedCharacter) : null;
+      const world = selectedWorld ? sampleWorlds.find(w => w.id === selectedWorld) : null;
+      
       const response = await fetch('https://functions.poehali.dev/52ab4d94-b7a4-4399-ab17-b239ff31342a', {
         method: 'POST',
         headers: {
@@ -89,7 +94,9 @@ const Index = () => {
         },
         body: JSON.stringify({
           prompt: storyPrompt,
-          genre: 'фэнтези'
+          character: character ? `${character.name} (${character.role}) - ${character.personality}` : '',
+          world: world ? `${world.name} - ${world.description}` : '',
+          genre: world?.genre || 'фэнтези'
         })
       });
       
@@ -264,6 +271,36 @@ const Index = () => {
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="character-select">Персонаж (опционально)</Label>
+                    <select
+                      id="character-select"
+                      className="w-full px-3 py-2 bg-background border border-input rounded-md"
+                      value={selectedCharacter}
+                      onChange={(e) => setSelectedCharacter(e.target.value)}
+                    >
+                      <option value="">Без персонажа</option>
+                      {sampleCharacters.map((char) => (
+                        <option key={char.id} value={char.id}>{char.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="world-select">Мир (опционально)</Label>
+                    <select
+                      id="world-select"
+                      className="w-full px-3 py-2 bg-background border border-input rounded-md"
+                      value={selectedWorld}
+                      onChange={(e) => setSelectedWorld(e.target.value)}
+                    >
+                      <option value="">Без мира</option>
+                      {sampleWorlds.map((world) => (
+                        <option key={world.id} value={world.id}>{world.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="story-prompt">Сюжет истории</Label>
                   <Textarea
