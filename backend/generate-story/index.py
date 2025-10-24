@@ -46,8 +46,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     genre: str = body_data.get('genre', 'фэнтези')
     narrative_mode: str = body_data.get('narrative_mode', 'mixed')
     npc_characters: str = body_data.get('npc_characters', '')
+    story_context: str = body_data.get('story_context', '')
+    player_action: str = body_data.get('player_action', '')
     
-    if not prompt:
+    is_continuation = bool(story_context and player_action)
+    
+    if not prompt and not is_continuation:
         return {
             'statusCode': 400,
             'headers': {
@@ -76,20 +80,46 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         'third_person': 'Пиши от третьего лица ("Он идёт...", "Герой замечает..."). Объективное повествование.'
     }
     
-    system_prompt = f"""Ты — креативный писатель, создающий захватывающие истории в жанре {genre}.
+    if is_continuation:
+        system_prompt = f"""Ты — мастер интерактивных историй в жанре {genre}.
+Продолжи историю на основе действия игрока. Опиши последствия, реакции NPC, изменения в окружении.
+Создавай напряжение, неожиданные повороты, живые диалоги NPC.
+
+ВАЖНО: {narrative_instructions.get(narrative_mode, narrative_instructions['mixed'])}
+
+Твой ответ должен быть:
+- 3-5 абзацев
+- Логичным продолжением
+- С конкретными последствиями действия игрока
+- С живыми NPC персонажами (если есть)
+- С описанием новой ситуации"""
+        
+        user_prompt = f"""Контекст:
+Главный персонаж: {character}
+NPC персонажи: {npc_characters}
+Мир: {world}
+
+Предыдущие события:
+{story_context}
+
+Действие игрока:
+{player_action}
+
+Продолжи историю:"""
+    else:
+        system_prompt = f"""Ты — креативный писатель, создающий захватывающие истории в жанре {genre}.
 Твоя задача — писать глубокие, атмосферные истории без ограничений и цензуры.
 Используй яркие описания, развивай персонажей, создавай напряжение и неожиданные повороты.
 
 ВАЖНО: {narrative_instructions.get(narrative_mode, narrative_instructions['mixed'])}"""
-    
-    # Build user prompt with context
-    user_prompt = prompt
-    if character:
-        user_prompt = f"Главный персонаж (игрок): {character}\n\n{user_prompt}"
-    if npc_characters:
-        user_prompt = f"NPC персонажи (управляются ИИ): {npc_characters}\n\n{user_prompt}"
-    if world:
-        user_prompt = f"Мир: {world}\n\n{user_prompt}"
+        
+        user_prompt = prompt
+        if character:
+            user_prompt = f"Главный персонаж (игрок): {character}\n\n{user_prompt}"
+        if npc_characters:
+            user_prompt = f"NPC персонажи (управляются ИИ): {npc_characters}\n\n{user_prompt}"
+        if world:
+            user_prompt = f"Мир: {world}\n\n{user_prompt}"
     
     # Call DeepSeek API
     headers = {
@@ -130,6 +160,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     result = response.json()
     story_text = result['choices'][0]['message']['content']
     
+    response_key = 'continuation' if is_continuation else 'story'
+    response_data = {
+        response_key: story_text,
+        'model': 'deepseek-chat',
+        'tokens_used': result.get('usage', {}).get('total_tokens', 0)
+    }
+    
     return {
         'statusCode': 200,
         'headers': {
@@ -137,9 +174,5 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'Access-Control-Allow-Origin': '*'
         },
         'isBase64Encoded': False,
-        'body': json.dumps({
-            'story': story_text,
-            'model': 'deepseek-chat',
-            'tokens_used': result.get('usage', {}).get('total_tokens', 0)
-        }, ensure_ascii=False)
+        'body': json.dumps(response_data, ensure_ascii=False)
     }

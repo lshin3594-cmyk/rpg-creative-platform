@@ -10,6 +10,7 @@ import { WorldsTab } from '@/components/WorldsTab';
 import { StoriesTab } from '@/components/StoriesTab';
 import { ProfileTab } from '@/components/ProfileTab';
 import { NarrativeSettings } from '@/components/NarrativeSettings';
+import { InteractiveStory } from '@/components/InteractiveStory';
 
 interface Character {
   id: string;
@@ -60,6 +61,8 @@ const Index = () => {
   const [isLoadingStories, setIsLoadingStories] = useState(false);
   const [narrativeMode, setNarrativeMode] = useState('mixed');
   const [playerCharacterId, setPlayerCharacterId] = useState('');
+  const [showInteractive, setShowInteractive] = useState(false);
+  const [currentStoryContext, setCurrentStoryContext] = useState('');
   const [characters, setCharacters] = useState<Character[]>([]);
   const [worlds, setWorlds] = useState<World[]>([]);
   const [isLoadingCharacters, setIsLoadingCharacters] = useState(false);
@@ -321,13 +324,48 @@ const Index = () => {
       if (data.story) {
         playSound(1200, 0.5);
         setGeneratedStory(data.story);
+        setCurrentStoryContext(data.story);
         await saveStory(data.story);
+        setShowInteractive(true);
       }
     } catch (error) {
       console.error('Error generating story:', error);
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const continueStory = async (playerAction: string) => {
+    const playerChar = playerCharacterId ? characters.find(c => c.id === playerCharacterId) : null;
+    const npcChars = characters.filter(c => c.character_type === 'npc');
+    const world = selectedWorld ? worlds.find(w => w.id === selectedWorld) : null;
+    
+    const npcCharactersText = npcChars.map(c => 
+      `${c.name} (${c.role}) - ${c.personality}`
+    ).join('; ');
+    
+    const response = await fetch('https://functions.poehali.dev/52ab4d94-b7a4-4399-ab17-b239ff31342a', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        story_context: currentStoryContext,
+        player_action: playerAction,
+        character: playerChar ? `${playerChar.name} (${playerChar.role}) - ${playerChar.personality}` : '',
+        npc_characters: npcCharactersText,
+        world: world ? `${world.name} - ${world.description}` : '',
+        genre: world?.genre || 'фэнтези',
+        narrative_mode: narrativeMode
+      })
+    });
+    
+    const data = await response.json();
+    if (data.continuation) {
+      setCurrentStoryContext(currentStoryContext + '\n\n' + playerAction + '\n\n' + data.continuation);
+      return data.continuation;
+    }
+    return '';
   };
 
 
@@ -380,7 +418,13 @@ const Index = () => {
 
           <StoryGenerator
             isOpen={isStoryDialogOpen}
-            onOpenChange={setIsStoryDialogOpen}
+            onOpenChange={(open) => {
+              setIsStoryDialogOpen(open);
+              if (!open) {
+                setShowInteractive(false);
+                setCurrentStoryContext('');
+              }
+            }}
             storyPrompt={storyPrompt}
             setStoryPrompt={setStoryPrompt}
             selectedCharacter={selectedCharacter}
@@ -393,6 +437,21 @@ const Index = () => {
             characters={characters}
             worlds={worlds}
           />
+
+          {showInteractive && generatedStory && (
+            <div className="max-w-4xl mx-auto mb-8">
+              <InteractiveStory
+                initialStory={generatedStory}
+                narrativeMode={narrativeMode}
+                playerCharacter={playerCharacterId ? characters.find(c => c.id === playerCharacterId)?.name || '' : ''}
+                npcCharacters={characters.filter(c => c.character_type === 'npc').map(c => c.name).join(', ')}
+                world={selectedWorld ? worlds.find(w => w.id === selectedWorld)?.name || '' : ''}
+                genre={selectedWorld ? worlds.find(w => w.id === selectedWorld)?.genre || 'фэнтези' : 'фэнтези'}
+                onContinue={continueStory}
+                onPlaySound={playCardSound}
+              />
+            </div>
+          )}
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 mb-8">
