@@ -339,10 +339,6 @@ const Index = () => {
               Главная
             </Button>
             <Button variant="ghost" className="gap-2 hover:text-primary transition-colors">
-              <Icon name="Map" size={20} />
-              Приключения
-            </Button>
-            <Button variant="ghost" className="gap-2 hover:text-primary transition-colors">
               <Icon name="User" size={20} />
               Профиль
             </Button>
