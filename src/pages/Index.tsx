@@ -59,6 +59,10 @@ const Index = () => {
     oscillator.stop(audioContext.currentTime + duration);
   };
 
+  const playCardSound = () => {
+    playSound(1000, 0.2);
+  };
+
   const nextImage = () => {
     playSound(900);
     setCurrentImageIndex((prev) => (prev + 1) % carouselImages.length);
@@ -304,9 +308,10 @@ const Index = () => {
               {sampleCharacters.map((character) => (
                 <Card 
                   key={character.id} 
-                  className="group hover:shadow-2xl hover:shadow-primary/50 transition-all duration-500 hover:scale-105 border border-primary/30 hover:border-primary bg-card/40 backdrop-blur-xl relative overflow-hidden"
+                  className="group hover:shadow-2xl hover:shadow-primary/50 transition-all duration-500 hover:scale-105 border border-primary/30 hover:border-primary bg-card/40 backdrop-blur-xl relative overflow-hidden cursor-pointer"
                   style={{ filter: 'blur(0px)', transition: 'all 0.5s ease' }}
                   onMouseEnter={(e) => e.currentTarget.style.filter = 'blur(0px)'}
+                  onClick={playCardSound}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
                   <CardHeader className="pb-3">
@@ -373,9 +378,10 @@ const Index = () => {
               {sampleWorlds.map((world) => (
                 <Card 
                   key={world.id}
-                  className="group hover:shadow-2xl hover:shadow-primary/50 transition-all duration-500 hover:scale-105 border border-primary/30 hover:border-primary bg-card/40 backdrop-blur-xl overflow-hidden relative"
+                  className="group hover:shadow-2xl hover:shadow-primary/50 transition-all duration-500 hover:scale-105 border border-primary/30 hover:border-primary bg-card/40 backdrop-blur-xl overflow-hidden relative cursor-pointer"
                   style={{ filter: 'blur(0px)', transition: 'all 0.5s ease' }}
                   onMouseEnter={(e) => e.currentTarget.style.filter = 'blur(0px)'}
+                  onClick={playCardSound}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 via-transparent to-primary/5" />
                   <div className="relative h-48 overflow-hidden">
