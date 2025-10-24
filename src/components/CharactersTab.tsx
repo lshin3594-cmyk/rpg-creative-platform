@@ -98,9 +98,9 @@ export const CharactersTab = ({
                 </Avatar>
               </div>
               <CardTitle className="text-2xl font-serif">{character.name}</CardTitle>
-              <CardDescription className="flex justify-center mt-2">
+              <div className="flex justify-center mt-2">
                 <Badge variant="secondary" className="text-sm">{character.role}</Badge>
-              </CardDescription>
+              </div>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="space-y-2">

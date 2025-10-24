@@ -1,0 +1,21 @@
+{
+  "tests": [
+    {
+      "name": "Save story successfully",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "title": "Тёмная встреча",
+        "content": "История о встрече в замке...",
+        "prompt": "Напиши историю",
+        "genre": "фэнтези"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "id": "number",
+        "title": "Тёмная встреча"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

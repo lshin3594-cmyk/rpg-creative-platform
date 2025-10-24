@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
@@ -7,6 +7,7 @@ import { BackgroundVeins } from '@/components/BackgroundVeins';
 import { StoryGenerator } from '@/components/StoryGenerator';
 import { CharactersTab } from '@/components/CharactersTab';
 import { WorldsTab } from '@/components/WorldsTab';
+import { StoriesTab } from '@/components/StoriesTab';
 
 interface Character {
   id: string;
@@ -26,6 +27,17 @@ interface World {
   genre: string;
 }
 
+interface Story {
+  id: number;
+  title: string;
+  content: string;
+  prompt: string;
+  character_name: string;
+  world_name: string;
+  genre: string;
+  created_at: string;
+}
+
 const Index = () => {
   const [activeTab, setActiveTab] = useState('characters');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -36,6 +48,8 @@ const Index = () => {
   const [storyPrompt, setStoryPrompt] = useState('');
   const [selectedCharacter, setSelectedCharacter] = useState<string>('');
   const [selectedWorld, setSelectedWorld] = useState<string>('');
+  const [savedStories, setSavedStories] = useState<Story[]>([]);
+  const [isLoadingStories, setIsLoadingStories] = useState(false);
 
   const carouselImages = [
     'https://cdn.poehali.dev/files/11a64f46-796a-4ce6-9051-28d80e0c7bdd.jpg',
@@ -77,6 +91,55 @@ const Index = () => {
     setCurrentImageIndex((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
   };
 
+  const loadStories = async () => {
+    setIsLoadingStories(true);
+    try {
+      const response = await fetch('https://functions.poehali.dev/4edb076b-0c05-4d7c-853b-526d0c476653');
+      const data = await response.json();
+      if (data.stories) {
+        setSavedStories(data.stories);
+      }
+    } catch (error) {
+      console.error('Error loading stories:', error);
+    } finally {
+      setIsLoadingStories(false);
+    }
+  };
+
+  useEffect(() => {
+    loadStories();
+  }, []);
+
+  const saveStory = async (storyContent: string) => {
+    const character = selectedCharacter ? sampleCharacters.find(c => c.id === selectedCharacter) : null;
+    const world = selectedWorld ? sampleWorlds.find(w => w.id === selectedWorld) : null;
+    
+    try {
+      const response = await fetch('https://functions.poehali.dev/71ffaad1-3e69-422c-ad49-81aec9f550de', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: storyPrompt.substring(0, 100),
+          content: storyContent,
+          prompt: storyPrompt,
+          character_name: character?.name || '',
+          world_name: world?.name || '',
+          genre: world?.genre || 'фэнтези'
+        })
+      });
+      
+      const savedStory = await response.json();
+      if (savedStory.id) {
+        playSound(1500, 0.4);
+        await loadStories();
+      }
+    } catch (error) {
+      console.error('Error saving story:', error);
+    }
+  };
+
   const generateStory = async () => {
     if (!storyPrompt.trim()) return;
     
@@ -102,6 +165,7 @@ const Index = () => {
       if (data.story) {
         playSound(1200, 0.5);
         setGeneratedStory(data.story);
+        await saveStory(data.story);
       }
     } catch (error) {
       console.error('Error generating story:', error);
@@ -247,17 +311,12 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="stories">
-              <div className="animate-fade-in text-center py-16">
-                <Icon name="BookMarked" size={64} className="mx-auto mb-6 text-primary/50" />
-                <h2 className="text-3xl font-serif font-semibold mb-4">Библиотека сюжетов</h2>
-                <p className="text-muted-foreground max-w-md mx-auto mb-8">
-                  Здесь будут храниться все твои сгенерированные истории и сюжеты
-                </p>
-                <Button size="lg" className="gap-2" onClick={() => setIsStoryDialogOpen(true)}>
-                  <Icon name="Sparkles" size={20} />
-                  Создать первую историю
-                </Button>
-              </div>
+              <StoriesTab
+                stories={savedStories}
+                isLoading={isLoadingStories}
+                onCreateNew={() => setIsStoryDialogOpen(true)}
+                onCardClick={playCardSound}
+              />
             </TabsContent>
           </Tabs>
         </div>
