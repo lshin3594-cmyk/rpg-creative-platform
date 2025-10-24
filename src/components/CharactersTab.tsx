@@ -25,6 +25,7 @@ interface CharactersTabProps {
   setIsCreateDialogOpen: (open: boolean) => void;
   onCardClick: () => void;
   onDelete?: (id: string) => void;
+  onCreate?: (data: Omit<Character, 'id'>) => Promise<void>;
 }
 
 export const CharactersTab = ({ 
@@ -32,9 +33,19 @@ export const CharactersTab = ({
   isCreateDialogOpen, 
   setIsCreateDialogOpen,
   onCardClick,
-  onDelete
+  onDelete,
+  onCreate
 }: CharactersTabProps) => {
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    role: '',
+    stats: '',
+    personality: '',
+    backstory: '',
+    avatar: ''
+  });
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -44,6 +55,26 @@ export const CharactersTab = ({
     setDeletingId(id);
     await onDelete(id);
     setDeletingId(null);
+  };
+
+  const handleCreate = async () => {
+    if (!onCreate || !formData.name || !formData.role) return;
+    
+    setIsCreating(true);
+    try {
+      await onCreate(formData);
+      setFormData({
+        name: '',
+        role: '',
+        stats: '',
+        personality: '',
+        backstory: '',
+        avatar: ''
+      });
+      setIsCreateDialogOpen(false);
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
@@ -67,27 +98,61 @@ export const CharactersTab = ({
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="char-name">Имя персонажа</Label>
-                <Input id="char-name" placeholder="Тёмный Страж" />
+                <Input 
+                  id="char-name" 
+                  placeholder="Тёмный Страж" 
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="char-role">Роль</Label>
-                <Input id="char-role" placeholder="Воин, Маг, Вор..." />
+                <Input 
+                  id="char-role" 
+                  placeholder="Воин, Маг, Вор..." 
+                  value={formData.role}
+                  onChange={(e) => setFormData({...formData, role: e.target.value})}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="char-stats">Характеристики</Label>
-                <Input id="char-stats" placeholder="Сила: 18, Ловкость: 14..." />
+                <Input 
+                  id="char-stats" 
+                  placeholder="Сила: 18, Ловкость: 14..." 
+                  value={formData.stats}
+                  onChange={(e) => setFormData({...formData, stats: e.target.value})}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="char-personality">Характер</Label>
-                <Textarea id="char-personality" placeholder="Суровый защитник древних тайн..." />
+                <Textarea 
+                  id="char-personality" 
+                  placeholder="Суровый защитник древних тайн..." 
+                  value={formData.personality}
+                  onChange={(e) => setFormData({...formData, personality: e.target.value})}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="char-backstory">Предыстория</Label>
-                <Textarea id="char-backstory" placeholder="Последний из ордена..." className="min-h-[100px]" />
+                <Textarea 
+                  id="char-backstory" 
+                  placeholder="Последний из ордена..." 
+                  className="min-h-[100px]" 
+                  value={formData.backstory}
+                  onChange={(e) => setFormData({...formData, backstory: e.target.value})}
+                />
               </div>
-              <Button className="w-full gap-2">
-                <Icon name="Wand2" size={20} />
-                Создать персонажа
+              <Button 
+                className="w-full gap-2" 
+                onClick={handleCreate}
+                disabled={isCreating || !formData.name || !formData.role}
+              >
+                {isCreating ? (
+                  <Icon name="Loader2" size={20} className="animate-spin" />
+                ) : (
+                  <Icon name="Wand2" size={20} />
+                )}
+                {isCreating ? 'Создание...' : 'Создать персонажа'}
               </Button>
             </div>
           </DialogContent>

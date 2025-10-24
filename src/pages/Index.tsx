@@ -50,6 +50,10 @@ const Index = () => {
   const [selectedWorld, setSelectedWorld] = useState<string>('');
   const [savedStories, setSavedStories] = useState<Story[]>([]);
   const [isLoadingStories, setIsLoadingStories] = useState(false);
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [worlds, setWorlds] = useState<World[]>([]);
+  const [isLoadingCharacters, setIsLoadingCharacters] = useState(false);
+  const [isLoadingWorlds, setIsLoadingWorlds] = useState(false);
 
   const carouselImages = [
     'https://cdn.poehali.dev/files/11a64f46-796a-4ce6-9051-28d80e0c7bdd.jpg',
@@ -106,6 +110,38 @@ const Index = () => {
     }
   };
 
+  const loadCharacters = async () => {
+    setIsLoadingCharacters(true);
+    try {
+      const response = await fetch('https://functions.poehali.dev/f3c359fd-06ee-4643-bf4c-c6d7a7155696?type=characters');
+      const data = await response.json();
+      setCharacters(data.map((c: any) => ({
+        ...c,
+        id: String(c.id)
+      })));
+    } catch (error) {
+      console.error('Error loading characters:', error);
+    } finally {
+      setIsLoadingCharacters(false);
+    }
+  };
+
+  const loadWorlds = async () => {
+    setIsLoadingWorlds(true);
+    try {
+      const response = await fetch('https://functions.poehali.dev/f3c359fd-06ee-4643-bf4c-c6d7a7155696?type=worlds');
+      const data = await response.json();
+      setWorlds(data.map((w: any) => ({
+        ...w,
+        id: String(w.id)
+      })));
+    } catch (error) {
+      console.error('Error loading worlds:', error);
+    } finally {
+      setIsLoadingWorlds(false);
+    }
+  };
+
   const deleteStory = async (id: number) => {
     try {
       const response = await fetch(`https://functions.poehali.dev/aaff4c60-19e2-4410-a5a6-48560de30278?id=${id}`, {
@@ -122,20 +158,82 @@ const Index = () => {
   };
 
   const deleteCharacter = async (id: string) => {
-    playSound(400, 0.3);
+    try {
+      const response = await fetch(`https://functions.poehali.dev/f3c359fd-06ee-4643-bf4c-c6d7a7155696?type=characters&id=${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        playSound(400, 0.3);
+        await loadCharacters();
+      }
+    } catch (error) {
+      console.error('Error deleting character:', error);
+    }
   };
 
   const deleteWorld = async (id: string) => {
-    playSound(400, 0.3);
+    try {
+      const response = await fetch(`https://functions.poehali.dev/f3c359fd-06ee-4643-bf4c-c6d7a7155696?type=worlds&id=${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        playSound(400, 0.3);
+        await loadWorlds();
+      }
+    } catch (error) {
+      console.error('Error deleting world:', error);
+    }
+  };
+
+  const createCharacter = async (data: Omit<Character, 'id'>) => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/f3c359fd-06ee-4643-bf4c-c6d7a7155696?type=characters', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (response.ok) {
+        playSound(1200, 0.4);
+        await loadCharacters();
+      }
+    } catch (error) {
+      console.error('Error creating character:', error);
+    }
+  };
+
+  const createWorld = async (data: Omit<World, 'id'>) => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/f3c359fd-06ee-4643-bf4c-c6d7a7155696?type=worlds', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (response.ok) {
+        playSound(1200, 0.4);
+        await loadWorlds();
+      }
+    } catch (error) {
+      console.error('Error creating world:', error);
+    }
   };
 
   useEffect(() => {
     loadStories();
+    loadCharacters();
+    loadWorlds();
   }, []);
 
   const saveStory = async (storyContent: string) => {
-    const character = selectedCharacter ? sampleCharacters.find(c => c.id === selectedCharacter) : null;
-    const world = selectedWorld ? sampleWorlds.find(w => w.id === selectedWorld) : null;
+    const character = selectedCharacter ? characters.find(c => c.id === selectedCharacter) : null;
+    const world = selectedWorld ? worlds.find(w => w.id === selectedWorld) : null;
     
     try {
       const response = await fetch('https://functions.poehali.dev/71ffaad1-3e69-422c-ad49-81aec9f550de', {
@@ -168,8 +266,8 @@ const Index = () => {
     
     setIsGenerating(true);
     try {
-      const character = selectedCharacter ? sampleCharacters.find(c => c.id === selectedCharacter) : null;
-      const world = selectedWorld ? sampleWorlds.find(w => w.id === selectedWorld) : null;
+      const character = selectedCharacter ? characters.find(c => c.id === selectedCharacter) : null;
+      const world = selectedWorld ? worlds.find(w => w.id === selectedWorld) : null;
       
       const response = await fetch('https://functions.poehali.dev/52ab4d94-b7a4-4399-ab17-b239ff31342a', {
         method: 'POST',
@@ -197,36 +295,7 @@ const Index = () => {
     }
   };
 
-  const sampleCharacters: Character[] = [
-    {
-      id: '1',
-      name: 'Тёмный Страж',
-      role: 'Воин',
-      avatar: 'https://cdn.poehali.dev/projects/c21ad508-1761-44f1-bdd8-2abd832bea95/files/8a4f7878-b4ca-4762-b15c-5879af2c116e.jpg',
-      stats: 'Сила: 18, Ловкость: 14, Интеллект: 10',
-      personality: 'Суровый, молчаливый защитник древних тайн',
-      backstory: 'Последний из ордена Ночных Стражей, поклявшийся защищать врата между мирами'
-    },
-    {
-      id: '2',
-      name: 'Элария',
-      role: 'Маг',
-      avatar: 'https://cdn.poehali.dev/projects/c21ad508-1761-44f1-bdd8-2abd832bea95/files/e7080da7-04de-430d-ab30-58d0c54ffef0.jpg',
-      stats: 'Сила: 8, Ловкость: 12, Интеллект: 20',
-      personality: 'Мудрая, загадочная хранительница древней магии',
-      backstory: 'Эльфийская архимагиня, изучающая забытые заклинания тысячелетней давности'
-    }
-  ];
 
-  const sampleWorlds: World[] = [
-    {
-      id: '1',
-      name: 'Замок Теней',
-      description: 'Древняя крепость, пронизанная тёмной магией и хранящая секреты прошлого',
-      image: 'https://cdn.poehali.dev/projects/c21ad508-1761-44f1-bdd8-2abd832bea95/files/d7267011-d16c-486a-b7f3-2eaacc6f6499.jpg',
-      genre: 'Тёмное фэнтези'
-    }
-  ];
 
   const veins = [
     { x1: '10%', y1: '20%', x2: '30%', y2: '50%', color: 'rgba(236, 72, 153, 0.3)', delay: '0s' },
@@ -295,8 +364,8 @@ const Index = () => {
             isGenerating={isGenerating}
             generatedStory={generatedStory}
             onGenerate={generateStory}
-            characters={sampleCharacters}
-            worlds={sampleWorlds}
+            characters={characters}
+            worlds={worlds}
           />
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -317,21 +386,23 @@ const Index = () => {
 
             <TabsContent value="characters">
               <CharactersTab 
-                characters={sampleCharacters}
+                characters={characters}
                 isCreateDialogOpen={isCreateDialogOpen}
                 setIsCreateDialogOpen={setIsCreateDialogOpen}
                 onCardClick={playCardSound}
                 onDelete={deleteCharacter}
+                onCreate={createCharacter}
               />
             </TabsContent>
 
             <TabsContent value="worlds">
               <WorldsTab 
-                worlds={sampleWorlds}
+                worlds={worlds}
                 isCreateDialogOpen={isCreateDialogOpen}
                 setIsCreateDialogOpen={setIsCreateDialogOpen}
                 onCardClick={playCardSound}
                 onDelete={deleteWorld}
+                onCreate={createWorld}
               />
             </TabsContent>
 
