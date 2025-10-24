@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import { ImageCarousel } from '@/components/ImageCarousel';
+import { BackgroundVeins } from '@/components/BackgroundVeins';
+import { StoryGenerator } from '@/components/StoryGenerator';
+import { CharactersTab } from '@/components/CharactersTab';
+import { WorldsTab } from '@/components/WorldsTab';
 
 interface Character {
   id: string;
@@ -153,466 +151,98 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
-      <svg className="absolute inset-0 w-full h-full" style={{ zIndex: 1 }}>
-        <defs>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
-            <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-        {veins.map((vein, index) => (
-          <line
-            key={index}
-            x1={vein.x1}
-            y1={vein.y1}
-            x2={vein.x2}
-            y2={vein.y2}
-            stroke={vein.color}
-            strokeWidth="3"
-            filter="url(#glow)"
-            style={{
-              animation: `pulse-slow 3s ease-in-out infinite`,
-              animationDelay: vein.delay
-            }}
-          />
-        ))}
-      </svg>
+      <BackgroundVeins veins={veins} />
       
       <div className="relative z-10">
-        <div className="w-full h-64 md:h-96 relative overflow-hidden mb-8">
-          <div 
-            className="absolute inset-0 bg-cover bg-center transition-all duration-700"
-            style={{
-              backgroundImage: `url(${carouselImages[currentImageIndex]})`,
-              filter: 'blur(0px)'
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black" />
-          
-          <button
-            onClick={prevImage}
-            className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 backdrop-blur-sm p-3 rounded-full transition-all z-20"
-          >
-            <Icon name="ChevronLeft" size={24} className="text-primary" />
-          </button>
-          
-          <button
-            onClick={nextImage}
-            className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 backdrop-blur-sm p-3 rounded-full transition-all z-20"
-          >
-            <Icon name="ChevronRight" size={24} className="text-primary" />
-          </button>
-          
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-            {carouselImages.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentImageIndex(index)}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  index === currentImageIndex 
-                    ? 'bg-primary w-8' 
-                    : 'bg-white/30 hover:bg-white/50'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
+        <ImageCarousel 
+          images={carouselImages}
+          currentIndex={currentImageIndex}
+          onNext={nextImage}
+          onPrev={prevImage}
+          onSelectIndex={setCurrentImageIndex}
+        />
         
         <div className="container mx-auto px-4 py-8">
-        <header className="mb-16 text-center animate-fade-in relative">
-          <div className="inline-block mb-6">
-            <div className="w-16 h-1 bg-primary mx-auto mb-8" />
-          </div>
-          <h1 className="text-6xl md:text-7xl font-serif font-bold mb-6 tracking-wide">
-            <span className="text-foreground">Amazing</span>{' '}
-            <span className="text-primary font-bold">ADVENTURES</span>
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Освободись от рутины. Создавай персонажей, миры и истории — 
-            это твоё путешествие без границ и цензуры
-          </p>
-        </header>
+          <header className="mb-16 text-center animate-fade-in relative">
+            <div className="inline-block mb-6">
+              <div className="w-16 h-1 bg-primary mx-auto mb-8" />
+            </div>
+            <h1 className="text-6xl md:text-7xl font-serif font-bold mb-6 tracking-wide">
+              <span className="text-foreground">Amazing</span>{' '}
+              <span className="text-primary font-bold">ADVENTURES</span>
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Освободись от рутины. Создавай персонажей, миры и истории — 
+              это твоё путешествие без границ и цензуры
+            </p>
+          </header>
 
-        <nav className="mb-12 flex justify-center gap-6">
-          <Button variant="ghost" className="gap-2 hover:text-primary transition-colors">
-            <Icon name="Home" size={20} />
-            Главная
-          </Button>
-          <Button variant="ghost" className="gap-2 hover:text-primary transition-colors">
-            <Icon name="Map" size={20} />
-            Приключения
-          </Button>
-          <Button variant="ghost" className="gap-2 hover:text-primary transition-colors">
-            <Icon name="BookOpen" size={20} />
-            Сюжеты
-          </Button>
-          <Button variant="ghost" className="gap-2 hover:text-primary transition-colors">
-            <Icon name="User" size={20} />
-            Профиль
-          </Button>
-        </nav>
+          <nav className="mb-12 flex justify-center gap-6">
+            <Button variant="ghost" className="gap-2 hover:text-primary transition-colors">
+              <Icon name="Home" size={20} />
+              Главная
+            </Button>
+            <Button variant="ghost" className="gap-2 hover:text-primary transition-colors">
+              <Icon name="Map" size={20} />
+              Приключения
+            </Button>
+            <Button variant="ghost" className="gap-2 hover:text-primary transition-colors">
+              <Icon name="BookOpen" size={20} />
+              Сюжеты
+            </Button>
+            <Button variant="ghost" className="gap-2 hover:text-primary transition-colors">
+              <Icon name="User" size={20} />
+              Профиль
+            </Button>
+          </nav>
 
-        <div className="flex justify-center mb-8">
-          <Dialog open={isStoryDialogOpen} onOpenChange={setIsStoryDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size="lg" className="gap-3 text-lg py-6 px-8">
-                <Icon name="Sparkles" size={24} />
-                Создать историю с ИИ
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-serif">Генератор историй</DialogTitle>
-                <DialogDescription>
-                  Опиши сюжет, и DeepSeek создаст уникальную историю без цензуры
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="character-select">Персонаж (опционально)</Label>
-                    <select
-                      id="character-select"
-                      className="w-full px-3 py-2 bg-background border border-input rounded-md"
-                      value={selectedCharacter}
-                      onChange={(e) => setSelectedCharacter(e.target.value)}
-                    >
-                      <option value="">Без персонажа</option>
-                      {sampleCharacters.map((char) => (
-                        <option key={char.id} value={char.id}>{char.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="world-select">Мир (опционально)</Label>
-                    <select
-                      id="world-select"
-                      className="w-full px-3 py-2 bg-background border border-input rounded-md"
-                      value={selectedWorld}
-                      onChange={(e) => setSelectedWorld(e.target.value)}
-                    >
-                      <option value="">Без мира</option>
-                      {sampleWorlds.map((world) => (
-                        <option key={world.id} value={world.id}>{world.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="story-prompt">Сюжет истории</Label>
-                  <Textarea
-                    id="story-prompt"
-                    placeholder="Напиши о тёмном страже, который встречает загадочную эльфийку в заброшенном замке..."
-                    className="min-h-[120px]"
-                    value={storyPrompt}
-                    onChange={(e) => setStoryPrompt(e.target.value)}
-                  />
-                </div>
-                <Button 
-                  onClick={generateStory} 
-                  disabled={isGenerating || !storyPrompt.trim()}
-                  className="w-full gap-2"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Icon name="Loader2" size={20} className="animate-spin" />
-                      Генерирую историю...
-                    </>
-                  ) : (
-                    <>
-                      <Icon name="Wand2" size={20} />
-                      Сгенерировать
-                    </>
-                  )}
-                </Button>
-                {generatedStory && (
-                  <div className="space-y-2 mt-6">
-                    <Label>Сгенерированная история</Label>
-                    <div className="p-4 bg-muted rounded-lg">
-                      <p className="whitespace-pre-wrap text-sm leading-relaxed">{generatedStory}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </DialogContent>
-          </Dialog>
+          <StoryGenerator
+            isOpen={isStoryDialogOpen}
+            onOpenChange={setIsStoryDialogOpen}
+            storyPrompt={storyPrompt}
+            setStoryPrompt={setStoryPrompt}
+            selectedCharacter={selectedCharacter}
+            setSelectedCharacter={setSelectedCharacter}
+            selectedWorld={selectedWorld}
+            setSelectedWorld={setSelectedWorld}
+            isGenerating={isGenerating}
+            generatedStory={generatedStory}
+            onGenerate={generateStory}
+            characters={sampleCharacters}
+            worlds={sampleWorlds}
+          />
+
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+              <TabsTrigger value="characters" className="gap-2">
+                <Icon name="Users" size={18} />
+                Персонажи
+              </TabsTrigger>
+              <TabsTrigger value="worlds" className="gap-2">
+                <Icon name="Globe" size={18} />
+                Миры
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="characters">
+              <CharactersTab 
+                characters={sampleCharacters}
+                isCreateDialogOpen={isCreateDialogOpen}
+                setIsCreateDialogOpen={setIsCreateDialogOpen}
+                onCardClick={playCardSound}
+              />
+            </TabsContent>
+
+            <TabsContent value="worlds">
+              <WorldsTab 
+                worlds={sampleWorlds}
+                isCreateDialogOpen={isCreateDialogOpen}
+                setIsCreateDialogOpen={setIsCreateDialogOpen}
+                onCardClick={playCardSound}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-            <TabsTrigger value="characters" className="gap-2">
-              <Icon name="Users" size={18} />
-              Персонажи
-            </TabsTrigger>
-            <TabsTrigger value="worlds" className="gap-2">
-              <Icon name="Globe" size={18} />
-              Миры
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="characters" className="animate-fade-in">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl font-serif font-semibold">Библиотека персонажей</h2>
-              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="gap-2">
-                    <Icon name="Plus" size={20} />
-                    Создать персонажа
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-serif">Создание персонажа</DialogTitle>
-                    <DialogDescription>
-                      Опиши своего персонажа, и ИИ сгенерирует его портрет
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="char-name">Имя персонажа</Label>
-                      <Input id="char-name" placeholder="Введите имя..." />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="char-role">Роль/Класс</Label>
-                      <Input id="char-role" placeholder="Воин, маг, вор..." />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="char-appearance">Внешность</Label>
-                      <Textarea 
-                        id="char-appearance" 
-                        placeholder="Опиши внешний вид для генерации портрета..."
-                        rows={3}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="char-stats">Характеристики</Label>
-                      <Input id="char-stats" placeholder="Сила: 15, Ловкость: 12..." />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="char-personality">Характер</Label>
-                      <Textarea 
-                        id="char-personality" 
-                        placeholder="Опиши личность персонажа..."
-                        rows={3}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="char-backstory">Предыстория</Label>
-                      <Textarea 
-                        id="char-backstory" 
-                        placeholder="Расскажи историю персонажа..."
-                        rows={4}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="char-behavior">Поведенческие правила</Label>
-                      <Textarea 
-                        id="char-behavior" 
-                        placeholder="Как персонаж должен реагировать на события? Какие у него запреты и принципы?"
-                        rows={4}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-2 justify-end">
-                    <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                      Отмена
-                    </Button>
-                    <Button className="gap-2">
-                      <Icon name="Sparkles" size={18} />
-                      Создать с ИИ
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sampleCharacters.map((character) => (
-                <Card 
-                  key={character.id} 
-                  className="group hover:shadow-2xl hover:shadow-primary/50 transition-all duration-500 hover:scale-105 border border-primary/30 hover:border-primary bg-card/40 backdrop-blur-xl relative overflow-hidden cursor-pointer"
-                  style={{ filter: 'blur(0px)', transition: 'all 0.5s ease' }}
-                  onMouseEnter={(e) => e.currentTarget.style.filter = 'blur(0px)'}
-                  onClick={playCardSound}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="w-20 h-20 border-2 border-primary/50 ring-4 ring-primary/20 shadow-lg shadow-primary/30">
-                        <AvatarImage src={character.avatar} alt={character.name} />
-                        <AvatarFallback>{character.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <CardTitle className="font-serif text-xl mb-2">{character.name}</CardTitle>
-                        <Badge variant="secondary" className="mb-2">
-                          {character.role}
-                        </Badge>
-                        <p className="text-sm text-muted-foreground">{character.stats}</p>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div>
-                        <h4 className="font-semibold text-sm mb-1 text-primary">Характер:</h4>
-                        <p className="text-sm text-muted-foreground">{character.personality}</p>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-sm mb-1 text-primary">История:</h4>
-                        <p className="text-sm text-muted-foreground">{character.backstory}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 mt-4">
-                      <Button variant="outline" size="sm" className="flex-1 gap-1 hover:bg-primary hover:text-primary-foreground transition-colors">
-                        <Icon name="Edit" size={16} />
-                        Редактировать
-                      </Button>
-                      <Button size="sm" className="gap-1 bg-primary text-primary-foreground hover:bg-primary/90">
-                        <Icon name="Play" size={16} />
-                        Играть
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-
-              <Card className="border-dashed border-2 border-border hover:border-primary transition-all duration-300 flex items-center justify-center min-h-[300px] cursor-pointer group hover:bg-card/50">
-                <div className="text-center p-6" onClick={() => setIsCreateDialogOpen(true)}>
-                  <Icon name="Plus" size={48} className="mx-auto mb-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                  <p className="text-lg font-semibold text-muted-foreground group-hover:text-primary transition-colors">
-                    Создать персонажа
-                  </p>
-                </div>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="worlds" className="animate-fade-in">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl font-serif font-semibold">Библиотека миров</h2>
-              <Button className="gap-2">
-                <Icon name="Plus" size={20} />
-                Создать мир
-              </Button>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sampleWorlds.map((world) => (
-                <Card 
-                  key={world.id}
-                  className="group hover:shadow-2xl hover:shadow-primary/50 transition-all duration-500 hover:scale-105 border border-primary/30 hover:border-primary bg-card/40 backdrop-blur-xl overflow-hidden relative cursor-pointer"
-                  style={{ filter: 'blur(0px)', transition: 'all 0.5s ease' }}
-                  onMouseEnter={(e) => e.currentTarget.style.filter = 'blur(0px)'}
-                  onClick={playCardSound}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 via-transparent to-primary/5" />
-                  <div className="relative h-48 overflow-hidden">
-                    <img 
-                      src={world.image} 
-                      alt={world.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
-                    <Badge className="absolute top-4 right-4" variant="secondary">
-                      {world.genre}
-                    </Badge>
-                  </div>
-                  <CardHeader>
-                    <CardTitle className="font-serif text-xl">{world.name}</CardTitle>
-                    <CardDescription className="text-sm">
-                      {world.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="flex-1 gap-1">
-                        <Icon name="Edit" size={16} />
-                        Редактировать
-                      </Button>
-                      <Button variant="outline" size="sm" className="gap-1">
-                        <Icon name="Eye" size={16} />
-                        Открыть
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-
-              <Card className="border-dashed border-2 border-border hover:border-primary transition-all duration-300 flex items-center justify-center min-h-[300px] cursor-pointer group hover:bg-card/50">
-                <div className="text-center p-6">
-                  <Icon name="Plus" size={48} className="mx-auto mb-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                  <p className="text-lg font-semibold text-muted-foreground group-hover:text-primary transition-colors">
-                    Создать мир
-                  </p>
-                </div>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        <div className="mt-16 grid md:grid-cols-3 gap-8">
-          <Card className="border border-primary/30 bg-card/40 backdrop-blur-xl hover:border-primary hover:scale-105 transition-all duration-500 group relative overflow-hidden hover:shadow-xl hover:shadow-primary/30">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-lg bg-primary/10">
-                  <Icon name="Brain" size={24} className="text-primary" />
-                </div>
-                <CardTitle className="font-serif">Лора-память</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>
-                ИИ запоминает всю историю сюжета и детали твоего мира для длинных арок
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-primary/30 bg-card/40 backdrop-blur-xl hover:border-primary hover:scale-105 transition-all duration-500 group relative overflow-hidden hover:shadow-xl hover:shadow-primary/30">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-lg bg-secondary/10">
-                  <Icon name="Shield" size={24} className="text-secondary" />
-                </div>
-                <CardTitle className="font-serif">Без цензуры</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>
-                Полная свобода творчества — создавай любые сюжеты без ограничений
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-primary/30 bg-card/40 backdrop-blur-xl hover:border-primary hover:scale-105 transition-all duration-500 group relative overflow-hidden hover:shadow-xl hover:shadow-primary/30">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-lg bg-accent/10">
-                  <Icon name="Wand2" size={24} className="text-accent" />
-                </div>
-                <CardTitle className="font-serif">ИИ-генерация</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <CardDescription>
-                Автоматическое создание портретов персонажей и изображений локаций
-              </CardDescription>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <div className="fixed bottom-8 right-8 z-50">
-          <Button size="lg" className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all px-8">
-            <Icon name="Sparkles" size={20} />
-            Начать путешествие
-          </Button>
-        </div>
-      </div>
       </div>
     </div>
   );
