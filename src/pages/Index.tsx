@@ -63,13 +63,40 @@ const Index = () => {
     }
   ];
 
+  const backgroundImages = [
+    { url: 'https://cdn.poehali.dev/files/c0c213ea-484f-4591-b119-132cfa275a8c.jpg', top: '5%', left: '5%', rotation: 45 },
+    { url: 'https://cdn.poehali.dev/files/7ffd2d83-38e4-4488-ae85-fa91c20c5b08.jpg', top: '15%', left: '75%', rotation: -30 },
+    { url: 'https://cdn.poehali.dev/files/977e0c87-064d-44e3-a97f-edc60eed53bf.jpg', top: '50%', left: '10%', rotation: 60 },
+    { url: 'https://cdn.poehali.dev/files/c65b4c8f-07cb-45a7-9998-cd06feb02a7e.jpeg', top: '60%', left: '80%', rotation: -45 },
+    { url: 'https://cdn.poehali.dev/files/2b8776fa-a9d0-4364-9e82-43f9061aef46.jpg', top: '85%', left: '50%', rotation: 15 }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-[#1a3d3d] to-background relative overflow-hidden">
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-20 left-10 w-64 h-64 bg-primary/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl" />
+      <div className="absolute inset-0 opacity-10">
+        {backgroundImages.map((img, index) => (
+          <div
+            key={index}
+            className="absolute w-48 h-48 md:w-64 md:h-64"
+            style={{
+              top: img.top,
+              left: img.left,
+              transform: `rotate(${img.rotation}deg)`
+            }}
+          >
+            <div 
+              className="w-full h-full bg-cover bg-center"
+              style={{
+                backgroundImage: `url(${img.url})`,
+                clipPath: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+                filter: 'blur(1px)',
+                opacity: 0.4
+              }}
+            />
+          </div>
+        ))}
       </div>
-      <div className="container mx-auto px-4 py-8 relative z-10">
+      <div className="container mx-auto px-4 py-8 relative z-10 backdrop-blur-[1px]">
         <header className="mb-16 text-center animate-fade-in relative">
           <div className="inline-block mb-6">
             <div className="w-16 h-1 bg-primary mx-auto mb-8" />
