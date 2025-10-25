@@ -36,10 +36,21 @@ export const ImageGenerator = ({
 
     setIsGenerating(true);
     try {
-      const response = await fetch(funcUrls['generate-image'], {
+      const translateResponse = await fetch(funcUrls['translate-prompt'], {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })
+      });
+
+      if (!translateResponse.ok) throw new Error('Ошибка перевода');
+
+      const translateData = await translateResponse.json();
+      const enhancedPrompt = translateData.translated;
+
+      const response = await fetch(funcUrls['generate-image'], {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: enhancedPrompt })
       });
 
       if (!response.ok) throw new Error('Ошибка генерации');
@@ -50,7 +61,7 @@ export const ImageGenerator = ({
       
       toast({
         title: "Успешно",
-        description: "Изображение сгенерировано",
+        description: "Изображение сгенерировано через FLUX",
       });
     } catch (error) {
       toast({
@@ -65,9 +76,15 @@ export const ImageGenerator = ({
 
   return (
     <div className="space-y-4 p-4 border-2 border-primary/20 rounded-lg bg-card/50">
-      <div className="flex items-center gap-2">
-        <Icon name="Wand2" size={20} className="text-primary" />
-        <Label className="text-base font-semibold">{label}</Label>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Icon name="Wand2" size={20} className="text-primary" />
+          <Label className="text-base font-semibold">{label}</Label>
+        </div>
+        <Badge variant="outline" className="gap-1">
+          <Icon name="Sparkles" size={12} />
+          FLUX AI
+        </Badge>
       </div>
       
       {currentImage && (
@@ -86,12 +103,18 @@ export const ImageGenerator = ({
         </div>
       )}
 
-      <Textarea
-        placeholder={placeholder}
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        className="min-h-[80px]"
-      />
+      <div className="space-y-2">
+        <Textarea
+          placeholder={placeholder}
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          className="min-h-[80px]"
+        />
+        <p className="text-xs text-muted-foreground flex items-center gap-1">
+          <Icon name="Languages" size={12} />
+          Автоперевод на английский для лучшего качества
+        </p>
+      </div>
 
       <Button 
         onClick={handleGenerate} 
@@ -102,12 +125,12 @@ export const ImageGenerator = ({
         {isGenerating ? (
           <>
             <Icon name="Loader2" size={20} className="animate-spin" />
-            Генерация...
+            Генерация через FLUX...
           </>
         ) : (
           <>
             <Icon name="Sparkles" size={20} />
-            Сгенерировать изображение
+            Сгенерировать через FLUX
           </>
         )}
       </Button>
