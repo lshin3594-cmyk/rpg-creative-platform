@@ -84,9 +84,13 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
     
     try:
         # Вызываем DeepSeek API
+        import httpx
+        
+        http_client = httpx.Client(timeout=30.0)
         client = OpenAI(
             api_key=DEEPSEEK_API_KEY,
-            base_url="https://api.deepseek.com"
+            base_url="https://api.deepseek.com",
+            http_client=http_client
         )
         
         response = client.chat.completions.create(
