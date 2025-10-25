@@ -22,6 +22,13 @@ export const CustomUniverseForm = ({
   });
   
   const handleSubmit = () => {
+    console.log('CustomUniverseForm handleSubmit called', formData);
+    
+    if (!formData.name || !formData.description) {
+      console.error('Validation failed: name or description missing');
+      return;
+    }
+    
     onSubmit({
       name: formData.name,
       description: formData.description,
