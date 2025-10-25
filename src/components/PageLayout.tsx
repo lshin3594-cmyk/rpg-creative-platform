@@ -1,6 +1,8 @@
 import { BackgroundVeins } from '@/components/BackgroundVeins';
 import { ImageCarousel } from '@/components/ImageCarousel';
 import { MidnightBackground } from '@/components/MidnightBackground';
+import { Button } from '@/components/ui/button';
+import Icon from '@/components/ui/icon';
 
 interface PageLayoutProps {
   children: React.ReactNode;
@@ -9,6 +11,7 @@ interface PageLayoutProps {
   onNextImage: () => void;
   onPrevImage: () => void;
   onSelectIndex: (index: number) => void;
+  onShowHelp?: () => void;
 }
 
 export const PageLayout = ({
@@ -17,7 +20,8 @@ export const PageLayout = ({
   currentImageIndex,
   onNextImage,
   onPrevImage,
-  onSelectIndex
+  onSelectIndex,
+  onShowHelp
 }: PageLayoutProps) => {
   const veins = [
     { x1: '10%', y1: '20%', x2: '30%', y2: '50%', color: 'rgba(59, 130, 246, 0.2)', delay: '0s' },
@@ -43,6 +47,17 @@ export const PageLayout = ({
         
         <div className="container mx-auto px-4 py-8">
           <header className="mb-16 text-center animate-fade-in relative">
+            {onShowHelp && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onShowHelp}
+                className="absolute top-0 right-4 gap-2"
+              >
+                <Icon name="HelpCircle" size={16} />
+                <span className="hidden md:inline">Помощь</span>
+              </Button>
+            )}
             <div className="inline-block mb-6">
               <div className="w-16 h-1 bg-primary mx-auto mb-8" />
             </div>

@@ -84,8 +84,12 @@ export const ActionInputModes = ({
           <Textarea
             value={freeText}
             onChange={(e) => setFreeText(e.target.value)}
-            placeholder="Опишите действие вашего персонажа и его слова (если есть)..."
-            className="min-h-[100px]"
+            placeholder="Примеры действий:
+• Я подхожу к двери и пытаюсь её открыть
+• Говорю незнакомцу: &quot;Что ты здесь делаешь?&quot;
+• Достаю меч и осматриваюсь в поисках угрозы
+• Прячусь за колонной и наблюдаю"
+            className="min-h-[120px]"
             disabled={isGenerating}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && e.ctrlKey) {

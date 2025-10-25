@@ -273,9 +273,9 @@ export const StoryGenerator = ({
                   id="story-prompt"
                   placeholder={selectedPlot 
                     ? 'Добавьте детали, которые хотите включить в эту историю...'
-                    : 'Напиши о тёмном страже, который встречает загадочную эльфийку...'
+                    : 'Примеры:\n• Мой персонаж просыпается в заброшенном храме без памяти\n• Начинаю день в городской таверне, ищу работу наёмником\n• Получаю загадочное письмо с приглашением в особняк\n• Оказываюсь на космической станции во время тревоги'
                   }
-                  className="min-h-[100px]"
+                  className="min-h-[120px]"
                   value={storyPrompt}
                   onChange={(e) => setStoryPrompt(e.target.value)}
                 />
@@ -445,6 +445,7 @@ export const StoryGenerator = ({
               onClick={onGenerate} 
               disabled={isGenerating || !storyPrompt.trim()}
               className="w-full gap-2"
+              size="lg"
             >
               {isGenerating ? (
                 <>
@@ -458,6 +459,29 @@ export const StoryGenerator = ({
                 </>
               )}
             </Button>
+            
+            {isGenerating && (
+              <div className="space-y-2 p-4 bg-primary/5 border border-primary/20 rounded-lg animate-fade-in">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Icon name="Sparkles" size={16} className="text-primary animate-pulse" />
+                  <span className="font-medium">DeepSeek создаёт вашу историю...</span>
+                </div>
+                <div className="space-y-1 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                    <span>Анализирую персонажей и мир</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-primary/60 animate-pulse delay-100" />
+                    <span>Строю сюжет и диалоги</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-primary/40 animate-pulse delay-200" />
+                    <span>Добавляю детали и атмосферу</span>
+                  </div>
+                </div>
+              </div>
+            )}
             {generatedStory && (
               <div className="space-y-2 mt-6">
                 <Label>Сгенерированная история</Label>

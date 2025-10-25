@@ -3,6 +3,7 @@ import { PageLayout } from '@/components/PageLayout';
 import { StoryGenerator } from '@/components/StoryGenerator';
 import { InteractiveStory } from '@/components/InteractiveStory';
 import { MainTabs } from '@/components/MainTabs';
+import { OnboardingTutorial } from '@/components/OnboardingTutorial';
 import { useDataManagement } from '@/hooks/useDataManagement';
 import { useStoryGeneration } from '@/hooks/useStoryGeneration';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
@@ -13,6 +14,7 @@ const Index = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isStoryDialogOpen, setIsStoryDialogOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [selectedNarrativeCharacters, setSelectedNarrativeCharacters] = useState<string[]>([]);
   const [episodeLength, setEpisodeLength] = useState(1500);
   const [imagesPerEpisode, setImagesPerEpisode] = useState(2);
@@ -95,6 +97,11 @@ const Index = () => {
         if (firstPlayer) {
           setPlayerCharacterId(firstPlayer.id);
         }
+      }
+
+      const hasCompletedOnboarding = localStorage.getItem('onboarding_completed');
+      if (!hasCompletedOnboarding) {
+        setShowOnboarding(true);
       }
     };
 
@@ -185,6 +192,7 @@ const Index = () => {
       onNextImage={nextImage}
       onPrevImage={prevImage}
       onSelectIndex={setCurrentImageIndex}
+      onShowHelp={() => setShowOnboarding(true)}
     >
       <StoryGenerator
         isOpen={isStoryDialogOpen}
@@ -281,6 +289,10 @@ const Index = () => {
         <Icon name="Sparkles" size={24} className="animate-pulse" />
         <span className="font-bold text-lg hidden md:inline">Начать приключение</span>
       </button>
+
+      {showOnboarding && (
+        <OnboardingTutorial onComplete={() => setShowOnboarding(false)} />
+      )}
     </PageLayout>
   );
 };
