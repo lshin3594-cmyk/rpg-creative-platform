@@ -12,6 +12,7 @@ import Library from "./pages/Library";
 import StoryView from "./pages/StoryView";
 import Profile from "./pages/Profile";
 import MySaves from "./pages/MySaves";
+import VkCallback from "./pages/VkCallback";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/story/:id" element={<StoryView />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/my-saves" element={<MySaves />} />
+            <Route path="/auth/vk/callback" element={<VkCallback />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
