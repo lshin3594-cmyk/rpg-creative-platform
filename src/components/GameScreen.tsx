@@ -5,6 +5,9 @@ import Icon from '@/components/ui/icon';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { StoryJournalModal } from '@/components/story/StoryJournalModal';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 interface Character {
   name: string;
@@ -44,6 +47,9 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
   const [currentEpisode, setCurrentEpisode] = useState(1);
   const [gameSettings, setGameSettings] = useState<GameSettings | null>(null);
   const [showResources, setShowResources] = useState(false);
+  const [showJournal, setShowJournal] = useState(false);
+  const [agentsEnabled, setAgentsEnabled] = useState(true);
+  const turnCountRef = useRef(0);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -120,6 +126,28 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
     }
   }, [messages]);
 
+  const getAgentPrompt = () => {
+    turnCountRef.current += 1;
+    const turns = turnCountRef.current;
+
+    if (!agentsEnabled) return '';
+
+    if (turns % 3 === 0) {
+      return '\n\n[АГЕНТ-НАБЛЮДАТЕЛЬ: Не забывай про сюжетные линии и персонажей. Время идёт, что-то должно происходить!]';
+    }
+    
+    if (turns % 5 === 0) {
+      return '\n\n[АГЕНТ-ВРЕМЕНИ: Напомни про время суток, погоду, атмосферу. Мир должен жить!]';
+    }
+
+    if (turns % 7 === 0 && characters.length > 0) {
+      const randomChar = characters[Math.floor(Math.random() * characters.length)];
+      return `\n\n[АГЕНТ-ПЕРСОНАЖЕЙ: А что делает ${randomChar.name}? Покажи их действия и эмоции!]`;
+    }
+
+    return '';
+  };
+
   const handleSendMessage = async () => {
     if (!currentInput.trim() || isProcessing || !gameSettings) return;
 
@@ -133,6 +161,8 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
 
     setMessages(prev => [...prev, userMessage]);
     const userAction = currentInput.trim();
+    const agentPrompt = getAgentPrompt();
+    
     setCurrentInput('');
     setIsProcessing(true);
 
@@ -143,7 +173,7 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          action: userAction,
+          action: userAction + agentPrompt,
           settings: gameSettings,
           history: messages.map(m => ({ type: m.type, content: m.content }))
         })
@@ -246,10 +276,31 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
             <Icon name="UserPlus" size={16} />
             Создать НПС
           </Button>
-          <Button variant="outline" size="sm" className="w-full gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full gap-2"
+            onClick={() => setShowJournal(true)}
+          >
             <Icon name="BookMarked" size={16} />
             Журнал
           </Button>
+          
+          <div className="pt-2 border-t">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="agents-toggle" className="text-xs cursor-pointer">
+                Агенты-наблюдатели
+              </Label>
+              <Switch 
+                id="agents-toggle"
+                checked={agentsEnabled}
+                onCheckedChange={setAgentsEnabled}
+              />
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">
+              ИИ следит за сюжетом и временем
+            </p>
+          </div>
         </div>
       </div>
 
@@ -413,6 +464,13 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
           </div>
         </ScrollArea>
       </div>
+
+      <StoryJournalModal 
+        open={showJournal}
+        onOpenChange={setShowJournal}
+        messages={messages}
+        currentEpisode={currentEpisode}
+      />
     </div>
   );
 };
