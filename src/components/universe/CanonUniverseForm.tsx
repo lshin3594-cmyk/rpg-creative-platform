@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 import { canonUniverses, UniverseFormData } from './universeTypes';
 
@@ -20,13 +22,44 @@ export const CanonUniverseForm = ({
   handleCreate,
   isCreating
 }: CanonUniverseFormProps) => {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredUniverses = canonUniverses.filter(canon => {
+    const query = searchQuery.toLowerCase();
+    return (
+      canon.name.toLowerCase().includes(query) ||
+      canon.description.toLowerCase().includes(query) ||
+      canon.source.toLowerCase().includes(query) ||
+      canon.tags.some(tag => tag.toLowerCase().includes(query))
+    );
+  });
+
   return (
     <div className="space-y-4 py-4">
-      <p className="text-sm text-muted-foreground">
-        ИИ изучит каноническую вселенную и будет следовать её правилам
-      </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {canonUniverses.map((canon, idx) => (
+      <div className="space-y-2">
+        <p className="text-sm text-muted-foreground">
+          ИИ изучит каноническую вселенную и будет следовать её правилам
+        </p>
+        <div className="relative">
+          <Icon name="Search" size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Поиск по названию, описанию или тегам..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+      </div>
+      
+      {filteredUniverses.length === 0 ? (
+        <div className="text-center py-12 space-y-2">
+          <Icon name="Search" size={48} className="mx-auto text-muted-foreground opacity-50" />
+          <p className="text-muted-foreground">Ничего не найдено</p>
+          <p className="text-sm text-muted-foreground">Попробуйте другой запрос</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-2">
+          {filteredUniverses.map((canon, idx) => (
           <Card 
             key={idx}
             className="cursor-pointer hover:border-primary/50 transition-colors"
@@ -41,14 +74,27 @@ export const CanonUniverseForm = ({
                 {canon.description}
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-2">
               <p className="text-xs text-muted-foreground">
                 Источник: {canon.source}
               </p>
+              <div className="flex flex-wrap gap-1">
+                {canon.tags.slice(0, 3).map((tag, i) => (
+                  <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                    {tag}
+                  </span>
+                ))}
+                {canon.tags.length > 3 && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                    +{canon.tags.length - 3}
+                  </span>
+                )}
+              </div>
             </CardContent>
           </Card>
         ))}
-      </div>
+        </div>
+      )}
       
       {formData.canonSource && (
         <div className="space-y-4 pt-4 border-t animate-fade-in">
