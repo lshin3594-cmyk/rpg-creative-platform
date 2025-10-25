@@ -12,6 +12,7 @@ interface MainTabsProps {
   characters: Character[];
   worlds: World[];
   stories: Story[];
+  favoriteStories: Story[];
   isLoadingStories: boolean;
   profileStats: {
     charactersCreated: number;
@@ -26,6 +27,7 @@ interface MainTabsProps {
   onDeleteCharacter: (id: string) => void;
   onDeleteWorld: (id: string) => void;
   onDeleteStory: (id: number) => void;
+  onToggleFavorite: (id: number) => void;
   onCreateCharacter: (data: Omit<Character, 'id'>) => void;
   onCreateWorld: (data: Omit<World, 'id'>) => void;
   onUpdateCharacter?: (id: string, data: Partial<Character>) => void;
@@ -38,6 +40,7 @@ export const MainTabs = ({
   characters,
   worlds,
   stories,
+  favoriteStories,
   isLoadingStories,
   profileStats,
   isCreateDialogOpen,
@@ -47,6 +50,7 @@ export const MainTabs = ({
   onDeleteCharacter,
   onDeleteWorld,
   onDeleteStory,
+  onToggleFavorite,
   onCreateCharacter,
   onCreateWorld,
   onUpdateCharacter,
@@ -54,7 +58,7 @@ export const MainTabs = ({
 }: MainTabsProps) => {
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 mb-8">
+      <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-5 mb-8">
         <TabsTrigger value="characters" className="gap-2 tab-trigger-active transition-all">
           <Icon name="Users" size={18} />
           Персонажи
@@ -66,6 +70,10 @@ export const MainTabs = ({
         <TabsTrigger value="stories" className="gap-2 tab-trigger-active transition-all">
           <Icon name="BookOpen" size={18} />
           Сюжеты
+        </TabsTrigger>
+        <TabsTrigger value="favorites" className="gap-2 tab-trigger-active transition-all">
+          <Icon name="Star" size={18} />
+          Избранное
         </TabsTrigger>
         <TabsTrigger value="profile" className="gap-2 tab-trigger-active transition-all">
           <Icon name="User" size={18} />
@@ -104,6 +112,19 @@ export const MainTabs = ({
           onCreateNew={onOpenStoryDialog}
           onCardClick={onCardClick}
           onDelete={onDeleteStory}
+          onToggleFavorite={onToggleFavorite}
+        />
+      </TabsContent>
+
+      <TabsContent value="favorites" className="tab-content-enter">
+        <StoriesTab
+          stories={favoriteStories}
+          isLoading={isLoadingStories}
+          onCreateNew={onOpenStoryDialog}
+          onCardClick={onCardClick}
+          onDelete={onDeleteStory}
+          onToggleFavorite={onToggleFavorite}
+          isFavoritesView
         />
       </TabsContent>
 

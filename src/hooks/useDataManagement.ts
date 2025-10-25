@@ -28,6 +28,7 @@ export interface Story {
   world_name: string;
   genre: string;
   created_at: string;
+  is_favorite?: boolean;
 }
 
 export const useDataManagement = () => {
@@ -239,6 +240,30 @@ export const useDataManagement = () => {
     }
   };
 
+  const toggleFavorite = async (id: number) => {
+    try {
+      const story = savedStories.find(s => s.id === id);
+      if (!story) return false;
+
+      const response = await fetch(`https://functions.poehali.dev/aaff4c60-19e2-4410-a5a6-48560de30278?id=${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ is_favorite: !story.is_favorite })
+      });
+      
+      if (response.ok) {
+        await loadStories();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      return false;
+    }
+  };
+
   return {
     characters,
     worlds,
@@ -256,6 +281,7 @@ export const useDataManagement = () => {
     updateWorld,
     deleteCharacter,
     deleteWorld,
-    deleteStory
+    deleteStory,
+    toggleFavorite
   };
 };

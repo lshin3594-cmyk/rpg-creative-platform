@@ -14,6 +14,7 @@ interface Story {
   world_name: string;
   genre: string;
   created_at: string;
+  is_favorite?: boolean;
 }
 
 interface StoriesTabProps {
@@ -22,9 +23,11 @@ interface StoriesTabProps {
   onCreateNew: () => void;
   onCardClick: () => void;
   onDelete: (id: number) => void;
+  onToggleFavorite: (id: number) => void;
+  isFavoritesView?: boolean;
 }
 
-export const StoriesTab = ({ stories, isLoading, onCreateNew, onCardClick, onDelete }: StoriesTabProps) => {
+export const StoriesTab = ({ stories, isLoading, onCreateNew, onCardClick, onDelete, onToggleFavorite, isFavoritesView }: StoriesTabProps) => {
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
@@ -49,15 +52,22 @@ export const StoriesTab = ({ stories, isLoading, onCreateNew, onCardClick, onDel
   if (stories.length === 0) {
     return (
       <div className="animate-fade-in text-center py-16">
-        <Icon name="BookMarked" size={64} className="mx-auto mb-6 text-primary/50" />
-        <h2 className="text-3xl font-serif font-semibold mb-4">Библиотека сюжетов</h2>
+        <Icon name={isFavoritesView ? "Star" : "BookMarked"} size={64} className="mx-auto mb-6 text-primary/50" />
+        <h2 className="text-3xl font-serif font-semibold mb-4">
+          {isFavoritesView ? 'Избранные истории' : 'Библиотека сюжетов'}
+        </h2>
         <p className="text-muted-foreground max-w-md mx-auto mb-8">
-          Здесь будут храниться все твои сгенерированные истории и сюжеты
+          {isFavoritesView 
+            ? 'Отмечайте любимые истории звёздочкой, чтобы легко находить их здесь'
+            : 'Здесь будут храниться все твои сгенерированные истории и сюжеты'
+          }
         </p>
-        <Button size="lg" className="gap-2" onClick={onCreateNew}>
-          <Icon name="Sparkles" size={20} />
-          Создать первую историю
-        </Button>
+        {!isFavoritesView && (
+          <Button size="lg" className="gap-2" onClick={onCreateNew}>
+            <Icon name="Sparkles" size={20} />
+            Создать первую историю
+          </Button>
+        )}
       </div>
     );
   }
@@ -65,11 +75,15 @@ export const StoriesTab = ({ stories, isLoading, onCreateNew, onCardClick, onDel
   return (
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-serif font-semibold">Библиотека сюжетов</h2>
-        <Button className="gap-2" onClick={onCreateNew}>
-          <Icon name="Plus" size={20} />
-          Создать новую историю
-        </Button>
+        <h2 className="text-3xl font-serif font-semibold">
+          {isFavoritesView ? 'Избранные истории' : 'Библиотека сюжетов'}
+        </h2>
+        {!isFavoritesView && (
+          <Button className="gap-2" onClick={onCreateNew}>
+            <Icon name="Plus" size={20} />
+            Создать новую историю
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -86,19 +100,33 @@ export const StoriesTab = ({ stories, isLoading, onCreateNew, onCardClick, onDel
               animation: 'fade-in 0.5s ease-out forwards'
             }}
           >
-            <Button
-              variant="destructive"
-              size="icon"
-              className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-              onClick={(e) => handleDelete(e, story.id)}
-              disabled={deletingId === story.id}
-            >
-              {deletingId === story.id ? (
-                <Icon name="Loader2" size={16} className="animate-spin" />
-              ) : (
-                <Icon name="Trash2" size={16} />
-              )}
-            </Button>
+            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              <Button
+                variant={story.is_favorite ? "default" : "outline"}
+                size="icon"
+                className="h-8 w-8"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleFavorite(story.id);
+                  onCardClick();
+                }}
+              >
+                <Icon name="Star" size={16} className={story.is_favorite ? 'fill-current' : ''} />
+              </Button>
+              <Button
+                variant="destructive"
+                size="icon"
+                className="h-8 w-8"
+                onClick={(e) => handleDelete(e, story.id)}
+                disabled={deletingId === story.id}
+              >
+                {deletingId === story.id ? (
+                  <Icon name="Loader2" size={16} className="animate-spin" />
+                ) : (
+                  <Icon name="Trash2" size={16} />
+                )}
+              </Button>
+            </div>
             <CardHeader>
               <div className="flex items-start justify-between mb-2">
                 <Badge variant="secondary" className="text-xs">{story.genre}</Badge>

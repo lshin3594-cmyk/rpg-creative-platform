@@ -14,6 +14,9 @@ const Index = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isStoryDialogOpen, setIsStoryDialogOpen] = useState(false);
   const [selectedNarrativeCharacters, setSelectedNarrativeCharacters] = useState<string[]>([]);
+  const [episodeLength, setEpisodeLength] = useState(1500);
+  const [imagesPerEpisode, setImagesPerEpisode] = useState(2);
+  const [playerInstructions, setPlayerInstructions] = useState('');
 
   const carouselImages = [
     'https://cdn.poehali.dev/files/11a64f46-796a-4ce6-9051-28d80e0c7bdd.jpg',
@@ -38,7 +41,8 @@ const Index = () => {
     updateWorld,
     deleteCharacter,
     deleteWorld,
-    deleteStory
+    deleteStory,
+    toggleFavorite
   } = useDataManagement();
 
   const {
@@ -132,6 +136,11 @@ const Index = () => {
     if (success) playDeleteSound();
   };
 
+  const handleToggleFavorite = async (id: number) => {
+    const success = await toggleFavorite(id);
+    if (success) playCardSound();
+  };
+
   const handleGenerateStory = async () => {
     await generateStory(characters, worlds, () => {
       playStorySound();
@@ -184,6 +193,12 @@ const Index = () => {
         onGenerate={handleGenerateStory}
         characters={characters}
         worlds={worlds}
+        episodeLength={episodeLength}
+        setEpisodeLength={setEpisodeLength}
+        imagesPerEpisode={imagesPerEpisode}
+        setImagesPerEpisode={setImagesPerEpisode}
+        playerInstructions={playerInstructions}
+        setPlayerInstructions={setPlayerInstructions}
       />
 
       {showInteractive && generatedStory && (
@@ -207,6 +222,7 @@ const Index = () => {
         characters={characters}
         worlds={worlds}
         stories={savedStories}
+        favoriteStories={savedStories.filter(s => s.is_favorite)}
         isLoadingStories={isLoadingStories}
         profileStats={profileStats}
         isCreateDialogOpen={isCreateDialogOpen}
@@ -216,6 +232,7 @@ const Index = () => {
         onDeleteCharacter={handleDeleteCharacter}
         onDeleteWorld={handleDeleteWorld}
         onDeleteStory={handleDeleteStory}
+        onToggleFavorite={handleToggleFavorite}
         onCreateCharacter={handleCreateCharacter}
         onCreateWorld={handleCreateWorld}
         onUpdateCharacter={handleUpdateCharacter}

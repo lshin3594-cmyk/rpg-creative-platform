@@ -2,7 +2,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Slider } from '@/components/ui/slider';
 import Icon from '@/components/ui/icon';
+import { useState } from 'react';
 
 interface Character {
   id: string;
@@ -36,6 +40,12 @@ interface StoryGeneratorProps {
   onGenerate: () => void;
   characters: Character[];
   worlds: World[];
+  episodeLength?: number;
+  setEpisodeLength?: (value: number) => void;
+  imagesPerEpisode?: number;
+  setImagesPerEpisode?: (value: number) => void;
+  playerInstructions?: string;
+  setPlayerInstructions?: (value: string) => void;
 }
 
 export const StoryGenerator = ({
@@ -51,8 +61,15 @@ export const StoryGenerator = ({
   generatedStory,
   onGenerate,
   characters,
-  worlds
+  worlds,
+  episodeLength = 1500,
+  setEpisodeLength,
+  imagesPerEpisode = 2,
+  setImagesPerEpisode,
+  playerInstructions = '',
+  setPlayerInstructions
 }: StoryGeneratorProps) => {
+  const [showAdvanced, setShowAdvanced] = useState(false);
   return (
     <div className="flex justify-center mb-8">
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -110,6 +127,83 @@ export const StoryGenerator = ({
                 onChange={(e) => setStoryPrompt(e.target.value)}
               />
             </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-2"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+            >
+              <Icon name={showAdvanced ? "ChevronUp" : "ChevronDown"} size={16} />
+              {showAdvanced ? 'Скрыть' : 'Показать'} дополнительные настройки
+            </Button>
+
+            {showAdvanced && (
+              <Card className="border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Icon name="Settings" size={18} />
+                    Настройки генерации
+                  </CardTitle>
+                  <CardDescription>
+                    Управляйте деталями создания истории
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="episode-length">Размер эпизода (символы)</Label>
+                      <span className="text-sm text-muted-foreground font-mono">{episodeLength}</span>
+                    </div>
+                    <Slider
+                      id="episode-length"
+                      min={500}
+                      max={3000}
+                      step={100}
+                      value={[episodeLength]}
+                      onValueChange={(value) => setEpisodeLength?.(value[0])}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Короткие эпизоды (500-1000) — быстрое действие. Длинные (2000-3000) — подробное повествование.
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="images-count">Картинок на эпизод</Label>
+                      <span className="text-sm text-muted-foreground font-mono">{imagesPerEpisode}</span>
+                    </div>
+                    <Slider
+                      id="images-count"
+                      min={0}
+                      max={5}
+                      step={1}
+                      value={[imagesPerEpisode]}
+                      onValueChange={(value) => setImagesPerEpisode?.(value[0])}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Иллюстрации ключевых моментов. 0 — без картинок, 3-5 — богатая визуализация.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="player-instructions">Дополнительные пожелания</Label>
+                    <Textarea
+                      id="player-instructions"
+                      placeholder="Например: 'Больше диалогов', 'Добавь неожиданный поворот', 'Фокус на романтике'"
+                      className="min-h-[80px] resize-none"
+                      value={playerInstructions}
+                      onChange={(e) => setPlayerInstructions?.(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Укажите предпочтения по стилю, темпу, фокусу нарратива и другие пожелания.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             <Button 
               onClick={onGenerate} 
               disabled={isGenerating || !storyPrompt.trim()}
