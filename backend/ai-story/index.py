@@ -83,10 +83,10 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
     messages.append({'role': 'user', 'content': action})
     
     try:
-        # Вызываем DeepSeek API
+        # Вызываем DeepSeek API с коротким таймаутом
         import httpx
         
-        http_client = httpx.Client(timeout=30.0)
+        http_client = httpx.Client(timeout=20.0)
         client = OpenAI(
             api_key=DEEPSEEK_API_KEY,
             base_url="https://api.deepseek.com",
@@ -96,7 +96,7 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
         response = client.chat.completions.create(
             model="deepseek-chat",
             messages=messages,
-            max_tokens=1000,
+            max_tokens=800,
             temperature=0.8,
             stream=False
         )
@@ -112,8 +112,10 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
             'episode': len(history) // 2 + 1
         }
         
+    except httpx.TimeoutException:
+        print(f"DeepSeek timeout - using fallback")
+        return fallback_response(action, role, len(history))
     except Exception as e:
-        # Если API не отвечает - возвращаем fallback
         print(f"DeepSeek API error: {e}")
         return fallback_response(action, role, len(history))
 
@@ -197,13 +199,22 @@ def extract_characters(text: str) -> List[Dict[str, str]]:
 
 def fallback_response(action: str, role: str, history_len: int) -> Dict[str, Any]:
     """
-    Фоллбэк на случай ошибки API
+    Фоллбэк на случай ошибки API - простой, но атмосферный
     """
     if history_len == 0:
-        text = f"История началась. {action}\n\nВы стоите на пороге приключения."
-        characters = [{'name': 'Странник', 'role': 'NPC', 'description': 'Загадочная фигура'}]
+        text = (
+            "Мир замер в ожидании. Где-то вдали слышится шум - голоса, шаги, эхо жизни. "
+            "Воздух наполнен предчувствием перемен. Что-то важное вот-вот произойдёт.\n\n"
+            f"*{action}*\n\n"
+            "История началась. Что дальше?"
+        )
+        characters = []
     else:
-        text = f"Вы решаете: {action}\n\nИстория продолжается..."
+        text = (
+            f"*{action}*\n\n"
+            "Мир отреагировал на ваши действия. Что-то изменилось, но полная картина пока не ясна. "
+            "Возможно, стоит попробовать ещё раз или сделать что-то другое?"
+        )
         characters = []
     
     return {
