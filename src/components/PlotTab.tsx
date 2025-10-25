@@ -15,7 +15,7 @@ interface Plot {
   mainConflict: string;
   keyEvents: string;
   resolution: string;
-  plotType: string;
+  genres: string[];
 }
 
 interface PlotTabProps {
@@ -26,7 +26,7 @@ interface PlotTabProps {
   onUpdate?: (id: string, data: Partial<Plot>) => Promise<void>;
 }
 
-const plotTypes = [
+const plotGenres = [
   { value: 'hero', label: 'Путь героя', icon: 'Sword' },
   { value: 'mystery', label: 'Детектив', icon: 'Search' },
   { value: 'romance', label: 'Романтика', icon: 'Heart' },
@@ -34,7 +34,9 @@ const plotTypes = [
   { value: 'comedy', label: 'Комедия', icon: 'Smile' },
   { value: 'adventure', label: 'Приключение', icon: 'Compass' },
   { value: 'revenge', label: 'Месть', icon: 'Flame' },
-  { value: 'custom', label: 'Свой тип', icon: 'Sparkles' }
+  { value: 'thriller', label: 'Триллер', icon: 'Zap' },
+  { value: 'horror', label: 'Хоррор', icon: 'Ghost' },
+  { value: 'drama', label: 'Драма', icon: 'Theater' }
 ];
 
 export const PlotTab = ({ 
@@ -55,8 +57,67 @@ export const PlotTab = ({
     mainConflict: '',
     keyEvents: '',
     resolution: '',
-    plotType: 'hero'
+    genres: [] as string[]
   });
+
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const toggleGenre = (genre: string) => {
+    setFormData(prev => ({
+      ...prev,
+      genres: prev.genres.includes(genre)
+        ? prev.genres.filter(g => g !== genre)
+        : [...prev.genres, genre]
+    }));
+  };
+
+  const handleGeneratePlot = async () => {
+    if (!formData.name) return;
+    
+    setIsGenerating(true);
+    try {
+      const genresText = formData.genres.length > 0 
+        ? formData.genres.map(g => plotGenres.find(pg => pg.value === g)?.label).join(', ')
+        : 'универсальный';
+      
+      const prompt = `Создай сюжет для истории "${formData.name}".
+Жанры: ${genresText}
+${formData.description ? `Краткое описание: ${formData.description}` : ''}
+
+Верни JSON:
+{
+  "mainConflict": "основной конфликт 1-2 предложения",
+  "keyEvents": "ключевые события через запятую или с новой строки",
+  "resolution": "развязка 1-2 предложения"
+}`;
+
+      const response = await fetch('https://functions.poehali.dev/25ab42fa-62e6-42e0-9d90-8e0a40bd65a1', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+
+      const data = await response.json();
+      if (data.content) {
+        try {
+          const jsonMatch = data.content.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const plotData = JSON.parse(jsonMatch[0]);
+            setFormData(prev => ({
+              ...prev,
+              mainConflict: plotData.mainConflict || '',
+              keyEvents: plotData.keyEvents || '',
+              resolution: plotData.resolution || ''
+            }));
+          }
+        } catch (e) {
+          console.error('Failed to parse plot data:', e);
+        }
+      }
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -81,7 +142,7 @@ export const PlotTab = ({
         mainConflict: '',
         keyEvents: '',
         resolution: '',
-        plotType: 'hero'
+        genres: []
       });
     } finally {
       setIsCreating(false);
@@ -97,7 +158,7 @@ export const PlotTab = ({
       mainConflict: plot.mainConflict || '',
       keyEvents: plot.keyEvents || '',
       resolution: plot.resolution || '',
-      plotType: plot.plotType
+      genres: plot.genres || []
     });
     setIsEditDialogOpen(true);
   };
@@ -116,19 +177,19 @@ export const PlotTab = ({
         mainConflict: '',
         keyEvents: '',
         resolution: '',
-        plotType: 'hero'
+        genres: []
       });
     } finally {
       setIsCreating(false);
     }
   };
 
-  const getPlotTypeIcon = (type: string) => {
-    return plotTypes.find(t => t.value === type)?.icon || 'Sparkles';
+  const getGenreIcon = (genre: string) => {
+    return plotGenres.find(g => g.value === genre)?.icon || 'Sparkles';
   };
 
-  const getPlotTypeLabel = (type: string) => {
-    return plotTypes.find(t => t.value === type)?.label || type;
+  const getGenreLabel = (genre: string) => {
+    return plotGenres.find(g => g.value === genre)?.label || genre;
   };
 
   return (
@@ -166,22 +227,28 @@ export const PlotTab = ({
               </div>
 
               <div className="space-y-2">
-                <Label>Тип сюжета</Label>
-                <div className="grid grid-cols-4 gap-2">
-                  {plotTypes.map((type) => (
+                <div className="flex items-center justify-between">
+                  <Label>Жанры сюжета</Label>
+                  {formData.genres.length > 0 && (
+                    <span className="text-xs text-primary">Выбрано: {formData.genres.length}</span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">Можно выбрать несколько жанров</p>
+                <div className="grid grid-cols-5 gap-2">
+                  {plotGenres.map((genre) => (
                     <button
-                      key={type.value}
+                      key={genre.value}
                       type="button"
-                      onClick={() => setFormData({...formData, plotType: type.value})}
-                      className={`p-3 rounded-lg border-2 transition-all text-left hover:scale-105 ${
-                        formData.plotType === type.value
+                      onClick={() => toggleGenre(genre.value)}
+                      className={`p-2 rounded-lg border-2 transition-all hover:scale-105 ${
+                        formData.genres.includes(genre.value)
                           ? 'border-primary bg-primary/10'
                           : 'border-border hover:border-primary/50'
                       }`}
                     >
                       <div className="flex flex-col items-center gap-1">
-                        <Icon name={type.icon as any} size={20} />
-                        <span className="text-xs font-medium text-center">{type.label}</span>
+                        <Icon name={genre.icon as any} size={18} />
+                        <span className="text-xs font-medium text-center">{genre.label}</span>
                       </div>
                     </button>
                   ))}
@@ -189,7 +256,7 @@ export const PlotTab = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="plot-description">Краткое описание</Label>
+                <Label htmlFor="plot-description">Краткое описание (опционально)</Label>
                 <Textarea 
                   id="plot-description" 
                   placeholder="Герои отправляются на поиски древнего артефакта..." 
@@ -198,6 +265,20 @@ export const PlotTab = ({
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
                 />
               </div>
+
+              <Button 
+                variant="outline"
+                className="w-full gap-2" 
+                onClick={handleGeneratePlot}
+                disabled={isGenerating || !formData.name}
+              >
+                {isGenerating ? (
+                  <Icon name="Loader2" size={20} className="animate-spin" />
+                ) : (
+                  <Icon name="Sparkles" size={20} />
+                )}
+                {isGenerating ? 'Генерирую сюжет...' : 'Сгенерировать сюжет через AI'}
+              </Button>
 
               <div className="border-t border-border pt-4 space-y-4">
                 <div className="flex items-center gap-2 mb-2">
@@ -242,7 +323,7 @@ export const PlotTab = ({
               <Button 
                 className="w-full gap-2" 
                 onClick={handleCreate}
-                disabled={isCreating || !formData.name || !formData.description}
+                disabled={isCreating || !formData.name}
               >
                 {isCreating ? (
                   <Icon name="Loader2" size={20} className="animate-spin" />
@@ -310,16 +391,27 @@ export const PlotTab = ({
                 )}
               </div>
               <CardHeader>
-                <div className="flex items-start justify-between mb-2">
-                  <Badge variant="secondary" className="gap-1">
-                    <Icon name={getPlotTypeIcon(plot.plotType) as any} size={14} />
-                    {getPlotTypeLabel(plot.plotType)}
-                  </Badge>
-                </div>
+                {plot.genres && plot.genres.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {plot.genres.slice(0, 3).map((genre) => (
+                      <Badge key={genre} variant="secondary" className="gap-1 text-xs">
+                        <Icon name={getGenreIcon(genre) as any} size={12} />
+                        {getGenreLabel(genre)}
+                      </Badge>
+                    ))}
+                    {plot.genres.length > 3 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{plot.genres.length - 3}
+                      </Badge>
+                    )}
+                  </div>
+                )}
                 <CardTitle className="text-2xl font-serif">{plot.name}</CardTitle>
-                <CardDescription className="text-base leading-relaxed">
-                  {plot.description}
-                </CardDescription>
+                {plot.description && (
+                  <CardDescription className="text-base leading-relaxed">
+                    {plot.description}
+                  </CardDescription>
+                )}
               </CardHeader>
               <CardContent className="space-y-3">
                 {plot.mainConflict && (
@@ -369,22 +461,28 @@ export const PlotTab = ({
             </div>
 
             <div className="space-y-2">
-              <Label>Тип сюжета</Label>
-              <div className="grid grid-cols-4 gap-2">
-                {plotTypes.map((type) => (
+              <div className="flex items-center justify-between">
+                <Label>Жанры сюжета</Label>
+                {formData.genres.length > 0 && (
+                  <span className="text-xs text-primary">Выбрано: {formData.genres.length}</span>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">Можно выбрать несколько жанров</p>
+              <div className="grid grid-cols-5 gap-2">
+                {plotGenres.map((genre) => (
                   <button
-                    key={type.value}
+                    key={genre.value}
                     type="button"
-                    onClick={() => setFormData({...formData, plotType: type.value})}
-                    className={`p-3 rounded-lg border-2 transition-all text-left hover:scale-105 ${
-                      formData.plotType === type.value
+                    onClick={() => toggleGenre(genre.value)}
+                    className={`p-2 rounded-lg border-2 transition-all hover:scale-105 ${
+                      formData.genres.includes(genre.value)
                         ? 'border-primary bg-primary/10'
                         : 'border-border hover:border-primary/50'
                     }`}
                   >
                     <div className="flex flex-col items-center gap-1">
-                      <Icon name={type.icon as any} size={20} />
-                      <span className="text-xs font-medium text-center">{type.label}</span>
+                      <Icon name={genre.icon as any} size={18} />
+                      <span className="text-xs font-medium text-center">{genre.label}</span>
                     </div>
                   </button>
                 ))}
@@ -392,7 +490,7 @@ export const PlotTab = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-plot-description">Краткое описание</Label>
+              <Label htmlFor="edit-plot-description">Краткое описание (опционально)</Label>
               <Textarea 
                 id="edit-plot-description" 
                 className="min-h-[100px]"
@@ -400,6 +498,20 @@ export const PlotTab = ({
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
               />
             </div>
+
+            <Button 
+              variant="outline"
+              className="w-full gap-2" 
+              onClick={handleGeneratePlot}
+              disabled={isGenerating || !formData.name}
+            >
+              {isGenerating ? (
+                <Icon name="Loader2" size={20} className="animate-spin" />
+              ) : (
+                <Icon name="Sparkles" size={20} />
+              )}
+              {isGenerating ? 'Генерирую сюжет...' : 'Сгенерировать сюжет через AI'}
+            </Button>
 
             <div className="border-t border-border pt-4 space-y-4">
               <div className="space-y-2">
@@ -436,7 +548,7 @@ export const PlotTab = ({
             <Button 
               className="w-full gap-2" 
               onClick={handleUpdate}
-              disabled={isCreating || !formData.name || !formData.description}
+              disabled={isCreating || !formData.name}
             >
               {isCreating ? (
                 <Icon name="Loader2" size={20} className="animate-spin" />

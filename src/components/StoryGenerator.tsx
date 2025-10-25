@@ -27,6 +27,16 @@ interface World {
   genre: string;
 }
 
+interface Plot {
+  id: string;
+  name: string;
+  description: string;
+  mainConflict: string;
+  keyEvents: string;
+  resolution: string;
+  genres: string[];
+}
+
 interface StoryGeneratorProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -41,6 +51,7 @@ interface StoryGeneratorProps {
   onGenerate: () => void;
   characters: Character[];
   worlds: World[];
+  plots: Plot[];
   episodeLength?: number;
   setEpisodeLength?: (value: number) => void;
   imagesPerEpisode?: number;
@@ -53,6 +64,8 @@ interface StoryGeneratorProps {
   setNpcCount?: (value: number) => void;
   npcTypes?: string[];
   setNpcTypes?: (value: string[]) => void;
+  selectedPlot?: string;
+  setSelectedPlot?: (id: string) => void;
 }
 
 export const StoryGenerator = ({
@@ -69,6 +82,7 @@ export const StoryGenerator = ({
   onGenerate,
   characters,
   worlds,
+  plots,
   episodeLength = 1500,
   setEpisodeLength,
   imagesPerEpisode = 2,
@@ -80,9 +94,14 @@ export const StoryGenerator = ({
   npcCount = 2,
   setNpcCount,
   npcTypes = [],
-  setNpcTypes
+  setNpcTypes,
+  selectedPlot = '',
+  setSelectedPlot
 }: StoryGeneratorProps) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showPlotDetails, setShowPlotDetails] = useState(false);
+  
+  const selectedPlotData = plots.find(p => p.id === selectedPlot);
   
   const availableNpcTypes = [
     { value: 'ally', label: 'Союзник', icon: 'Users', description: 'Помогает главному герою' },
@@ -150,15 +169,94 @@ export const StoryGenerator = ({
                 </select>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="story-prompt">Сюжет истории</Label>
-              <Textarea
-                id="story-prompt"
-                placeholder="Напиши о тёмном страже, который встречает загадочную эльфийку в заброшенном замке..."
-                className="min-h-[120px]"
-                value={storyPrompt}
-                onChange={(e) => setStoryPrompt(e.target.value)}
-              />
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label>Выберите готовый сюжет или опишите свой</Label>
+                {plots.length > 0 && (
+                  <div className="grid grid-cols-1 gap-2 mb-3">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPlot?.('')}
+                      className={`p-2 rounded-lg border-2 transition-all text-left text-sm ${
+                        !selectedPlot
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                    >
+                      <Icon name="Sparkles" size={14} className="inline mr-2" />
+                      Свободное описание
+                    </button>
+                    {plots.map((plot) => (
+                      <button
+                        key={plot.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedPlot?.(plot.id);
+                          setShowPlotDetails(true);
+                        }}
+                        className={`p-2 rounded-lg border-2 transition-all text-left hover:scale-[1.01] ${
+                          selectedPlot === plot.id
+                            ? 'border-primary bg-primary/10'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-medium">{plot.name}</span>
+                          {plot.genres && plot.genres.length > 0 && (
+                            <span className="text-xs px-2 py-0.5 rounded bg-muted">
+                              {plot.genres[0]}
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {selectedPlotData && showPlotDetails && (
+                <div className="p-3 bg-muted/50 rounded-lg space-y-2 border border-border text-sm">
+                  <div className="flex items-start justify-between">
+                    <span className="font-semibold flex items-center gap-1">
+                      <Icon name="Info" size={14} />
+                      Детали
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0"
+                      onClick={() => setShowPlotDetails(false)}
+                    >
+                      <Icon name="X" size={14} />
+                    </Button>
+                  </div>
+                  {selectedPlotData.description && (
+                    <p className="text-xs text-muted-foreground">{selectedPlotData.description}</p>
+                  )}
+                  {selectedPlotData.mainConflict && (
+                    <div>
+                      <p className="text-xs font-medium">Конфликт:</p>
+                      <p className="text-xs text-muted-foreground">{selectedPlotData.mainConflict}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="story-prompt">
+                  {selectedPlot ? 'Дополнительные пожелания (опционально)' : 'Опишите сюжет'}
+                </Label>
+                <Textarea
+                  id="story-prompt"
+                  placeholder={selectedPlot 
+                    ? 'Добавьте детали, которые хотите включить в эту историю...'
+                    : 'Напиши о тёмном страже, который встречает загадочную эльфийку...'
+                  }
+                  className="min-h-[100px]"
+                  value={storyPrompt}
+                  onChange={(e) => setStoryPrompt(e.target.value)}
+                />
+              </div>
             </div>
 
             <Button

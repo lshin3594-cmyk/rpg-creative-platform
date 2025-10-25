@@ -20,6 +20,7 @@ const Index = () => {
   const [autoGenerateNPCs, setAutoGenerateNPCs] = useState(true);
   const [npcCount, setNpcCount] = useState(2);
   const [npcTypes, setNpcTypes] = useState<string[]>([]);
+  const [selectedPlot, setSelectedPlot] = useState('');
 
   const carouselImages = [
     'https://cdn.poehali.dev/files/11a64f46-796a-4ce6-9051-28d80e0c7bdd.jpg',
@@ -217,6 +218,7 @@ const Index = () => {
         onGenerate={handleGenerateStory}
         characters={characters}
         worlds={worlds}
+        plots={plots}
         episodeLength={episodeLength}
         setEpisodeLength={setEpisodeLength}
         imagesPerEpisode={imagesPerEpisode}
@@ -229,6 +231,8 @@ const Index = () => {
         setNpcCount={setNpcCount}
         npcTypes={npcTypes}
         setNpcTypes={setNpcTypes}
+        selectedPlot={selectedPlot}
+        setSelectedPlot={setSelectedPlot}
       />
 
       {showInteractive && generatedStory && (
