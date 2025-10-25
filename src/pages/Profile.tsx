@@ -37,15 +37,10 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 flex items-center justify-center relative">
-      <Button
-        onClick={() => navigate('/create-game')}
-        className="absolute top-4 right-4 gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-none shadow-lg shadow-purple-500/50 z-10"
-      >
-        <Icon name="UserPlus" size={18} />
-        Создать персонажа
-      </Button>
-      <UserProfile />
+    <div className="min-h-screen p-4 py-12">
+      <div className="max-w-6xl mx-auto">
+        <UserProfile />
+      </div>
     </div>
   );
 };
