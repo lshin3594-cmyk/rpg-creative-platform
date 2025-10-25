@@ -89,24 +89,27 @@ export const AuthModal = ({ open, onClose }: AuthModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Добро пожаловать!</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="sm:max-w-md bg-gradient-to-br from-purple-950/95 via-black/95 to-pink-950/95 border-purple-500/50 backdrop-blur-xl">
+        <DialogHeader className="space-y-3">
+          <div className="flex items-center justify-center gap-2 text-purple-300">
+            <Icon name="Sparkles" size={24} />
+          </div>
+          <DialogTitle className="text-2xl text-center bg-gradient-to-r from-purple-300 via-pink-300 to-purple-300 bg-clip-text text-transparent">Добро пожаловать!</DialogTitle>
+          <DialogDescription className="text-center text-purple-200/70">
             Войдите или создайте аккаунт для сохранения прогресса
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="login" className="mt-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Вход</TabsTrigger>
-            <TabsTrigger value="register">Регистрация</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 bg-purple-900/40 border-purple-500/30">
+            <TabsTrigger value="login" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white">Вход</TabsTrigger>
+            <TabsTrigger value="register" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white">Регистрация</TabsTrigger>
           </TabsList>
 
           <TabsContent value="login">
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="login">Email или имя пользователя</Label>
+                <Label htmlFor="login" className="text-purple-200">Email или имя пользователя</Label>
                 <Input
                   id="login"
                   type="text"
@@ -114,11 +117,12 @@ export const AuthModal = ({ open, onClose }: AuthModalProps) => {
                   value={loginData.login}
                   onChange={(e) => setLoginData({ ...loginData, login: e.target.value })}
                   required
+                  className="bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50 focus:border-purple-400"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Пароль</Label>
+                <Label htmlFor="password" className="text-purple-200">Пароль</Label>
                 <Input
                   id="password"
                   type="password"
@@ -126,10 +130,11 @@ export const AuthModal = ({ open, onClose }: AuthModalProps) => {
                   value={loginData.password}
                   onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                   required
+                  className="bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50 focus:border-purple-400"
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-none" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Icon name="Loader2" className="mr-2 animate-spin" size={16} />
@@ -145,10 +150,10 @@ export const AuthModal = ({ open, onClose }: AuthModalProps) => {
 
               <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
+                  <span className="w-full border-t border-purple-500/30" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
+                  <span className="bg-gradient-to-br from-purple-950/95 via-black/95 to-pink-950/95 px-2 text-purple-300/70">
                     Или войти через
                   </span>
                 </div>
@@ -159,7 +164,7 @@ export const AuthModal = ({ open, onClose }: AuthModalProps) => {
                   type="button"
                   variant="outline"
                   disabled
-                  className="gap-2 opacity-50 cursor-not-allowed"
+                  className="gap-2 opacity-50 cursor-not-allowed bg-purple-900/20 border-purple-500/30 text-purple-300"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M15.07 2H8.93C3.33 2 2 3.33 2 8.93v6.14C2 20.67 3.33 22 8.93 22h6.14c5.6 0 6.93-1.33 6.93-6.93V8.93C22 3.33 20.67 2 15.07 2zm3.15 14.51c-.19.52-.95 1.09-1.6 1.24-.33.08-.7.12-1.11.12-1.07 0-2.42-.37-4.01-1.37-2.34-1.47-4.23-4.12-5.28-6.6-.33-.77-.12-1.4.24-1.8.41-.47 1.02-.71 1.7-.71.31 0 .64.06.96.17.75.26 1.27.97 1.62 1.59.32.55.6 1.27.77 1.97.09.37.04.68-.13.92-.18.26-.48.42-.85.48-.13.02-.25.04-.36.08.32.76.79 1.48 1.37 2.09.58.61 1.28 1.12 2.02 1.47.04-.11.08-.24.11-.38.08-.37.26-.66.54-.84.26-.17.58-.25.93-.15.7.2 1.4.51 1.91.87.58.4 1.23.93 1.46 1.68z"/>
@@ -171,7 +176,7 @@ export const AuthModal = ({ open, onClose }: AuthModalProps) => {
                   type="button"
                   variant="outline"
                   disabled
-                  className="gap-2 opacity-50 cursor-not-allowed"
+                  className="gap-2 opacity-50 cursor-not-allowed bg-purple-900/20 border-purple-500/30 text-purple-300"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.03-1.99 1.27-5.62 3.72-.53.36-1.01.54-1.44.53-.47-.01-1.38-.27-2.05-.49-.82-.27-1.47-.42-1.42-.88.03-.24.37-.48 1.02-.73 4-1.74 6.68-2.88 8.03-3.44 3.82-1.59 4.62-1.87 5.14-1.88.11 0 .37.03.54.17.14.11.18.26.2.37.01.06.03.21.01.33z"/>
@@ -185,7 +190,7 @@ export const AuthModal = ({ open, onClose }: AuthModalProps) => {
           <TabsContent value="register">
             <form onSubmit={handleRegister} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="reg-email">Email</Label>
+                <Label htmlFor="reg-email" className="text-purple-200">Email</Label>
                 <Input
                   id="reg-email"
                   type="email"
@@ -193,11 +198,12 @@ export const AuthModal = ({ open, onClose }: AuthModalProps) => {
                   value={registerData.email}
                   onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
                   required
+                  className="bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50 focus:border-purple-400"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="reg-username">Имя пользователя</Label>
+                <Label htmlFor="reg-username" className="text-purple-200">Имя пользователя</Label>
                 <Input
                   id="reg-username"
                   type="text"
@@ -205,11 +211,12 @@ export const AuthModal = ({ open, onClose }: AuthModalProps) => {
                   value={registerData.username}
                   onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
                   required
+                  className="bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50 focus:border-purple-400"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="reg-password">Пароль</Label>
+                <Label htmlFor="reg-password" className="text-purple-200">Пароль</Label>
                 <Input
                   id="reg-password"
                   type="password"
@@ -217,11 +224,12 @@ export const AuthModal = ({ open, onClose }: AuthModalProps) => {
                   value={registerData.password}
                   onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
                   required
+                  className="bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50 focus:border-purple-400"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="reg-confirm">Подтвердите пароль</Label>
+                <Label htmlFor="reg-confirm" className="text-purple-200">Подтвердите пароль</Label>
                 <Input
                   id="reg-confirm"
                   type="password"
@@ -229,10 +237,11 @@ export const AuthModal = ({ open, onClose }: AuthModalProps) => {
                   value={registerData.confirmPassword}
                   onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
                   required
+                  className="bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50 focus:border-purple-400"
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-none" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Icon name="Loader2" className="mr-2 animate-spin" size={16} />
