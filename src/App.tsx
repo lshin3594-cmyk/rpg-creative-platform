@@ -16,6 +16,7 @@ import Profile from "./pages/Profile";
 import MySaves from "./pages/MySaves";
 import VkCallback from "./pages/VkCallback";
 import NotFound from "./pages/NotFound";
+import { GameScreen } from "./components/GameScreen";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/create-game" element={<CreateGame />} />
+            <Route path="/story/new" element={<GameScreen />} />
             <Route path="/create-fanfic" element={<CreateFanfic />} />
             <Route path="/library" element={<Library />} />
             <Route path="/story/:id" element={<StoryView />} />
