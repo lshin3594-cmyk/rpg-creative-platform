@@ -22,12 +22,18 @@ const categories = [
 const FAVORITES_KEY = 'canon-universes-favorites';
 
 interface CanonUniverseFormProps {
-  onSubmit: (data: any) => void;
+  formData: UniverseFormData;
+  setFormData: (data: UniverseFormData) => void;
+  handleCanonSelect: (canon: typeof canonUniverses[0]) => void;
+  handleCreate: () => void;
   isCreating: boolean;
 }
 
 export const CanonUniverseForm = ({
-  onSubmit,
+  formData,
+  setFormData,
+  handleCanonSelect: handleCanonSelectProp,
+  handleCreate,
   isCreating
 }: CanonUniverseFormProps) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,14 +70,7 @@ export const CanonUniverseForm = ({
   };
 
   const handleCanonSelect = (canon: typeof canonUniverses[0]) => {
-    onSubmit({
-      name: canon.name,
-      description: canon.description,
-      canonSource: canon.source,
-      sourceType: 'canon' as const,
-      genre: canon.tags[0] || 'фэнтези',
-      tags: canon.tags
-    });
+    handleCanonSelectProp(canon);
   };
 
   const handlePreviewSelect = () => {

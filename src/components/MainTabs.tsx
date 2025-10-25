@@ -109,7 +109,7 @@ export const MainTabs = ({
 
       <TabsContent value="universe" className="tab-content-enter">
         <UniverseTab
-          universes={[]}
+          universes={worlds as any}
           onCardClick={onCardClick}
           onDelete={onDeleteWorld}
           onCreate={onCreateWorld as any}

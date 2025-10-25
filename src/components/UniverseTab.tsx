@@ -16,13 +16,27 @@ interface UniverseTabProps {
 }
 
 export const UniverseTab = ({ 
-  universes, 
+  universes: worldsInput, 
   onCardClick,
   onDelete,
   onCreate,
   onUpdate,
   onLearnCanon
 }: UniverseTabProps) => {
+  const universes: Universe[] = worldsInput.map((world: any) => ({
+    id: world.id,
+    name: world.name,
+    description: world.description,
+    lore: world.magic || '',
+    rules: world.laws || '',
+    characters: '',
+    locations: '',
+    timeline: '',
+    canonSource: '',
+    isCustom: true,
+    genres: world.genre ? world.genre.split(',').map((g: string) => g.trim()) : []
+  }));
+
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -117,7 +131,18 @@ ${formData.lore ? `История: ${formData.lore}` : ''}
     
     setIsCreating(true);
     try {
-      await onCreate(formData);
+      const worldData = {
+        name: formData.name,
+        description: formData.description,
+        image: '',
+        genre: formData.genres.join(', ') || 'фэнтези',
+        laws: formData.rules,
+        physics: '',
+        magic: formData.lore,
+        technology: ''
+      };
+      
+      await onCreate(worldData as any);
       setFormData({
         name: '',
         description: '',
