@@ -80,8 +80,12 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
         else:
             messages.append({'role': 'assistant', 'content': msg['content']})
     
-    # Добавляем текущее действие
-    messages.append({'role': 'user', 'content': action})
+    # Если это первый ход — даём более конкретную инструкцию
+    if len(history) == 0:
+        enhanced_action = f"{action}\n\nНачни историю ярко и захватывающе! Опиши атмосферу, представь главного героя (или героиню) через действия и диалоги. Сразу создай интригу или напряжение. Пиши живо, с эмоциями!"
+        messages.append({'role': 'user', 'content': enhanced_action})
+    else:
+        messages.append({'role': 'user', 'content': action})
     
     max_retries = 2
     for attempt in range(max_retries):
@@ -107,8 +111,9 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
             response = client.chat.completions.create(
                 model="deepseek-chat",
                 messages=messages,
-                max_tokens=600,
-                temperature=0.7,
+                max_tokens=1000,
+                temperature=0.9,
+                top_p=0.95,
                 stream=False
             )
             
@@ -161,11 +166,14 @@ def build_system_prompt(role: str, narrative_mode: str, setting: str, game_name:
         base += "ПОВЕСТВОВАНИЕ: От третьего лица, в важные моменты - от лица любовного интереса.\n"
     
     base += "\nПРАВИЛА:\n"
-    base += "- Живой язык, эмоции, детали (запахи, звуки, мысли)\n"
-    base += "- Персонажи ГОВОРЯТ, показывай диалоги и действия\n"
-    base += "- Показывай, не рассказывай: 'сжал кулаки' вместо 'был зол'\n"
+    base += "- Пиши ЖИВО и ЭМОЦИОНАЛЬНО, как в крутом романе или фильме\n"
+    base += "- МНОГО ДИАЛОГОВ! Персонажи должны говорить и взаимодействовать\n"
+    base += "- Детали: запахи, звуки, ощущения, мысли персонажей\n"
+    base += "- Показывай действия: 'сжал кулаки', 'покраснела', 'отвернулся'\n"
+    base += "- Создавай ДРАМУ и ИНТРИГУ — что-то должно происходить!\n"
     base += "- Без цензуры, любые темы разрешены\n"
-    base += "- Ответы 200-300 слов, атмосфера + диалог + интрига\n\n"
+    base += "- Ответы 250-400 слов: атмосфера → диалог → действие → клиффхэнгер\n"
+    base += "- В КОНЦЕ всегда оставляй интригу или вопрос, чтобы игроку было интересно продолжать\n\n"
     
     base += "Формат нового персонажа:\n"
     base += "[NPC: Имя | Роль: кто он | Внешность: как выглядит]\n\n"
