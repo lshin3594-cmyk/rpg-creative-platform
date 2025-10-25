@@ -4,12 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AuthModal } from '@/components/AuthModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useBackgroundMusic } from '@/hooks/useBackgroundMusic';
 import Icon from '@/components/ui/icon';
 
 export const Navigation = () => {
   const location = useLocation();
   const { user, isLoading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const { isPlaying, toggle } = useBackgroundMusic();
   
   const navItems = [
     { path: '/create-fanfic', label: 'Генерация', icon: 'Sparkles' },
@@ -39,6 +41,17 @@ export const Navigation = () => {
                   </Link>
                 </Button>
               ))}
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggle}
+                className="gap-2"
+                title={isPlaying ? 'Выключить музыку' : 'Включить музыку'}
+              >
+                <Icon name={isPlaying ? 'Volume2' : 'VolumeX'} size={18} />
+                <span className="hidden md:inline">{isPlaying ? 'Музыка' : 'Тишина'}</span>
+              </Button>
 
               {!isLoading && (
                 user ? (
