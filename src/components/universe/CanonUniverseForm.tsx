@@ -22,18 +22,12 @@ const categories = [
 const FAVORITES_KEY = 'canon-universes-favorites';
 
 interface CanonUniverseFormProps {
-  formData: UniverseFormData;
-  setFormData: (data: UniverseFormData) => void;
-  handleCanonSelect: (canon: typeof canonUniverses[0]) => void;
-  handleCreate: () => void;
+  onSubmit: (data: any) => void;
   isCreating: boolean;
 }
 
 export const CanonUniverseForm = ({
-  formData,
-  setFormData,
-  handleCanonSelect,
-  handleCreate,
+  onSubmit,
   isCreating
 }: CanonUniverseFormProps) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -67,6 +61,17 @@ export const CanonUniverseForm = ({
     e.stopPropagation();
     setPreviewUniverse(canon);
     setIsPreviewOpen(true);
+  };
+
+  const handleCanonSelect = (canon: typeof canonUniverses[0]) => {
+    onSubmit({
+      name: canon.name,
+      description: canon.description,
+      canonSource: canon.source,
+      sourceType: 'canon' as const,
+      genre: canon.tags[0] || 'фэнтези',
+      tags: canon.tags
+    });
   };
 
   const handlePreviewSelect = () => {
@@ -246,37 +251,6 @@ export const CanonUniverseForm = ({
         isFavorite={previewUniverse ? favorites.includes(previewUniverse.name) : false}
         onToggleFavorite={handlePreviewToggleFavorite}
       />
-      
-      {formData.canonSource && (
-        <div className="space-y-4 pt-4 border-t animate-fade-in">
-          <div className="flex items-center gap-2">
-            <Icon name="Sparkles" size={20} className="text-primary" />
-            <h3 className="font-semibold">Выбрано: {formData.name}</h3>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="canon-description">Дополнительное описание (опционально)</Label>
-            <Textarea 
-              id="canon-description"
-              placeholder="Укажите конкретный период или аспект вселенной..."
-              value={formData.description}
-              onChange={(e) => setFormData({...formData, description: e.target.value})}
-              className="min-h-[80px]"
-            />
-          </div>
-          <Button 
-            className="w-full gap-2" 
-            onClick={handleCreate}
-            disabled={isCreating}
-          >
-            {isCreating ? (
-              <Icon name="Loader2" size={20} className="animate-spin" />
-            ) : (
-              <Icon name="Download" size={20} />
-            )}
-            {isCreating ? 'Изучаю вселенную...' : 'Добавить и изучить'}
-          </Button>
-        </div>
-      )}
     </div>
   );
 };
