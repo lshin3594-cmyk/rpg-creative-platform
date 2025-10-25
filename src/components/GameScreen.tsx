@@ -6,6 +6,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { StoryJournalModal } from '@/components/story/StoryJournalModal';
+import { CreateCharacterModal } from '@/components/story/CreateCharacterModal';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
@@ -48,6 +49,7 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
   const [gameSettings, setGameSettings] = useState<GameSettings | null>(null);
   const [showResources, setShowResources] = useState(false);
   const [showJournal, setShowJournal] = useState(false);
+  const [showCreateChar, setShowCreateChar] = useState(false);
   const [agentsEnabled, setAgentsEnabled] = useState(true);
   const turnCountRef = useRef(0);
   
@@ -216,6 +218,10 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
     }
   };
 
+  const handleCharacterCreated = (character: Character) => {
+    setCharacters(prev => [...prev, character]);
+  };
+
   if (!gameSettings) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -272,7 +278,12 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
           </div>
         </ScrollArea>
         <div className="p-3 border-t space-y-2">
-          <Button variant="outline" size="sm" className="w-full gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full gap-2"
+            onClick={() => setShowCreateChar(true)}
+          >
             <Icon name="UserPlus" size={16} />
             Создать НПС
           </Button>
@@ -470,6 +481,13 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
         onOpenChange={setShowJournal}
         messages={messages}
         currentEpisode={currentEpisode}
+      />
+
+      <CreateCharacterModal
+        open={showCreateChar}
+        onOpenChange={setShowCreateChar}
+        onCharacterCreated={handleCharacterCreated}
+        gameSettings={gameSettings}
       />
     </div>
   );
