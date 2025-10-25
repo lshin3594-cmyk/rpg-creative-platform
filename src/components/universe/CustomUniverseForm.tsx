@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
+import { InputWithAI } from '@/components/ui/input-with-ai';
 import { plotGenres } from '../plot/plotGenres';
 
 interface CustomUniverseFormProps {
@@ -42,27 +43,57 @@ export const CustomUniverseForm = ({
     }));
   };
 
+  const generateUniverseField = async (field: 'name' | 'description') => {
+    const prompts = {
+      name: `Придумай оригинальное название для фэнтези/фантастической вселенной. Только название, без описаний.`,
+      description: `Создай краткое интригующее описание фэнтези/фантастической вселенной. 1-2 предложения.`
+    };
+
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: prompts[field] }],
+          max_tokens: 100
+        })
+      });
+
+      if (!response.ok) throw new Error('Ошибка генерации');
+      
+      const data = await response.json();
+      const generated = data.choices[0]?.message?.content?.trim() || '';
+      setFormData(prev => ({ ...prev, [field]: generated }));
+    } catch (error) {
+      console.error('Ошибка генерации:', error);
+    }
+  };
+
   return (
     <div className="space-y-6 py-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="universe-name">Название вселенной *</Label>
-          <Input 
-            id="universe-name" 
-            placeholder="Новый Эдем" 
-            value={formData.name}
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="universe-description">Краткое описание *</Label>
-          <Input
-            id="universe-description" 
-            placeholder="Мир после апокалипсиса..." 
-            value={formData.description}
-            onChange={(e) => setFormData({...formData, description: e.target.value})}
-          />
-        </div>
+        <InputWithAI
+          label="Название вселенной"
+          id="universe-name"
+          value={formData.name}
+          onChange={(value) => setFormData({...formData, name: value})}
+          onGenerate={() => generateUniverseField('name')}
+          placeholder="Новый Эдем"
+          required
+        />
+        <InputWithAI
+          label="Краткое описание"
+          id="universe-description"
+          value={formData.description}
+          onChange={(value) => setFormData({...formData, description: value})}
+          onGenerate={() => generateUniverseField('description')}
+          placeholder="Мир после апокалипсиса..."
+          required
+        />
       </div>
 
       <div className="space-y-2">

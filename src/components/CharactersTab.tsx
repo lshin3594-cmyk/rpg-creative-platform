@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageGenerator } from '@/components/ImageGenerator';
+import { InputWithAI } from '@/components/ui/input-with-ai';
 
 interface Character {
   id: string;
@@ -123,6 +124,39 @@ export const CharactersTab = ({
     }
   };
 
+  const generateCharacterField = async (field: 'personality' | 'backstory' | 'stats' | 'role') => {
+    const context = `Персонаж: ${formData.name || 'без имени'}, Роль: ${formData.role || 'не указана'}`;
+    const prompts = {
+      personality: `Создай краткое описание характера для ${context}. 2-3 предложения.`,
+      backstory: `Создай краткую предысторию для ${context}. 3-4 предложения.`,
+      stats: `Создай игровые характеристики для ${context}. Формат: Сила: X, Ловкость: Y, и т.д.`,
+      role: `Предложи интересную роль/класс для персонажа ${formData.name || 'фэнтези персонажа'}`
+    };
+
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: prompts[field] }],
+          max_tokens: 150
+        })
+      });
+
+      if (!response.ok) throw new Error('Ошибка генерации');
+      
+      const data = await response.json();
+      const generated = data.choices[0]?.message?.content?.trim() || '';
+      setFormData(prev => ({ ...prev, [field]: generated }));
+    } catch (error) {
+      console.error('Ошибка генерации:', error);
+    }
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">
@@ -181,43 +215,41 @@ export const CharactersTab = ({
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="char-role">Роль</Label>
-                <Input 
-                  id="char-role" 
-                  placeholder="Воин, Маг, Вор..." 
-                  value={formData.role}
-                  onChange={(e) => setFormData({...formData, role: e.target.value})}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="char-stats">Характеристики</Label>
-                <Input 
-                  id="char-stats" 
-                  placeholder="Сила: 18, Ловкость: 14..." 
-                  value={formData.stats}
-                  onChange={(e) => setFormData({...formData, stats: e.target.value})}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="char-personality">Характер</Label>
-                <Textarea 
-                  id="char-personality" 
-                  placeholder="Суровый защитник древних тайн..." 
-                  value={formData.personality}
-                  onChange={(e) => setFormData({...formData, personality: e.target.value})}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="char-backstory">Предыстория</Label>
-                <Textarea 
-                  id="char-backstory" 
-                  placeholder="Последний из ордена..." 
-                  className="min-h-[100px]" 
-                  value={formData.backstory}
-                  onChange={(e) => setFormData({...formData, backstory: e.target.value})}
-                />
-              </div>
+              <InputWithAI
+                label="Роль"
+                id="char-role"
+                value={formData.role}
+                onChange={(value) => setFormData({...formData, role: value})}
+                onGenerate={() => generateCharacterField('role')}
+                placeholder="Воин, Маг, Вор..."
+              />
+              <InputWithAI
+                label="Характеристики"
+                id="char-stats"
+                value={formData.stats}
+                onChange={(value) => setFormData({...formData, stats: value})}
+                onGenerate={() => generateCharacterField('stats')}
+                placeholder="Сила: 18, Ловкость: 14..."
+              />
+              <InputWithAI
+                label="Характер"
+                id="char-personality"
+                value={formData.personality}
+                onChange={(value) => setFormData({...formData, personality: value})}
+                onGenerate={() => generateCharacterField('personality')}
+                placeholder="Суровый защитник древних тайн..."
+                multiline
+              />
+              <InputWithAI
+                label="Предыстория"
+                id="char-backstory"
+                value={formData.backstory}
+                onChange={(value) => setFormData({...formData, backstory: value})}
+                onGenerate={() => generateCharacterField('backstory')}
+                placeholder="Последний из ордена..."
+                multiline
+                className="min-h-[100px]"
+              />
               
               <ImageGenerator
                 currentImage={formData.avatar}
@@ -360,43 +392,41 @@ export const CharactersTab = ({
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-char-role">Роль</Label>
-              <Input 
-                id="edit-char-role" 
-                placeholder="Воин, Маг, Вор..." 
-                value={formData.role}
-                onChange={(e) => setFormData({...formData, role: e.target.value})}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-char-stats">Характеристики</Label>
-              <Input 
-                id="edit-char-stats" 
-                placeholder="Сила: 18, Ловкость: 14..." 
-                value={formData.stats}
-                onChange={(e) => setFormData({...formData, stats: e.target.value})}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-char-personality">Характер</Label>
-              <Textarea 
-                id="edit-char-personality" 
-                placeholder="Суровый защитник древних тайн..." 
-                value={formData.personality}
-                onChange={(e) => setFormData({...formData, personality: e.target.value})}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-char-backstory">Предыстория</Label>
-              <Textarea 
-                id="edit-char-backstory" 
-                placeholder="Последний из ордена..." 
-                className="min-h-[100px]" 
-                value={formData.backstory}
-                onChange={(e) => setFormData({...formData, backstory: e.target.value})}
-              />
-            </div>
+            <InputWithAI
+              label="Роль"
+              id="edit-char-role"
+              value={formData.role}
+              onChange={(value) => setFormData({...formData, role: value})}
+              onGenerate={() => generateCharacterField('role')}
+              placeholder="Воин, Маг, Вор..."
+            />
+            <InputWithAI
+              label="Характеристики"
+              id="edit-char-stats"
+              value={formData.stats}
+              onChange={(value) => setFormData({...formData, stats: value})}
+              onGenerate={() => generateCharacterField('stats')}
+              placeholder="Сила: 18, Ловкость: 14..."
+            />
+            <InputWithAI
+              label="Характер"
+              id="edit-char-personality"
+              value={formData.personality}
+              onChange={(value) => setFormData({...formData, personality: value})}
+              onGenerate={() => generateCharacterField('personality')}
+              placeholder="Суровый защитник древних тайн..."
+              multiline
+            />
+            <InputWithAI
+              label="Предыстория"
+              id="edit-char-backstory"
+              value={formData.backstory}
+              onChange={(value) => setFormData({...formData, backstory: value})}
+              onGenerate={() => generateCharacterField('backstory')}
+              placeholder="Последний из ордена..."
+              multiline
+              className="min-h-[100px]"
+            />
             <Button 
               className="w-full gap-2" 
               onClick={handleUpdate}
