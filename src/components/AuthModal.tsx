@@ -24,15 +24,9 @@ export const AuthModal = ({ open, onClose }: AuthModalProps) => {
 
 
   const handleVkLogin = () => {
-    const redirectUri = `${window.location.origin}/auth/vk/callback`;
-    const params = new URLSearchParams({
-      client_id: '54268217',
-      redirect_uri: redirectUri,
-      response_type: 'code',
-      scope: 'email',
-      state: Math.random().toString(36).substring(7)
-    });
-    window.location.href = `https://id.vk.com/authorize?${params.toString()}`;
+    const redirectUri = encodeURIComponent(`${window.location.origin}/auth/vk/callback`);
+    const appId = '54268217';
+    window.location.href = `https://id.vk.com/authorize?response_type=code&client_id=${appId}&redirect_uri=${redirectUri}`;
   };
 
 
