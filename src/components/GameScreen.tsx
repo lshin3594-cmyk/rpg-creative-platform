@@ -24,6 +24,7 @@ interface Message {
   timestamp: Date;
   id: string;
   episode: number;
+  illustration?: string;
 }
 
 interface GameSettings {
@@ -51,6 +52,8 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
   const [showJournal, setShowJournal] = useState(false);
   const [showCreateChar, setShowCreateChar] = useState(false);
   const [agentsEnabled, setAgentsEnabled] = useState(true);
+  const [autoIllustrations, setAutoIllustrations] = useState(true);
+  const [generatingIllustration, setGeneratingIllustration] = useState(false);
   const turnCountRef = useRef(0);
   
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -106,6 +109,17 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
           if (data.characters && data.characters.length > 0) {
             setCharacters(data.characters);
           }
+
+          // Генерируем иллюстрацию для первого эпизода
+          if (autoIllustrations) {
+            setGeneratingIllustration(true);
+            generateIllustration(data.text, 1).then(illustrationUrl => {
+              if (illustrationUrl) {
+                setMessages([{ ...aiMessage, illustration: illustrationUrl }]);
+              }
+              setGeneratingIllustration(false);
+            }).catch(() => setGeneratingIllustration(false));
+          }
         } catch (error) {
           console.error('Auto-start error:', error);
           toast({
@@ -148,6 +162,29 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
     }
 
     return '';
+  };
+
+  const generateIllustration = async (aiText: string, episode: number): Promise<string | undefined> => {
+    if (!autoIllustrations) return undefined;
+
+    try {
+      const sceneDescription = aiText.slice(0, 500);
+      const prompt = `${gameSettings?.setting ? gameSettings.setting + ', ' : ''}${sceneDescription}, cinematic scene, detailed illustration, high quality art`;
+      
+      const response = await fetch('https://functions.poehali.dev/16a136ce-ff21-4430-80df-ad1caa87a3a7', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+
+      if (!response.ok) return undefined;
+      
+      const data = await response.json();
+      return data.url;
+    } catch (error) {
+      console.error('Illustration generation failed:', error);
+      return undefined;
+    }
   };
 
   const handleSendMessage = async () => {
@@ -195,6 +232,19 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
 
       setMessages(prev => [...prev, aiMessage]);
       setCurrentEpisode(data.episode || currentEpisode);
+
+      // Генерируем иллюстрацию в фоне (не блокируем UI)
+      if (autoIllustrations) {
+        setGeneratingIllustration(true);
+        generateIllustration(data.text, data.episode || currentEpisode).then(illustrationUrl => {
+          if (illustrationUrl) {
+            setMessages(prev => prev.map(m => 
+              m.id === aiMessage.id ? { ...m, illustration: illustrationUrl } : m
+            ));
+          }
+          setGeneratingIllustration(false);
+        }).catch(() => setGeneratingIllustration(false));
+      }
 
       // Добавляем новых персонажей
       if (data.characters && data.characters.length > 0) {
@@ -297,20 +347,38 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
             Журнал
           </Button>
           
-          <div className="pt-2 border-t">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="agents-toggle" className="text-xs cursor-pointer">
-                Агенты-наблюдатели
-              </Label>
-              <Switch 
-                id="agents-toggle"
-                checked={agentsEnabled}
-                onCheckedChange={setAgentsEnabled}
-              />
+          <div className="pt-2 border-t space-y-3">
+            <div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="agents-toggle" className="text-xs cursor-pointer">
+                  Агенты-наблюдатели
+                </Label>
+                <Switch 
+                  id="agents-toggle"
+                  checked={agentsEnabled}
+                  onCheckedChange={setAgentsEnabled}
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                ИИ следит за сюжетом и временем
+              </p>
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1">
-              ИИ следит за сюжетом и временем
-            </p>
+
+            <div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="illustrations-toggle" className="text-xs cursor-pointer">
+                  Автоиллюстрации
+                </Label>
+                <Switch 
+                  id="illustrations-toggle"
+                  checked={autoIllustrations}
+                  onCheckedChange={setAutoIllustrations}
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                Картинки для каждого эпизода
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -368,6 +436,16 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
                     </div>
                   )}
                   <div className={`flex-1 max-w-3xl ${message.type === 'user' ? 'ml-12' : 'mr-12'}`}>
+                    {message.illustration && message.type === 'ai' && (
+                      <div className="mb-3 rounded-lg overflow-hidden border">
+                        <img 
+                          src={message.illustration} 
+                          alt="Episode illustration"
+                          className="w-full aspect-[16/9] object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    )}
                     <div
                       className={`rounded-lg p-4 ${
                         message.type === 'user'
@@ -396,6 +474,21 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
                         <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '0ms' }} />
                         <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '150ms' }} />
                         <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {generatingIllustration && (
+                <div className="flex gap-4 justify-start">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Icon name="Image" size={20} className="text-primary" />
+                  </div>
+                  <div className="flex-1 max-w-3xl mr-12">
+                    <div className="rounded-lg p-4 bg-muted/50 border-2 border-dashed border-primary/30">
+                      <div className="flex items-center gap-3">
+                        <Icon name="Loader2" size={20} className="animate-spin text-primary" />
+                        <span className="text-sm text-muted-foreground">Создаю иллюстрацию для эпизода...</span>
                       </div>
                     </div>
                   </div>
