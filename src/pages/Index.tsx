@@ -7,61 +7,58 @@ import { PreviewCarousel } from '@/components/PreviewCarousel';
 const Index = () => {
   const navigate = useNavigate();
 
+  const menuItems = [
+    {
+      title: 'НАЧАТЬ ПРИКЛЮЧЕНИЕ',
+      description: 'Создайте игру с нуля',
+      icon: 'Play',
+      onClick: () => navigate('/create-game'),
+    },
+    {
+      title: 'ВЫБРАТЬ ПРИКЛЮЧЕНИЕ',
+      description: 'Продолжите свои предыдущие приключения',
+      icon: 'BookMarked',
+      onClick: () => navigate('/library'),
+    },
+    {
+      title: 'СОЗДАТЬ ПЕРСОНАЖА',
+      description: 'Настройте идеального героя',
+      icon: 'UserPlus',
+      onClick: () => navigate('/profile'),
+    },
+  ];
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl space-y-8">
+    <div className="min-h-screen flex items-center justify-center p-4 py-12">
+      <div className="w-full max-w-4xl space-y-8">
         <PreviewCarousel />
         
-        <Card className="max-w-2xl w-full shadow-2xl border-2 mx-auto">
-        <CardContent className="p-12 space-y-8">
-          <div className="text-center space-y-4">
-            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-primary/10 mb-4">
-              <Icon name="BookOpen" size={48} className="text-primary" />
-            </div>
-            <h1 className="text-5xl font-bold tracking-tight">Твоя история</h1>
-            <p className="text-xl text-muted-foreground max-w-md mx-auto">
-              Ролевая новелла без ограничений. Создай свой мир, управляй персонажами, твори приключения.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-6 py-6">
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10">
-                <Icon name="Sparkles" size={28} className="text-primary" />
+        <div className="grid gap-4 max-w-2xl mx-auto">
+          {menuItems.map((item, index) => (
+            <button
+              key={index}
+              onClick={item.onClick}
+              className="group relative w-full p-6 rounded-xl bg-gradient-to-r from-purple-900/40 via-pink-900/30 to-purple-900/40 border border-purple-500/30 backdrop-blur-sm transition-all duration-300 hover:border-purple-400/60 hover:shadow-lg hover:shadow-purple-500/20"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/0 via-pink-600/0 to-purple-600/0 group-hover:from-purple-600/10 group-hover:via-pink-600/10 group-hover:to-purple-600/10 rounded-xl transition-all duration-300" />
+              
+              <div className="relative flex items-center justify-between blur-[1px] group-hover:blur-0 brightness-75 group-hover:brightness-100 transition-all duration-300">
+                <div className="flex-1 text-left">
+                  <h3 className="text-xl font-bold text-white uppercase tracking-wider mb-1">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-purple-200/80">
+                    {item.description}
+                  </p>
+                </div>
+                
+                <div className="ml-4 p-3 rounded-lg bg-purple-500/20 group-hover:bg-purple-500/40 transition-all duration-300">
+                  <Icon name={item.icon} size={28} className="text-purple-300" />
+                </div>
               </div>
-              <h3 className="font-semibold">Генерация ИИ</h3>
-              <p className="text-sm text-muted-foreground">История развивается с помощью нейросети</p>
-            </div>
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10">
-                <Icon name="Users" size={28} className="text-primary" />
-              </div>
-              <h3 className="font-semibold">Живые персонажи</h3>
-              <p className="text-sm text-muted-foreground">Взаимодействуй с героями истории</p>
-            </div>
-            <div className="text-center space-y-2">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10">
-                <Icon name="Zap" size={28} className="text-primary" />
-              </div>
-              <h3 className="font-semibold">Без цензуры</h3>
-              <p className="text-sm text-muted-foreground">Полная свобода сюжета</p>
-            </div>
-          </div>
-
-          <Button 
-            size="lg" 
-            className="w-full h-16 text-xl gap-3 shadow-lg hover:shadow-xl transition-all"
-            onClick={() => navigate('/create-game')}
-          >
-            <Icon name="Play" size={24} />
-            Начать новую историю
-          </Button>
-
-          <p className="text-center text-sm text-muted-foreground">
-            Просто опиши что хочешь и история начнётся
-          </p>
-        </CardContent>
-        </Card>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
