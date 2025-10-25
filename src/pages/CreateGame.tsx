@@ -62,19 +62,17 @@ const CreateGame = () => {
   };
 
   return (
-    <div className="min-h-screen p-4 py-12">
-      <div className="max-w-3xl mx-auto space-y-8">
-        <div className="flex items-start justify-between mb-4">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/')}
-            className="gap-2 text-purple-300 hover:text-purple-100 hover:bg-purple-500/20"
-          >
-            <Icon name="Home" size={18} />
-            На главную
-          </Button>
-        </div>
+    <div className="min-h-screen p-4 py-12 relative">
+      <Button
+        variant="ghost"
+        onClick={() => navigate('/')}
+        className="absolute top-4 left-4 gap-2 text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 z-10"
+      >
+        <Icon name="Home" size={18} />
+        На главную
+      </Button>
 
+      <div className="max-w-3xl mx-auto space-y-8">
         <div className="text-center space-y-3">
           <h1 className="text-4xl font-bold tracking-tight text-purple-100 uppercase">
             Создание игры
