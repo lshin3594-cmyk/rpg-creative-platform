@@ -84,20 +84,20 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
     messages.append({'role': 'user', 'content': action})
     
     try:
-        # Вызываем DeepSeek API с жёстким таймаутом
-        http_client = httpx.Client(timeout=httpx.Timeout(15.0, connect=5.0))
+        # Вызываем DeepSeek API с увеличенным таймаутом
+        http_client = httpx.Client(timeout=httpx.Timeout(60.0, connect=10.0))
         client = OpenAI(
             api_key=DEEPSEEK_API_KEY,
             base_url="https://api.deepseek.com",
             http_client=http_client,
-            timeout=15.0
+            timeout=60.0
         )
         
         response = client.chat.completions.create(
             model="deepseek-chat",
             messages=messages,
-            max_tokens=400,
-            temperature=0.6,
+            max_tokens=600,
+            temperature=0.7,
             stream=False
         )
         
