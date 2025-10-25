@@ -83,7 +83,7 @@ const CreateGame = () => {
       <div className="max-w-4xl mx-auto py-8 space-y-6">
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold tracking-tight">СОЗДАНИЕ ИГРЫ</h1>
-          <p className="text-muted-foreground">Настрой свой мир и начни приключение</p>
+          <p className="text-muted-foreground">Нейросеть адаптируется к вашим действиям и создаёт уникальные сюжеты, героев, окружение и диалоги</p>
         </div>
 
         {/* Название игры */}
