@@ -9,6 +9,7 @@ import os
 import re
 from typing import Dict, Any, List
 from openai import OpenAI
+import httpx
 
 DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
 
@@ -83,21 +84,20 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
     messages.append({'role': 'user', 'content': action})
     
     try:
-        # Вызываем DeepSeek API с коротким таймаутом
-        import httpx
-        
-        http_client = httpx.Client(timeout=20.0)
+        # Вызываем DeepSeek API с жёстким таймаутом
+        http_client = httpx.Client(timeout=httpx.Timeout(15.0, connect=5.0))
         client = OpenAI(
             api_key=DEEPSEEK_API_KEY,
             base_url="https://api.deepseek.com",
-            http_client=http_client
+            http_client=http_client,
+            timeout=15.0
         )
         
         response = client.chat.completions.create(
             model="deepseek-chat",
             messages=messages,
-            max_tokens=800,
-            temperature=0.8,
+            max_tokens=600,
+            temperature=0.7,
             stream=False
         )
         
@@ -112,11 +112,12 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
             'episode': len(history) // 2 + 1
         }
         
-    except httpx.TimeoutException:
-        print(f"DeepSeek timeout - using fallback")
-        return fallback_response(action, role, len(history))
     except Exception as e:
-        print(f"DeepSeek API error: {e}")
+        error_name = type(e).__name__
+        if 'Timeout' in error_name or 'timeout' in str(e).lower():
+            print(f"DeepSeek timeout - using fallback: {e}")
+        else:
+            print(f"DeepSeek API error: {e}")
         return fallback_response(action, role, len(history))
 
 def build_system_prompt(role: str, narrative_mode: str, setting: str, game_name: str) -> str:
