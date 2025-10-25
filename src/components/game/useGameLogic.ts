@@ -12,6 +12,7 @@ export const useGameLogic = () => {
   const [currentEpisode, setCurrentEpisode] = useState(1);
   const [turnsInEpisode, setTurnsInEpisode] = useState(0);
   const [imagesInEpisode, setImagesInEpisode] = useState(0);
+  const [totalSymbolsInEpisode, setTotalSymbolsInEpisode] = useState(0);
   const [gameSettings, setGameSettings] = useState<GameSettings | null>(null);
   const [showJournal, setShowJournal] = useState(false);
   const [showCreateChar, setShowCreateChar] = useState(false);
@@ -152,13 +153,20 @@ export const useGameLogic = () => {
 
       setMessages(prev => [...prev, aiMessage]);
       
-      const newTurns = turnsInEpisode + 1;
+      const aiTextLength = data.text.length;
+      const newTotalSymbols = totalSymbolsInEpisode + aiTextLength;
+      setTotalSymbolsInEpisode(newTotalSymbols);
+      
+      const newTurns = Math.floor(newTotalSymbols / 600);
+      const episodeChanged = newTurns >= 5;
+      
       setTurnsInEpisode(newTurns);
       
-      if (newTurns >= 5) {
+      if (episodeChanged) {
         setCurrentEpisode(prev => prev + 1);
         setTurnsInEpisode(0);
         setImagesInEpisode(0);
+        setTotalSymbolsInEpisode(0);
       }
 
       if (shouldGenerateIllustration()) {
