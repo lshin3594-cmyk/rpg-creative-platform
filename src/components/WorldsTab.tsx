@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { Badge } from '@/components/ui/badge';
+import { ImageGenerator } from '@/components/ImageGenerator';
 
 interface World {
   id: string;
@@ -226,6 +227,14 @@ export const WorldsTab = ({
                   />
                 </div>
               </div>
+              
+              <ImageGenerator
+                currentImage={formData.image}
+                onImageGenerated={(url) => setFormData({...formData, image: url})}
+                placeholder="Опиши ландшафт или локацию этого мира..."
+                label="Визуализация мира"
+              />
+              
               <Button 
                 className="w-full gap-2" 
                 onClick={handleCreate}

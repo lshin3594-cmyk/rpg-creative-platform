@@ -147,4 +147,19 @@
   .tab-trigger-active {
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
+
+  @keyframes shooting-star {
+    0% {
+      opacity: 1;
+      transform: translate(0, 0);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(200px, 200px);
+    }
+  }
+
+  .animate-shooting-star {
+    animation: shooting-star 2s linear infinite;
+  }
 }

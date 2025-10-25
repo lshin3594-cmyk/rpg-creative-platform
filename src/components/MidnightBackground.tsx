@@ -8,6 +8,13 @@ export const MidnightBackground = () => {
     duration: Math.random() * 2 + 2,
   }));
 
+  const shootingStars = Array.from({ length: 5 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 50,
+    delay: Math.random() * 8 + i * 3,
+  }));
+
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {stars.map((star) => (
@@ -23,6 +30,20 @@ export const MidnightBackground = () => {
             animationDuration: `${star.duration}s`,
           }}
         />
+      ))}
+
+      {shootingStars.map((star) => (
+        <div
+          key={`shooting-${star.id}`}
+          className="absolute w-1 h-1 bg-blue-100 rounded-full animate-shooting-star"
+          style={{
+            left: `${star.x}%`,
+            top: `${star.y}%`,
+            animationDelay: `${star.delay}s`,
+          }}
+        >
+          <div className="absolute w-20 h-0.5 bg-gradient-to-r from-blue-100 to-transparent -translate-y-0.5" />
+        </div>
       ))}
 
       <div className="absolute top-10 right-10 w-32 h-32 md:w-48 md:h-48">

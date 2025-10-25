@@ -9,6 +9,7 @@ import Icon from '@/components/ui/icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ImageGenerator } from '@/components/ImageGenerator';
 
 interface Character {
   id: string;
@@ -217,6 +218,14 @@ export const CharactersTab = ({
                   onChange={(e) => setFormData({...formData, backstory: e.target.value})}
                 />
               </div>
+              
+              <ImageGenerator
+                currentImage={formData.avatar}
+                onImageGenerated={(url) => setFormData({...formData, avatar: url})}
+                placeholder="Опиши внешность персонажа для генерации портрета..."
+                label="Портрет персонажа"
+              />
+              
               <Button 
                 className="w-full gap-2" 
                 onClick={handleCreate}

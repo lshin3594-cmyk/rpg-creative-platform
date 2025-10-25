@@ -1,0 +1,28 @@
+{
+  "tests": [
+    {
+      "name": "Generate fantasy character image",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "prompt": "dark fantasy warrior with armor"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "url": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Missing prompt error",
+      "method": "POST",
+      "path": "/",
+      "body": {},
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
