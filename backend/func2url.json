@@ -1,4 +1,7 @@
 {
+  "generate-fanfic": "https://functions.poehali.dev/397a81f0-4bbd-44c6-af80-eacbd644e110",
+  "save-character": "https://functions.poehali.dev/bdf99cda-0137-4587-8760-d89f239695a5",
+  "save-universe": "https://functions.poehali.dev/afd406e2-2b81-4659-ad8f-4fe5be7c1242",
   "game-entities": "https://functions.poehali.dev/f3c359fd-06ee-4643-bf4c-c6d7a7155696",
   "delete-story": "https://functions.poehali.dev/aaff4c60-19e2-4410-a5a6-48560de30278",
   "save-story": "https://functions.poehali.dev/71ffaad1-3e69-422c-ad49-81aec9f550de",
