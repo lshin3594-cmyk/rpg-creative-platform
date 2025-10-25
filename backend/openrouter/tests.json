@@ -1,0 +1,24 @@
+{
+  "tests": [
+    {
+      "name": "Simple chat completion",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "model": "anthropic/claude-3.5-sonnet",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Say hi in one word"
+          }
+        ],
+        "max_tokens": 10
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "choices": "array"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
