@@ -8,6 +8,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import Icon from '@/components/ui/icon';
 import { useState } from 'react';
+import { NarrativeSettings } from '@/components/NarrativeSettings';
 
 interface Character {
   id: string;
@@ -66,6 +67,12 @@ interface StoryGeneratorProps {
   setNpcTypes?: (value: string[]) => void;
   selectedPlot?: string;
   setSelectedPlot?: (id: string) => void;
+  narrativeMode?: string;
+  setNarrativeMode?: (mode: string) => void;
+  playerCharacterId?: string;
+  setPlayerCharacterId?: (id: string) => void;
+  selectedNarrativeCharacters?: string[];
+  setSelectedNarrativeCharacters?: (ids: string[]) => void;
 }
 
 export const StoryGenerator = ({
@@ -96,7 +103,13 @@ export const StoryGenerator = ({
   npcTypes = [],
   setNpcTypes,
   selectedPlot = '',
-  setSelectedPlot
+  setSelectedPlot,
+  narrativeMode = 'story',
+  setNarrativeMode,
+  playerCharacterId = '',
+  setPlayerCharacterId,
+  selectedNarrativeCharacters = [],
+  setSelectedNarrativeCharacters
 }: StoryGeneratorProps) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showPlotDetails, setShowPlotDetails] = useState(false);
@@ -139,6 +152,16 @@ export const StoryGenerator = ({
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            <NarrativeSettings
+              narrativeMode={narrativeMode}
+              setNarrativeMode={setNarrativeMode!}
+              playerCharacterId={playerCharacterId}
+              setPlayerCharacterId={setPlayerCharacterId!}
+              characters={characters}
+              selectedNarrativeCharacters={selectedNarrativeCharacters}
+              setSelectedNarrativeCharacters={setSelectedNarrativeCharacters}
+            />
+            
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="character-select">Персонаж (опционально)</Label>

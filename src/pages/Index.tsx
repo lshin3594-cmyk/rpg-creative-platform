@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/PageLayout';
 import { StoryGenerator } from '@/components/StoryGenerator';
-import { NarrativeSettings } from '@/components/NarrativeSettings';
 import { InteractiveStory } from '@/components/InteractiveStory';
 import { MainTabs } from '@/components/MainTabs';
 import { useDataManagement } from '@/hooks/useDataManagement';
@@ -186,18 +185,6 @@ const Index = () => {
       onPrevImage={prevImage}
       onSelectIndex={setCurrentImageIndex}
     >
-      <div className="max-w-4xl mx-auto mb-8">
-        <NarrativeSettings 
-          narrativeMode={narrativeMode}
-          setNarrativeMode={setNarrativeMode}
-          playerCharacterId={playerCharacterId}
-          setPlayerCharacterId={setPlayerCharacterId}
-          characters={characters}
-          selectedNarrativeCharacters={selectedNarrativeCharacters}
-          setSelectedNarrativeCharacters={setSelectedNarrativeCharacters}
-        />
-      </div>
-
       <StoryGenerator
         isOpen={isStoryDialogOpen}
         onOpenChange={(open) => {
@@ -233,6 +220,12 @@ const Index = () => {
         setNpcTypes={setNpcTypes}
         selectedPlot={selectedPlot}
         setSelectedPlot={setSelectedPlot}
+        narrativeMode={narrativeMode}
+        setNarrativeMode={setNarrativeMode}
+        playerCharacterId={playerCharacterId}
+        setPlayerCharacterId={setPlayerCharacterId}
+        selectedNarrativeCharacters={selectedNarrativeCharacters}
+        setSelectedNarrativeCharacters={setSelectedNarrativeCharacters}
       />
 
       {showInteractive && generatedStory && (

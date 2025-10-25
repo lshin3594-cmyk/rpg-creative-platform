@@ -83,11 +83,11 @@ export const MainTabs = ({
         </TabsTrigger>
         <TabsTrigger value="universe" className="gap-2 tab-trigger-active transition-all">
           <Icon name="Globe" size={18} />
-          Вселенные
+          Миры
         </TabsTrigger>
         <TabsTrigger value="favorites" className="gap-2 tab-trigger-active transition-all">
-          <Icon name="Star" size={18} />
-          Избранное
+          <Icon name="BookOpen" size={18} />
+          Истории
         </TabsTrigger>
         <TabsTrigger value="profile" className="gap-2 tab-trigger-active transition-all">
           <Icon name="User" size={18} />
