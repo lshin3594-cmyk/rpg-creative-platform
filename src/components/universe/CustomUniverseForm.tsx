@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { InputWithAI } from '@/components/ui/input-with-ai';
 import { plotGenres } from '../plot/plotGenres';
+import { useAIGeneration } from '@/hooks/useAIGeneration';
 
 interface CustomUniverseFormProps {
   onSubmit: (data: any) => void;
@@ -23,7 +23,7 @@ export const CustomUniverseForm = ({
     tags: [] as string[]
   });
   
-  const [isGeneratingTags, setIsGeneratingTags] = useState(false);
+  const { generate } = useAIGeneration();
 
   const handleSubmit = () => {
     onSubmit({
@@ -45,72 +45,16 @@ export const CustomUniverseForm = ({
     }));
   };
 
-  const generateUniverseField = async (field: 'name' | 'description' | 'genre') => {
-    const context = `Вселенная: ${formData.name || 'новая'}, ${formData.description || ''}`;
+  const generateField = async (field: 'name' | 'description' | 'genre') => {
     const prompts = {
-      name: `Придумай оригинальное название для фэнтези/фантастической вселенной. Только название, без описаний.`,
-      description: `Создай краткое интригующее описание фэнтези/фантастической вселенной. 1-2 предложения.`,
-      genre: `Предложи подходящий жанр для вселенной: ${context}. Только название жанра (1-2 слова).`
+      name: 'Придумай оригинальное название для фэнтези/фантастической вселенной. Только название, без описаний.',
+      description: 'Создай краткое интригующее описание фэнтези/фантастической вселенной. 1-2 предложения.',
+      genre: `Предложи подходящий жанр для вселенной: ${formData.name || 'новая'}, ${formData.description || ''}. Только название жанра (1-2 слова).`
     };
 
-    try {
-      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: [{ role: 'user', content: prompts[field] }],
-          max_tokens: 100
-        })
-      });
-
-      if (!response.ok) throw new Error('Ошибка генерации');
-      
-      const data = await response.json();
-      const generated = data.choices[0]?.message?.content?.trim() || '';
-      setFormData(prev => ({ ...prev, [field]: generated }));
-    } catch (error) {
-      console.error('Ошибка генерации:', error);
-    }
-  };
-
-  const generateTags = async () => {
-    if (!formData.name && !formData.description) return;
-    
-    setIsGeneratingTags(true);
-    try {
-      const availableTags = plotGenres.slice(0, 8).map(g => g.label).join(', ');
-      const prompt = `На основе вселенной "${formData.name || 'без названия'}" (${formData.description || 'без описания'}), выбери 2-3 подходящих тега из списка: ${availableTags}. Ответь только названиями тегов через запятую.`;
-
-      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: [{ role: 'user', content: prompt }],
-          max_tokens: 50
-        })
-      });
-
-      if (!response.ok) throw new Error('Ошибка генерации');
-      
-      const data = await response.json();
-      const tagsText = data.choices[0]?.message?.content?.trim() || '';
-      const suggestedTags = tagsText.split(',').map((t: string) => t.trim()).filter((t: string) => 
-        plotGenres.slice(0, 8).some(g => g.label.toLowerCase() === t.toLowerCase())
-      );
-      
-      setFormData(prev => ({ ...prev, tags: suggestedTags }));
-    } catch (error) {
-      console.error('Ошибка генерации тегов:', error);
-    } finally {
-      setIsGeneratingTags(false);
+    const result = await generate(prompts[field]);
+    if (result) {
+      setFormData(prev => ({ ...prev, [field]: result }));
     }
   };
 
@@ -122,7 +66,7 @@ export const CustomUniverseForm = ({
           id="universe-name"
           value={formData.name}
           onChange={(value) => setFormData({...formData, name: value})}
-          onGenerate={() => generateUniverseField('name')}
+          onGenerate={() => generateField('name')}
           placeholder="Новый Эдем"
           required
         />
@@ -131,7 +75,7 @@ export const CustomUniverseForm = ({
           id="universe-description"
           value={formData.description}
           onChange={(value) => setFormData({...formData, description: value})}
-          onGenerate={() => generateUniverseField('description')}
+          onGenerate={() => generateField('description')}
           placeholder="Мир после апокалипсиса..."
           required
         />
@@ -142,29 +86,12 @@ export const CustomUniverseForm = ({
         id="universe-genre"
         value={formData.genre}
         onChange={(value) => setFormData({...formData, genre: value})}
-        onGenerate={() => generateUniverseField('genre')}
+        onGenerate={() => generateField('genre')}
         placeholder="Например: фэнтези, sci-fi, киберпанк..."
       />
 
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label>Теги (по желанию)</Label>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={generateTags}
-            disabled={isGeneratingTags || (!formData.name && !formData.description)}
-            className="h-7 gap-1.5 text-xs"
-          >
-            <Icon 
-              name={isGeneratingTags ? "Loader2" : "Sparkles"} 
-              size={14} 
-              className={isGeneratingTags ? "animate-spin" : ""} 
-            />
-            {isGeneratingTags ? 'Подбор...' : 'Подобрать ИИ'}
-          </Button>
-        </div>
+        <Label>Теги (по желанию)</Label>
         <div className="flex flex-wrap gap-2">
           {plotGenres.slice(0, 8).map((genre) => (
             <Button

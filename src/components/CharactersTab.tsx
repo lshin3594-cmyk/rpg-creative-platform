@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageGenerator } from '@/components/ImageGenerator';
 import { InputWithAI } from '@/components/ui/input-with-ai';
+import { useAIGeneration } from '@/hooks/useAIGeneration';
 
 interface Character {
   id: string;
@@ -55,6 +56,8 @@ export const CharactersTab = ({
     avatar: '',
     character_type: 'player'
   });
+  
+  const { generate } = useAIGeneration();
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -133,27 +136,9 @@ export const CharactersTab = ({
       role: `Предложи интересную роль/класс для персонажа ${formData.name || 'фэнтези персонажа'}`
     };
 
-    try {
-      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'deepseek-chat',
-          messages: [{ role: 'user', content: prompts[field] }],
-          max_tokens: 150
-        })
-      });
-
-      if (!response.ok) throw new Error('Ошибка генерации');
-      
-      const data = await response.json();
-      const generated = data.choices[0]?.message?.content?.trim() || '';
-      setFormData(prev => ({ ...prev, [field]: generated }));
-    } catch (error) {
-      console.error('Ошибка генерации:', error);
+    const result = await generate(prompts[field]);
+    if (result) {
+      setFormData(prev => ({ ...prev, [field]: result }));
     }
   };
 
