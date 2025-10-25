@@ -29,14 +29,12 @@ export const PreviewModal = ({ open, onOpenChange }: PreviewModalProps) => {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl p-0 overflow-hidden border-none bg-transparent shadow-none">
         <div className="relative rounded-2xl overflow-hidden backdrop-blur-xl bg-gradient-to-br from-purple-900/50 via-blue-900/40 to-black/70 border border-purple-500/40 shadow-2xl">
-          <button
-            onClick={() => onOpenChange(false)}
-            className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md border border-purple-500/30 transition-all"
-          >
-            <Icon name="X" size={24} className="text-white" />
-          </button>
-
-          <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-black/30 pointer-events-none z-10" />
+          <div className="absolute inset-0 pointer-events-none z-10">
+            <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 via-black/30 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
+            <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-black/40 via-black/20 to-transparent" />
+            <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-black/40 via-black/20 to-transparent" />
+          </div>
 
           <div className="relative aspect-video w-full">
             <img
