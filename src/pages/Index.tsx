@@ -6,6 +6,7 @@ import { MainTabs } from '@/components/MainTabs';
 import { useDataManagement } from '@/hooks/useDataManagement';
 import { useStoryGeneration } from '@/hooks/useStoryGeneration';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
+import Icon from '@/components/ui/icon';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('characters');
@@ -269,6 +270,17 @@ const Index = () => {
         onUpdateWorld={handleUpdateWorld}
         onUpdatePlot={handleUpdatePlot}
       />
+
+      <button
+        onClick={() => {
+          playStorySound();
+          setIsStoryDialogOpen(true);
+        }}
+        className="fixed bottom-8 right-8 z-50 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full p-6 shadow-2xl hover:scale-110 transition-all duration-300 flex items-center gap-3 group"
+      >
+        <Icon name="Sparkles" size={24} className="animate-pulse" />
+        <span className="font-bold text-lg hidden md:inline">Начать приключение</span>
+      </button>
     </PageLayout>
   );
 };
