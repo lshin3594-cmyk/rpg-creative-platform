@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ActionInputModes } from './story/ActionInputModes';
+import { useToast } from '@/hooks/use-toast';
 
 interface StoryMessage {
   type: 'story' | 'action' | 'choices';
@@ -39,6 +40,7 @@ export const InteractiveStory = ({
   ]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [inputMode, setInputMode] = useState<'free' | 'structured'>('structured');
+  const { toast } = useToast();
 
   const handleActionSubmit = async (actionText: string, dialogue?: string) => {
     if (isGenerating) return;
@@ -65,6 +67,39 @@ export const InteractiveStory = ({
     }
   };
 
+  const exportToFile = () => {
+    let content = `# Интерактивная история\n\n`;
+    content += `**Персонаж:** ${playerCharacter}\n`;
+    content += `**NPC:** ${npcCharacters}\n`;
+    content += `**Мир:** ${world}\n`;
+    content += `**Жанр:** ${genre}\n`;
+    content += `**Режим повествования:** ${narrativeMode === 'mixed' ? 'Смешанный' : narrativeMode === 'first_person' ? 'От первого лица' : 'От третьего лица'}\n\n`;
+    content += `---\n\n`;
+
+    messages.forEach((msg, index) => {
+      if (msg.type === 'story') {
+        content += `## Часть ${Math.floor(index / 2) + 1}\n\n${msg.content}\n\n`;
+      } else if (msg.type === 'action') {
+        content += `> **Действие игрока:** ${msg.content}\n\n`;
+      }
+    });
+
+    const blob = new Blob([content], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `история-${new Date().toISOString().split('T')[0]}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Экспорт завершён",
+      description: "История сохранена в файл Markdown"
+    });
+  };
+
   return (
     <Card className="border-2 border-primary/20 backdrop-blur-sm bg-card/80">
       <CardHeader>
@@ -81,16 +116,50 @@ export const InteractiveStory = ({
             <Badge variant="outline" className="text-xs">
               {messages.filter(m => m.type === 'action').length} действий
             </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={exportToFile}
+              className="gap-1 h-7"
+              title="Экспортировать историю"
+            >
+              <Icon name="Download" size={14} />
+              Экспорт
+            </Button>
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <ScrollArea className="h-[400px] pr-4">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm text-muted-foreground">
+            История из {messages.length} частей
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              const scrollArea = document.querySelector('[data-story-scroll]');
+              if (scrollArea) {
+                scrollArea.scrollTop = scrollArea.scrollHeight;
+              }
+            }}
+            className="gap-1 h-8"
+          >
+            <Icon name="ArrowDown" size={14} />
+            В конец
+          </Button>
+        </div>
+        <ScrollArea className="h-[500px] pr-4" data-story-scroll>
           <div className="space-y-4">
             {messages.map((message, index) => (
               <div key={index} className="animate-fade-in">
                 {message.type === 'story' && (
-                  <div className="p-4 bg-background/50 rounded-lg border border-border/50">
+                  <div className="p-4 bg-background/50 rounded-lg border border-border/50 relative group">
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Badge variant="secondary" className="text-xs">
+                        Часть {index + 1}
+                      </Badge>
+                    </div>
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">
                       {message.content}
                     </p>

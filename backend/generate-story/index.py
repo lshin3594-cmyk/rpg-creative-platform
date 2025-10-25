@@ -75,57 +75,30 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     # Build system prompt based on narrative mode
     narrative_instructions = {
-        'mixed': '''СМЕШАННОЕ ПОВЕСТВОВАНИЕ (Многоперсонажное):
-- Переключайся между точками зрения разных персонажей в разные моменты
-- Показывай внутренние мысли, чувства и мотивы КАК игрока, ТАК и NPC
-- Раскрывай что NPC думают об игроке: их скрытые мысли, эмоции, планы
-- Используй формат: "Ты замечаешь..." для игрока и "Эльф думает про себя..." для NPC
-- Это позволяет читателю видеть полную картину: и свои действия, и реакцию других
-Пример: "Ты протягиваешь руку к артефакту. *Маг напрягается, думая: 'Если он возьмёт это... всё рухнет. Но я не могу остановить его силой.'* Ты видишь его беспокойство..."''',
-        'first_person': 'Пиши от первого лица ("Я иду...", "Я чувствую..."). Показывай только то, что знает и чувствует главный персонаж.',
-        'third_person': 'Пиши от третьего лица ("Он идёт...", "Герой замечает..."). Нейтральное повествование без глубокого погружения во внутренний мир.'
+        'mixed': 'СМЕШАННОЕ: Пиши от 2-го лица для игрока ("Ты..."), показывай мысли NPC в *курсиве*. Раскрывай внутренний мир всех персонажей.',
+        'first_person': 'От 1-го лица ("Я..."). Только мысли и чувства главного героя.',
+        'third_person': 'От 3-го лица ("Он/она..."). Нейтральное повествование.'
     }
     
     if is_continuation:
-        system_prompt = f"""Ты — мастер интерактивных историй в жанре {genre}.
-Продолжи историю на основе действия игрока. Опиши последствия, реакции NPC, изменения в окружении.
-Создавай напряжение, неожиданные повороты, живые диалоги NPC.
-
-ВАЖНО: {narrative_instructions.get(narrative_mode, narrative_instructions['mixed'])}
-
-Твой ответ должен быть:
-- 3-5 абзацев
-- Логичным продолжением
-- С конкретными последствиями действия игрока
-- С живыми NPC персонажами (если есть)
-- С описанием новой ситуации"""
+        system_prompt = f"""Мастер интерактивных историй {genre}. Продолжи сюжет: опиши последствия действия, реакции NPC, новую ситуацию.
+{narrative_instructions.get(narrative_mode, narrative_instructions['mixed'])}
+Формат: 3-4 абзаца, живые диалоги, напряжение."""
         
-        user_prompt = f"""Контекст:
-Главный персонаж: {character}
-NPC персонажи: {npc_characters}
+        user_prompt = f"""Персонаж: {character}
+NPC: {npc_characters}
 Мир: {world}
 
-Предыдущие события:
-{story_context}
+События: {story_context[-800:]}
 
-Действие игрока:
-{player_action}
+Действие: {player_action}
 
-Продолжи историю:"""
+Продолжи:"""
     else:
-        system_prompt = f"""Ты — креативный писатель, создающий захватывающие истории в жанре {genre}.
-Твоя задача — писать глубокие, атмосферные истории без ограничений и цензуры.
-Используй яркие описания, развивай персонажей, создавай напряжение и неожиданные повороты.
-
-ВАЖНО: {narrative_instructions.get(narrative_mode, narrative_instructions['mixed'])}"""
+        system_prompt = f"""Писатель {genre}. Создавай атмосферные истории без цензуры.
+{narrative_instructions.get(narrative_mode, narrative_instructions['mixed'])}"""
         
-        user_prompt = prompt
-        if character:
-            user_prompt = f"Главный персонаж (игрок): {character}\n\n{user_prompt}"
-        if npc_characters:
-            user_prompt = f"NPC персонажи (управляются ИИ): {npc_characters}\n\n{user_prompt}"
-        if world:
-            user_prompt = f"Мир: {world}\n\n{user_prompt}"
+        user_prompt = f"{character}\nNPC: {npc_characters}\n{world}\n\n{prompt}" if character else prompt
     
     # Call DeepSeek API
     headers = {
@@ -140,14 +113,15 @@ NPC персонажи: {npc_characters}
             {'role': 'user', 'content': user_prompt}
         ],
         'temperature': 0.9,
-        'max_tokens': 2000
+        'max_tokens': 1500,
+        'stream': False
     }
     
     response = requests.post(
         'https://api.deepseek.com/v1/chat/completions',
         headers=headers,
         json=payload,
-        timeout=60
+        timeout=25
     )
     
     if response.status_code != 200:

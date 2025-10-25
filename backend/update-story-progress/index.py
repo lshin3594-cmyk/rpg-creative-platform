@@ -5,9 +5,9 @@ import psycopg2
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Business: Saves generated story to database
-    Args: event with httpMethod, body (title, content, prompt, character_name, world_name, genre)
-    Returns: Saved story with ID
+    Business: Updates story progress (context and actions log)
+    Args: event with httpMethod, body (story_id, story_context, new_action)
+    Returns: Success status
     '''
     method: str = event.get('httpMethod', 'GET')
     
@@ -16,21 +16,23 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Methods': 'PUT, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type',
                 'Access-Control-Max-Age': '86400'
             },
-            'body': ''
+            'body': '',
+            'isBase64Encoded': False
         }
     
-    if method != 'POST':
+    if method != 'PUT':
         return {
             'statusCode': 405,
             'headers': {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            'body': json.dumps({'error': 'Method not allowed'})
+            'body': json.dumps({'error': 'Method not allowed'}),
+            'isBase64Encoded': False
         }
     
     body_str = event.get('body') or '{}'
@@ -39,23 +41,19 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     except (json.JSONDecodeError, AttributeError):
         body_data = {}
     
-    title: str = body_data.get('title', 'Без названия')
-    content: str = body_data.get('content', '')
-    prompt: str = body_data.get('prompt', '')
-    character_name: str = body_data.get('character_name', '')
-    world_name: str = body_data.get('world_name', '')
-    genre: str = body_data.get('genre', 'фэнтези')
-    story_context: str = body_data.get('story_context', content)
-    actions_log: str = json.dumps(body_data.get('actions_log', []))
+    story_id: int = body_data.get('story_id')
+    story_context: str = body_data.get('story_context', '')
+    new_action: dict = body_data.get('new_action')
     
-    if not content:
+    if not story_id:
         return {
             'statusCode': 400,
             'headers': {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            'body': json.dumps({'error': 'Content is required'})
+            'body': json.dumps({'error': 'story_id is required'}),
+            'isBase64Encoded': False
         }
     
     dsn = os.environ.get('DATABASE_URL')
@@ -66,18 +64,24 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            'body': json.dumps({'error': 'Database not configured'})
+            'body': json.dumps({'error': 'Database not configured'}),
+            'isBase64Encoded': False
         }
     
     conn = psycopg2.connect(dsn)
     cur = conn.cursor()
     
-    cur.execute(
-        "INSERT INTO stories (title, content, prompt, character_name, world_name, genre, story_context, actions_log) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id, created_at",
-        (title, content, prompt, character_name, world_name, genre, story_context, actions_log)
-    )
+    if new_action:
+        cur.execute(
+            "UPDATE stories SET story_context = %s, actions_log = actions_log || %s::jsonb, updated_at = CURRENT_TIMESTAMP WHERE id = %s",
+            (story_context, json.dumps([new_action]), story_id)
+        )
+    else:
+        cur.execute(
+            "UPDATE stories SET story_context = %s, updated_at = CURRENT_TIMESTAMP WHERE id = %s",
+            (story_context, story_id)
+        )
     
-    story_id, created_at = cur.fetchone()
     conn.commit()
     cur.close()
     conn.close()
@@ -89,14 +93,5 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'Access-Control-Allow-Origin': '*'
         },
         'isBase64Encoded': False,
-        'body': json.dumps({
-            'id': story_id,
-            'title': title,
-            'content': content,
-            'prompt': prompt,
-            'character_name': character_name,
-            'world_name': world_name,
-            'genre': genre,
-            'created_at': created_at.isoformat()
-        }, ensure_ascii=False)
+        'body': json.dumps({'success': True}, ensure_ascii=False)
     }

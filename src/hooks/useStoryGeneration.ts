@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Character, World } from './useDataManagement';
+import funcUrls from '../../backend/func2url.json';
 
 export const useStoryGeneration = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -11,6 +12,7 @@ export const useStoryGeneration = () => {
   const [playerCharacterId, setPlayerCharacterId] = useState('');
   const [showInteractive, setShowInteractive] = useState(false);
   const [currentStoryContext, setCurrentStoryContext] = useState('');
+  const [currentStoryId, setCurrentStoryId] = useState<number | null>(null);
 
   const saveStory = async (
     storyContent: string,
@@ -40,7 +42,7 @@ export const useStoryGeneration = () => {
       });
       
       const savedStory = await response.json();
-      return savedStory.id ? true : false;
+      return savedStory;
     } catch (error) {
       console.error('Error saving story:', error);
       return false;
@@ -83,7 +85,10 @@ export const useStoryGeneration = () => {
       if (data.story) {
         setGeneratedStory(data.story);
         setCurrentStoryContext(data.story);
-        await saveStory(data.story, storyPrompt, characters, worlds, selectedCharacter, selectedWorld);
+        const saved = await saveStory(data.story, storyPrompt, characters, worlds, selectedCharacter, selectedWorld);
+        if (saved && saved.id) {
+          setCurrentStoryId(saved.id);
+        }
         if (onSaved) onSaved();
         setShowInteractive(true);
       }
@@ -125,7 +130,25 @@ export const useStoryGeneration = () => {
     
     const data = await response.json();
     if (data.continuation) {
-      setCurrentStoryContext(currentStoryContext + '\n\n' + playerAction + '\n\n' + data.continuation);
+      const newContext = currentStoryContext + '\n\n' + playerAction + '\n\n' + data.continuation;
+      setCurrentStoryContext(newContext);
+      
+      if (currentStoryId) {
+        await fetch(funcUrls['update-story-progress'], {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            story_id: currentStoryId,
+            story_context: newContext,
+            new_action: {
+              action: playerAction,
+              response: data.continuation,
+              timestamp: new Date().toISOString()
+            }
+          })
+        });
+      }
+      
       return data.continuation;
     }
     return '';
@@ -148,6 +171,8 @@ export const useStoryGeneration = () => {
     setShowInteractive,
     currentStoryContext,
     setCurrentStoryContext,
+    currentStoryId,
+    setCurrentStoryId,
     generateStory,
     continueStory
   };

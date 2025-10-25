@@ -1,0 +1,33 @@
+{
+  "tests": [
+    {
+      "name": "Update story progress",
+      "method": "PUT",
+      "path": "/",
+      "body": {
+        "story_id": 1,
+        "story_context": "Updated context",
+        "new_action": {
+          "action": "Test action",
+          "timestamp": "2024-01-01T00:00:00Z"
+        }
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Missing story_id",
+      "method": "PUT",
+      "path": "/",
+      "body": {},
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
