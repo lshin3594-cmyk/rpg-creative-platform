@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { Character, Message, GameSettings, AI_STORY_URL, IMAGE_GEN_URL } from './types';
+import { Character, Message, GameSettings, AI_STORY_URL, IMAGE_GEN_URL, SAVE_STORY_URL } from './types';
 
 export const useGameLogic = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -61,6 +61,30 @@ export const useGameLogic = () => {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (messages.length > 0 && messages.length % 5 === 0 && gameSettings) {
+      const saveGame = async () => {
+        try {
+          const storyContent = messages.map(m => `[${m.type === 'user' ? 'Игрок' : 'ИИ'}]: ${m.content}`).join('\n\n');
+          await fetch(SAVE_STORY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: gameSettings.name,
+              content: storyContent,
+              genre: gameSettings.genre || 'Фэнтези',
+              story_context: storyContent
+            })
+          });
+          console.log('✅ Game auto-saved');
+        } catch (error) {
+          console.error('❌ Auto-save failed:', error);
+        }
+      };
+      saveGame();
+    }
+  }, [messages.length, gameSettings]);
 
   const getAgentPrompt = () => {
     turnCountRef.current += 1;
