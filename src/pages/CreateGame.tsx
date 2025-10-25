@@ -16,6 +16,8 @@ const CreateGame = () => {
   const [aiInstructions, setAiInstructions] = useState('');
   const [role, setRole] = useState<'hero' | 'author'>('hero');
   const [narrativeMode, setNarrativeMode] = useState<'first' | 'third' | 'love-interest'>('third');
+  const [genre, setGenre] = useState('Фэнтези');
+  const [rating, setRating] = useState('18+');
 
   const generateRandomName = () => {
     const names = [
@@ -59,6 +61,8 @@ const CreateGame = () => {
       role,
       narrativeMode,
       playerCount: 1,
+      genre,
+      rating,
       createdAt: new Date().toISOString()
     };
 

@@ -55,6 +55,7 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
           characters={characters}
           agentsEnabled={agentsEnabled}
           autoIllustrations={autoIllustrations}
+          gameSettings={gameSettings}
           onAgentsToggle={setAgentsEnabled}
           onIllustrationsToggle={setAutoIllustrations}
           onCreateCharacter={() => setShowCreateChar(true)}

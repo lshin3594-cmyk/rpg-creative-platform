@@ -21,6 +21,9 @@ export interface GameSettings {
   role: 'author' | 'hero';
   narrativeMode: 'first' | 'third' | 'love-interest';
   playerCount: number;
+  genre?: string;
+  rating?: string;
+  eloquenceLevel?: number;
 }
 
 export const AI_STORY_URL = 'https://functions.poehali.dev/43b376d8-4248-4a7e-8065-56da54df84d7';

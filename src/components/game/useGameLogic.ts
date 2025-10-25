@@ -33,12 +33,25 @@ export const useGameLogic = () => {
     if (settingsJson) {
       const settings = JSON.parse(settingsJson);
       console.log('🎮 Game settings loaded:', settings);
-      setGameSettings(settings);
+      setGameSettings({
+        ...settings,
+        genre: settings.genre || 'Фэнтези',
+        rating: settings.rating || '18+',
+        eloquenceLevel: 1
+      });
       storyInitializedRef.current = false;
     } else {
       console.warn('⚠️ No game settings found in localStorage');
     }
   }, []);
+
+  useEffect(() => {
+    if (gameSettings) {
+      const userMessages = messages.filter(m => m.type === 'user').length;
+      const level = Math.min(5, Math.floor(userMessages / 3) + 1);
+      setGameSettings(prev => prev ? { ...prev, eloquenceLevel: level } : null);
+    }
+  }, [messages]);
 
   useEffect(() => {
     if (scrollRef.current) {

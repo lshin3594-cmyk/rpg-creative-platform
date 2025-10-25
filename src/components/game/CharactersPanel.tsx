@@ -3,12 +3,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
-import { Character } from './types';
+import { Character, GameSettings } from './types';
 
 interface CharactersPanelProps {
   characters: Character[];
   agentsEnabled: boolean;
   autoIllustrations: boolean;
+  gameSettings?: GameSettings;
   onAgentsToggle: (enabled: boolean) => void;
   onIllustrationsToggle: (enabled: boolean) => void;
   onCreateCharacter: () => void;
@@ -20,16 +21,21 @@ export const CharactersPanel = ({
   characters,
   agentsEnabled,
   autoIllustrations,
+  gameSettings,
   onAgentsToggle,
   onIllustrationsToggle,
   onCreateCharacter,
   onOpenJournal,
   onKickAI
 }: CharactersPanelProps) => {
+  const eloquenceLevel = gameSettings?.eloquenceLevel || 1;
+  const genre = gameSettings?.genre || 'Фэнтези';
+  const rating = gameSettings?.rating || '18+';
+
   return (
     <div className="w-80 border-r border-primary/20 bg-black/40 backdrop-blur-sm flex flex-col">
-      <div className="p-6 border-b border-primary/20">
-        <div className="flex items-center gap-3 mb-4">
+      <div className="p-6 border-b border-primary/20 space-y-4">
+        <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center border border-primary/40">
             <Icon name="Crown" size={24} className="text-primary" />
           </div>
@@ -39,6 +45,42 @@ export const CharactersPanel = ({
               <Icon name="Settings" size={12} />
               Настройки
             </button>
+          </div>
+        </div>
+
+        <div className="space-y-2 pt-2 border-t border-primary/10">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground flex items-center gap-1">
+              <Icon name="Sparkles" size={12} />
+              Жанр
+            </span>
+            <span className="text-foreground font-medium">{genre}</span>
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground flex items-center gap-1">
+              <Icon name="Shield" size={12} />
+              Рейтинг
+            </span>
+            <span className="text-foreground font-medium">{rating}</span>
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground flex items-center gap-1">
+              <Icon name="MessageSquare" size={12} />
+              Красноречие
+            </span>
+            <div className="flex items-center gap-1">
+              <span className="text-primary font-bold">{eloquenceLevel}</span>
+              <div className="flex gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-1 h-3 rounded-full ${
+                      i < eloquenceLevel ? 'bg-primary' : 'bg-primary/20'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
