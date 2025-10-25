@@ -17,7 +17,7 @@ export const useGameLogic = () => {
   const [showJournal, setShowJournal] = useState(false);
   const [showCreateChar, setShowCreateChar] = useState(false);
   const [agentsEnabled, setAgentsEnabled] = useState(true);
-  const [autoIllustrations, setAutoIllustrations] = useState(true);
+  const [autoIllustrations, setAutoIllustrations] = useState(false);
   const [generatingIllustration, setGeneratingIllustration] = useState(false);
   const turnCountRef = useRef(0);
   const storyInitializedRef = useRef(false);
