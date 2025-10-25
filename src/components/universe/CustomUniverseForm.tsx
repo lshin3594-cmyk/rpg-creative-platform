@@ -1,6 +1,7 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { plotGenres } from '../plot/plotGenres';
 import { UniverseFormData } from './universeTypes';
@@ -48,6 +49,40 @@ export const CustomUniverseForm = ({
             placeholder="Мир после апокалипсиса..." 
             value={formData.description}
             onChange={(e) => setFormData({...formData, description: e.target.value})}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="universe-lore">История и лор мира</Label>
+        <Textarea
+          id="universe-lore"
+          placeholder="Опишите историю мира, важные события, легенды..."
+          value={formData.lore}
+          onChange={(e) => setFormData({...formData, lore: e.target.value})}
+          rows={3}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="universe-rules">Правила и законы</Label>
+          <Textarea
+            id="universe-rules"
+            placeholder="Законы физики, магии, социальные правила..."
+            value={formData.rules}
+            onChange={(e) => setFormData({...formData, rules: e.target.value})}
+            rows={3}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="universe-locations">Ключевые локации</Label>
+          <Textarea
+            id="universe-locations"
+            placeholder="Важные места, города, регионы..."
+            value={formData.locations}
+            onChange={(e) => setFormData({...formData, locations: e.target.value})}
+            rows={3}
           />
         </div>
       </div>
