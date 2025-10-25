@@ -10,6 +10,8 @@ import { useBackgroundMusic } from '@/hooks/useBackgroundMusic';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface Character {
   id: string;
@@ -23,7 +25,8 @@ export const UserProfile = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { isPlaying, toggle } = useBackgroundMusic();
-  const [characters] = useState<Character[]>([
+  const { toast } = useToast();
+  const [characters, setCharacters] = useState<Character[]>([
     {
       id: '1',
       name: 'Космический Рейнджер',
@@ -32,6 +35,59 @@ export const UserProfile = () => {
       personality: 'Отважный защитник галактики'
     }
   ]);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [newCharacter, setNewCharacter] = useState({ name: '', role: '', personality: '', avatar: '' });
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleCreateCharacter = () => {
+    if (!newCharacter.name || !newCharacter.role) {
+      toast({ title: 'Заполните имя и роль', variant: 'destructive' });
+      return;
+    }
+
+    const character: Character = {
+      id: Date.now().toString(),
+      name: newCharacter.name,
+      role: newCharacter.role,
+      avatar: newCharacter.avatar || '',
+      personality: newCharacter.personality
+    };
+
+    setCharacters([...characters, character]);
+    setNewCharacter({ name: '', role: '', personality: '', avatar: '' });
+    setIsCreateDialogOpen(false);
+    toast({ title: 'Персонаж создан! 🎭' });
+  };
+
+  const generateAvatar = async () => {
+    if (!newCharacter.name || !newCharacter.personality) {
+      toast({ title: 'Заполните имя и описание для генерации', variant: 'destructive' });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const prompt = `Portrait of ${newCharacter.name}, ${newCharacter.personality}, cosmic space theme, detailed character art, high quality, sci-fi style`;
+      
+      const response = await fetch('https://functions.poehali.dev/16a136ce-ff21-4430-80df-ad1caa87a3a7', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+
+      if (!response.ok) throw new Error('Generation failed');
+      
+      const data = await response.json();
+      setNewCharacter({ ...newCharacter, avatar: data.url });
+      
+      toast({ title: 'Изображение готово! ✨' });
+    } catch (error) {
+      console.error('Avatar generation error:', error);
+      toast({ title: 'Ошибка генерации', description: 'Попробуйте ещё раз', variant: 'destructive' });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   if (!user) return null;
 
@@ -164,7 +220,7 @@ export const UserProfile = () => {
             {/* Кнопка создания */}
             <Card 
               className="border-2 border-dashed border-purple-500/40 hover:border-purple-400/60 transition-all duration-300 hover:scale-105 cursor-pointer backdrop-blur-sm bg-gradient-to-br from-purple-950/20 via-black/40 to-pink-950/20 relative group overflow-hidden min-h-[280px] flex items-center justify-center"
-              onClick={() => navigate('/create-game')}
+              onClick={() => setIsCreateDialogOpen(true)}
             >
               <div className="text-center space-y-3">
                 <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
@@ -242,6 +298,113 @@ export const UserProfile = () => {
           Выйти
         </Button>
       </div>
+
+      {/* Модальное окно создания персонажа */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="sm:max-w-2xl bg-gradient-to-br from-purple-950/95 via-black/95 to-pink-950/95 border-purple-500/50 backdrop-blur-xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl bg-gradient-to-r from-purple-300 via-pink-300 to-purple-300 bg-clip-text text-transparent flex items-center gap-2">
+              <Icon name="Sparkles" size={24} className="text-purple-400" />
+              Создать персонажа
+            </DialogTitle>
+            <DialogDescription className="text-purple-200/70">
+              Настройте идеального героя для своих приключений
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid md:grid-cols-2 gap-6 py-4">
+            {/* Левая колонка - форма */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="char-name" className="text-purple-200">Имя персонажа</Label>
+                <Input
+                  id="char-name"
+                  placeholder="Космический Рейнджер"
+                  value={newCharacter.name}
+                  onChange={(e) => setNewCharacter({ ...newCharacter, name: e.target.value })}
+                  className="bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50 focus:border-purple-400"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="char-role" className="text-purple-200">Роль / Профессия</Label>
+                <Input
+                  id="char-role"
+                  placeholder="Исследователь, Воин, Маг..."
+                  value={newCharacter.role}
+                  onChange={(e) => setNewCharacter({ ...newCharacter, role: e.target.value })}
+                  className="bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50 focus:border-purple-400"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="char-personality" className="text-purple-200">Описание и характер</Label>
+                <Textarea
+                  id="char-personality"
+                  placeholder="Опишите внешность и характер для генерации портрета..."
+                  value={newCharacter.personality}
+                  onChange={(e) => setNewCharacter({ ...newCharacter, personality: e.target.value })}
+                  className="bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50 focus:border-purple-400 min-h-[120px]"
+                />
+              </div>
+            </div>
+
+            {/* Правая колонка - превью */}
+            <div className="space-y-4">
+              <div className="aspect-[3/4] bg-black/30 rounded-lg overflow-hidden border-2 border-dashed border-purple-500/40 flex items-center justify-center">
+                {newCharacter.avatar ? (
+                  <img
+                    src={newCharacter.avatar}
+                    alt="Avatar preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="text-center text-purple-300/50 p-4">
+                    <Icon name="Image" size={48} className="mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Портрет персонажа</p>
+                    <p className="text-xs mt-1">Заполните описание и сгенерируйте</p>
+                  </div>
+                )}
+              </div>
+
+              <Button
+                className="w-full gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-none"
+                onClick={generateAvatar}
+                disabled={isGenerating || !newCharacter.name || !newCharacter.personality}
+              >
+                {isGenerating ? (
+                  <>
+                    <Icon name="Loader2" size={16} className="animate-spin" />
+                    Генерация...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="Sparkles" size={16} />
+                    Сгенерировать портрет
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <Button
+              variant="outline"
+              className="flex-1 border-purple-500/40 hover:bg-purple-500/20 text-purple-200"
+              onClick={() => setIsCreateDialogOpen(false)}
+            >
+              Отмена
+            </Button>
+            <Button
+              className="flex-1 gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-none"
+              onClick={handleCreateCharacter}
+            >
+              <Icon name="Check" size={16} />
+              Создать персонажа
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
