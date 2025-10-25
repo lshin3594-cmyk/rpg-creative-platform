@@ -37,7 +37,7 @@ export const useGameLogic = () => {
         ...settings,
         genre: settings.genre || 'Фэнтези',
         rating: settings.rating || '18+',
-        eloquenceLevel: 1
+        eloquenceLevel: settings.eloquenceLevel || 3
       });
       
       if (settings.initialCharacters && settings.initialCharacters.length > 0) {
@@ -54,13 +54,7 @@ export const useGameLogic = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (gameSettings) {
-      const userMessages = messages.filter(m => m.type === 'user').length;
-      const level = Math.min(5, Math.floor(userMessages / 3) + 1);
-      setGameSettings(prev => prev ? { ...prev, eloquenceLevel: level } : null);
-    }
-  }, [messages]);
+
 
   useEffect(() => {
     if (scrollRef.current) {

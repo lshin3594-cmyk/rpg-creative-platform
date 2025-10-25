@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
+
+const GAME_ENTITIES_URL = 'https://functions.poehali.dev/f3c359fd-06ee-4643-bf4c-c6d7a7155696';
 
 const CreateGame = () => {
   const navigate = useNavigate();
@@ -18,7 +20,28 @@ const CreateGame = () => {
   const [narrativeMode, setNarrativeMode] = useState<'first' | 'third' | 'love-interest'>('third');
   const [genre, setGenre] = useState('Фэнтези');
   const [rating, setRating] = useState('18+');
-  const [characters, setCharacters] = useState<Array<{name: string; role: string; description: string}>>([]);
+  const [eloquenceLevel, setEloquenceLevel] = useState(3);
+  const [availableCharacters, setAvailableCharacters] = useState<any[]>([]);
+  const [selectedCharacterIds, setSelectedCharacterIds] = useState<number[]>([]);
+  const [loadingCharacters, setLoadingCharacters] = useState(false);
+
+  useEffect(() => {
+    const fetchCharacters = async () => {
+      setLoadingCharacters(true);
+      try {
+        const response = await fetch(`${GAME_ENTITIES_URL}?type=characters`);
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableCharacters(data);
+        }
+      } catch (error) {
+        console.error('Failed to load characters:', error);
+      } finally {
+        setLoadingCharacters(false);
+      }
+    };
+    fetchCharacters();
+  }, []);
 
   const generateRandomName = () => {
     const names = [
@@ -55,6 +78,8 @@ const CreateGame = () => {
       return;
     }
 
+    const selectedChars = availableCharacters.filter(c => selectedCharacterIds.includes(c.id));
+    
     const gameSettings = {
       name: gameName,
       setting,
@@ -64,7 +89,12 @@ const CreateGame = () => {
       playerCount: 1,
       genre,
       rating,
-      initialCharacters: characters,
+      eloquenceLevel,
+      initialCharacters: selectedChars.map(c => ({
+        name: c.name,
+        role: c.role,
+        description: c.personality || c.backstory || ''
+      })),
       createdAt: new Date().toISOString()
     };
 
@@ -72,18 +102,12 @@ const CreateGame = () => {
     navigate('/story/new');
   };
 
-  const addCharacter = () => {
-    setCharacters([...characters, { name: '', role: '', description: '' }]);
-  };
-
-  const updateCharacter = (index: number, field: 'name' | 'role' | 'description', value: string) => {
-    const updated = [...characters];
-    updated[index][field] = value;
-    setCharacters(updated);
-  };
-
-  const removeCharacter = (index: number) => {
-    setCharacters(characters.filter((_, i) => i !== index));
+  const toggleCharacter = (id: number) => {
+    if (selectedCharacterIds.includes(id)) {
+      setSelectedCharacterIds(selectedCharacterIds.filter(cid => cid !== id));
+    } else {
+      setSelectedCharacterIds([...selectedCharacterIds, id]);
+    }
   };
 
   return (
@@ -343,65 +367,86 @@ const CreateGame = () => {
                 </select>
               </div>
             </div>
+            <div className="mt-4 pt-4 border-t border-purple-500/20">
+              <Label className="text-purple-200/80 text-sm mb-3 block">
+                Уровень красноречия
+              </Label>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min="1"
+                    max="5"
+                    value={eloquenceLevel}
+                    onChange={(e) => setEloquenceLevel(Number(e.target.value))}
+                    className="flex-1 h-2 bg-black/30 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-400 [&::-webkit-slider-thumb]:cursor-pointer"
+                  />
+                  <span className="text-purple-300 font-bold text-lg min-w-[2rem] text-center">
+                    {eloquenceLevel}
+                  </span>
+                </div>
+                <div className="flex justify-between text-xs text-purple-300/60">
+                  <span>Простые фразы</span>
+                  <span>Литературный стиль</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="relative p-6 rounded-xl bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-purple-900/40 border border-purple-500/40 backdrop-blur-md">
-            <div className="flex items-center justify-between mb-4">
-              <Label className="text-purple-100 text-base">
-                Персонажи (необязательно)
-              </Label>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={addCharacter}
-                className="gap-2 text-yellow-400 hover:text-yellow-300 hover:bg-yellow-400/10"
-              >
-                <Icon name="UserPlus" size={16} />
-                Добавить
-              </Button>
-            </div>
+            <Label className="text-purple-100 text-base mb-4 block">
+              Персонажи (необязательно)
+            </Label>
 
-            {characters.length === 0 ? (
+            {loadingCharacters ? (
+              <div className="text-center py-8">
+                <Icon name="Loader2" size={32} className="mx-auto mb-2 animate-spin text-purple-400" />
+                <p className="text-purple-300/60 text-sm">Загрузка персонажей...</p>
+              </div>
+            ) : availableCharacters.length === 0 ? (
               <div className="text-center py-8 text-purple-300/60 text-sm">
                 <Icon name="Users" size={40} className="mx-auto mb-2 opacity-40" />
-                <p>Персонажи появятся по ходу истории</p>
-                <p className="text-xs mt-1">Или создайте их заранее</p>
+                <p>Нет сохранённых персонажей</p>
+                <p className="text-xs mt-1">Создайте их в библиотеке персонажей</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {characters.map((char, idx) => (
-                  <div key={idx} className="p-4 bg-black/40 border border-purple-500/30 rounded-lg space-y-3">
+              <div className="grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto">
+                {availableCharacters.map((char) => (
+                  <button
+                    key={char.id}
+                    onClick={() => toggleCharacter(char.id)}
+                    className={`
+                      p-4 rounded-lg border-2 transition-all text-left
+                      ${
+                        selectedCharacterIds.includes(char.id)
+                          ? 'border-purple-400 bg-purple-500/30'
+                          : 'border-purple-500/30 bg-black/20 hover:border-purple-400/50'
+                      }
+                    `}
+                  >
                     <div className="flex items-start gap-3">
-                      <div className="flex-1 space-y-3">
-                        <Input
-                          value={char.name}
-                          onChange={(e) => updateCharacter(idx, 'name', e.target.value)}
-                          placeholder="Имя персонажа"
-                          className="bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50"
-                        />
-                        <Input
-                          value={char.role}
-                          onChange={(e) => updateCharacter(idx, 'role', e.target.value)}
-                          placeholder="Роль (воин, маг, торговец...)"
-                          className="bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50"
-                        />
-                        <Textarea
-                          value={char.description}
-                          onChange={(e) => updateCharacter(idx, 'description', e.target.value)}
-                          placeholder="Внешность и характер..."
-                          className="min-h-[60px] resize-none bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50"
-                        />
+                      {char.avatar && (
+                        <img src={char.avatar} alt={char.name} className="w-12 h-12 rounded-full object-cover" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-sm text-purple-100 truncate">{char.name}</h4>
+                        <p className="text-xs text-purple-300/70">{char.role}</p>
+                        {char.personality && (
+                          <p className="text-xs text-purple-200/60 mt-1 line-clamp-2">{char.personality}</p>
+                        )}
                       </div>
-                      <button
-                        onClick={() => removeCharacter(idx)}
-                        className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors"
-                      >
-                        <Icon name="X" size={18} />
-                      </button>
+                      {selectedCharacterIds.includes(char.id) && (
+                        <Icon name="Check" size={18} className="text-purple-400 flex-shrink-0" />
+                      )}
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
+            )}
+            {selectedCharacterIds.length > 0 && (
+              <p className="text-purple-300/70 text-sm mt-3">
+                Выбрано: {selectedCharacterIds.length} {selectedCharacterIds.length === 1 ? 'персонаж' : 'персонажа'}
+              </p>
             )}
           </div>
 
