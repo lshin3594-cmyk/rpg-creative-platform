@@ -180,11 +180,11 @@ export const useGameLogic = () => {
   useEffect(() => {
     if (gameSettings && messages.length === 0 && !isProcessing && !storyInitializedRef.current) {
       storyInitializedRef.current = true;
+      setIsProcessing(true);
       
       const abortController = new AbortController();
       
       const startStory = async () => {
-        setIsProcessing(true);
         try {
           const startAction = gameSettings.setting 
             ? `Начни историю в сеттинге: ${gameSettings.setting}`
