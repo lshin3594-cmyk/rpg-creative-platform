@@ -13,6 +13,7 @@ interface CharactersPanelProps {
   onIllustrationsToggle: (enabled: boolean) => void;
   onCreateCharacter: () => void;
   onOpenJournal: () => void;
+  onKickAI: () => void;
 }
 
 export const CharactersPanel = ({
@@ -22,7 +23,8 @@ export const CharactersPanel = ({
   onAgentsToggle,
   onIllustrationsToggle,
   onCreateCharacter,
-  onOpenJournal
+  onOpenJournal,
+  onKickAI
 }: CharactersPanelProps) => {
   return (
     <div className="w-80 border-r border-primary/20 bg-black/40 backdrop-blur-sm flex flex-col">
@@ -98,10 +100,10 @@ export const CharactersPanel = ({
           variant="outline" 
           size="sm" 
           className="w-full gap-2 border-primary/40 hover:bg-primary/10 hover:border-primary transition-all text-foreground"
-          onClick={onCreateCharacter}
+          onClick={onKickAI}
         >
-          <Icon name="Swords" size={16} />
-          Завысло - починить
+          <Icon name="Zap" size={16} />
+          Пнуть ИИ
         </Button>
         
         <div className="pt-3 border-t border-primary/20 space-y-3">

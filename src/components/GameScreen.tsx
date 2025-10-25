@@ -36,7 +36,8 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
     setAutoIllustrations,
     handleSendMessage,
     handleCharacterCreated,
-    handleDiceRoll
+    handleDiceRoll,
+    handleKickAI
   } = useGameLogic();
 
   if (!gameSettings) {
@@ -58,6 +59,7 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
           onIllustrationsToggle={setAutoIllustrations}
           onCreateCharacter={() => setShowCreateChar(true)}
           onOpenJournal={() => setShowJournal(true)}
+          onKickAI={handleKickAI}
         />
 
         <div className="flex-1 flex flex-col">

@@ -27,6 +27,31 @@ export const StoryJournalModal = ({
   currentEpisode 
 }: StoryJournalModalProps) => {
   const [viewMode, setViewMode] = useState<'detailed' | 'overview'>('detailed');
+
+  const handleExport = () => {
+    const exportText = episodes.map(ep => {
+      const episodeMsgs = groupedByEpisode[ep];
+      let text = `\n═══════════════════════════════════════\n`;
+      text += `          ЭПИЗОД ${ep}\n`;
+      text += `═══════════════════════════════════════\n\n`;
+      
+      episodeMsgs.forEach(msg => {
+        const time = new Date(msg.timestamp).toLocaleString('ru');
+        const author = msg.type === 'user' ? 'ИГРОК' : 'ИИ';
+        text += `[${time}] ${author}:\n${msg.content}\n\n`;
+      });
+      
+      return text;
+    }).join('\n');
+
+    const blob = new Blob([exportText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `story-journal-${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
   
   const groupedByEpisode = messages.reduce((acc, msg) => {
     const ep = msg.episode;
@@ -189,7 +214,7 @@ export const StoryJournalModal = ({
             <Icon name="X" size={16} />
             Закрыть
           </Button>
-          <Button variant="outline" className="gap-2 ml-auto">
+          <Button variant="outline" className="gap-2 ml-auto" onClick={handleExport}>
             <Icon name="Download" size={16} />
             Экспорт
           </Button>

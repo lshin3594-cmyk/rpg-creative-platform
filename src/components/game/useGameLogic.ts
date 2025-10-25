@@ -231,6 +231,37 @@ export const useGameLogic = () => {
     setCurrentInput(actions[Math.floor(Math.random() * actions.length)]);
   };
 
+  const handleKickAI = async () => {
+    if (isProcessing) {
+      toast({
+        title: '👟 ИИ пнут!',
+        description: 'Ускоряем процесс... Попробуйте отправить запрос снова.',
+      });
+      setIsProcessing(false);
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+      return;
+    }
+
+    const kickPrompts = [
+      'Продолжи историю! Что-то должно произойти!',
+      'Эй, ИИ! Давай развивать сюжет дальше!',
+      'Не тормози! Что происходит дальше?',
+      'Хватит молчать! Покажи драму!',
+      'Действие! Нужно больше действия!'
+    ];
+
+    const randomKick = kickPrompts[Math.floor(Math.random() * kickPrompts.length)];
+    setCurrentInput(randomKick);
+    
+    toast({
+      title: '👟 Пинок отправлен!',
+      description: 'ИИ получил мотивацию продолжить историю',
+    });
+  };
+
   useEffect(() => {
     if (gameSettings && messages.length === 0 && !isProcessing && !storyInitializedRef.current) {
       storyInitializedRef.current = true;
@@ -351,6 +382,7 @@ export const useGameLogic = () => {
     setAutoIllustrations,
     handleSendMessage,
     handleCharacterCreated,
-    handleDiceRoll
+    handleDiceRoll,
+    handleKickAI
   };
 };
