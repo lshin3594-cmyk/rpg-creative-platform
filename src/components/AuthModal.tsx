@@ -25,7 +25,7 @@ export const AuthModal = ({ open, onClose }: AuthModalProps) => {
 
   const handleVkLogin = () => {
     const redirectUri = `${window.location.origin}/auth/vk/callback`;
-    window.location.href = `https://oauth.vk.com/authorize?client_id=54268206&display=page&redirect_uri=${redirectUri}&response_type=code&v=5.131`;
+    window.location.href = `https://oauth.vk.com/authorize?client_id=54268217&display=page&redirect_uri=${redirectUri}&response_type=code&v=5.131`;
   };
 
 
