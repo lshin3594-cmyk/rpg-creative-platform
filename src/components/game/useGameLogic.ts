@@ -16,6 +16,7 @@ export const useGameLogic = () => {
   const [autoIllustrations, setAutoIllustrations] = useState(true);
   const [generatingIllustration, setGeneratingIllustration] = useState(false);
   const turnCountRef = useRef(0);
+  const storyInitializedRef = useRef(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -176,7 +177,8 @@ export const useGameLogic = () => {
   };
 
   useEffect(() => {
-    if (gameSettings && messages.length === 0 && !isProcessing) {
+    if (gameSettings && messages.length === 0 && !isProcessing && !storyInitializedRef.current) {
+      storyInitializedRef.current = true;
       const startStory = async () => {
         setIsProcessing(true);
         try {
@@ -226,9 +228,11 @@ export const useGameLogic = () => {
           }
         } catch (error) {
           console.error('Auto-start error:', error);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          console.error('Error details:', errorMessage);
           toast({
             title: 'Ошибка запуска',
-            description: 'Не удалось начать историю. Попробуйте ввести первое действие.',
+            description: `Не удалось начать историю: ${errorMessage}`,
             variant: 'destructive'
           });
         } finally {
