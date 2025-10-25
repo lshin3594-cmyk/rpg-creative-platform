@@ -83,42 +83,58 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
     # Добавляем текущее действие
     messages.append({'role': 'user', 'content': action})
     
-    try:
-        # Вызываем DeepSeek API с увеличенным таймаутом
-        http_client = httpx.Client(timeout=httpx.Timeout(60.0, connect=10.0))
-        client = OpenAI(
-            api_key=DEEPSEEK_API_KEY,
-            base_url="https://api.deepseek.com",
-            http_client=http_client,
-            timeout=60.0
-        )
-        
-        response = client.chat.completions.create(
-            model="deepseek-chat",
-            messages=messages,
-            max_tokens=600,
-            temperature=0.7,
-            stream=False
-        )
-        
-        ai_text = response.choices[0].message.content
-        
-        # Извлекаем персонажей из текста
-        characters = extract_characters(ai_text)
-        
-        return {
-            'text': ai_text,
-            'characters': characters,
-            'episode': len(history) // 2 + 1
-        }
-        
-    except Exception as e:
-        error_name = type(e).__name__
-        if 'Timeout' in error_name or 'timeout' in str(e).lower():
-            print(f"DeepSeek timeout - using fallback: {e}")
-        else:
-            print(f"DeepSeek API error: {e}")
-        return fallback_response(action, role, len(history))
+    max_retries = 2
+    for attempt in range(max_retries):
+        try:
+            # Вызываем DeepSeek API с таймаутом
+            timeout_config = httpx.Timeout(
+                connect=5.0,
+                read=30.0,
+                write=10.0,
+                pool=5.0
+            )
+            http_client = httpx.Client(timeout=timeout_config)
+            client = OpenAI(
+                api_key=DEEPSEEK_API_KEY,
+                base_url="https://api.deepseek.com",
+                http_client=http_client,
+                timeout=30.0,
+                max_retries=0
+            )
+            
+            print(f"DeepSeek API attempt {attempt + 1}/{max_retries}")
+            
+            response = client.chat.completions.create(
+                model="deepseek-chat",
+                messages=messages,
+                max_tokens=600,
+                temperature=0.7,
+                stream=False
+            )
+            
+            ai_text = response.choices[0].message.content
+            print(f"DeepSeek API success, response length: {len(ai_text)}")
+            
+            # Извлекаем персонажей из текста
+            characters = extract_characters(ai_text)
+            
+            return {
+                'text': ai_text,
+                'characters': characters,
+                'episode': len(history) // 2 + 1
+            }
+            
+        except Exception as e:
+            error_name = type(e).__name__
+            error_msg = str(e)
+            print(f"DeepSeek API attempt {attempt + 1} failed: {error_name} - {error_msg}")
+            
+            if attempt < max_retries - 1:
+                print(f"Retrying... ({attempt + 2}/{max_retries})")
+                continue
+            else:
+                print("All retries exhausted, using fallback")
+                return fallback_response(action, role, len(history))
 
 def build_system_prompt(role: str, narrative_mode: str, setting: str, game_name: str) -> str:
     """
@@ -191,26 +207,29 @@ def extract_characters(text: str) -> List[Dict[str, str]]:
 
 def fallback_response(action: str, role: str, history_len: int) -> Dict[str, Any]:
     """
-    Фоллбэк на случай ошибки API - простой, но атмосферный
+    Фоллбэк на случай ошибки API - даёт базовое продолжение
     """
+    fallback_responses = [
+        f"**{action}**\n\nДействие выполнено. Окружение реагирует на ваш шаг. Воздух наполнен напряжением, что-то должно произойти...",
+        f"**{action}**\n\nВы делаете это. Тишина. Затем — реакция. Мир вокруг оживает, начинают происходить события...",
+        f"**{action}**\n\nВаш выбор сделан. Последствия не заставят себя ждать. Что-то меняется в атмосфере...",
+        f"**{action}**\n\nДействие завершено. Окружающий мир откликается. Впереди новые возможности и опасности...",
+        f"**{action}**\n\nВы действуете решительно. Реальность вокруг начинает трансформироваться..."
+    ]
+    
+    import random
+    text = random.choice(fallback_responses)
+    
     if history_len == 0:
         text = (
-            "Мир замер в ожидании. Где-то вдали слышится шум - голоса, шаги, эхо жизни. "
-            "Воздух наполнен предчувствием перемен. Что-то важное вот-вот произойдёт.\n\n"
-            f"*{action}*\n\n"
-            "История началась. Что дальше?"
+            "🌟 **История начинается**\n\n"
+            f"{action}\n\n"
+            "Мир оживает вокруг вас. Приключение только началось, и впереди множество возможностей. "
+            "ИИ временно недоступен, но вы можете продолжить своё путешествие!"
         )
-        characters = []
-    else:
-        text = (
-            f"*{action}*\n\n"
-            "Мир отреагировал на ваши действия. Что-то изменилось, но полная картина пока не ясна. "
-            "Возможно, стоит попробовать ещё раз или сделать что-то другое?"
-        )
-        characters = []
     
     return {
         'text': text,
-        'characters': characters,
+        'characters': [],
         'episode': history_len // 2 + 1
     }
