@@ -10,8 +10,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ImageGenerator } from '@/components/ImageGenerator';
-import { InputWithAI } from '@/components/ui/input-with-ai';
-import { useAIGeneration } from '@/hooks/useAIGeneration';
 
 interface Character {
   id: string;
@@ -56,8 +54,6 @@ export const CharactersTab = ({
     avatar: '',
     character_type: 'player'
   });
-  
-  const { generate } = useAIGeneration();
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -127,21 +123,6 @@ export const CharactersTab = ({
     }
   };
 
-  const generateCharacterField = async (field: 'personality' | 'backstory' | 'stats' | 'role') => {
-    const context = `Персонаж: ${formData.name || 'без имени'}, Роль: ${formData.role || 'не указана'}`;
-    const prompts = {
-      personality: `Создай краткое описание характера для ${context}. 2-3 предложения.`,
-      backstory: `Создай краткую предысторию для ${context}. 3-4 предложения.`,
-      stats: `Создай игровые характеристики для ${context}. Формат: Сила: X, Ловкость: Y, и т.д.`,
-      role: `Предложи интересную роль/класс для персонажа ${formData.name || 'фэнтези персонажа'}`
-    };
-
-    const result = await generate(prompts[field]);
-    if (result) {
-      setFormData(prev => ({ ...prev, [field]: result }));
-    }
-  };
-
   return (
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">
@@ -200,41 +181,43 @@ export const CharactersTab = ({
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                 />
               </div>
-              <InputWithAI
-                label="Роль"
-                id="char-role"
-                value={formData.role}
-                onChange={(value) => setFormData({...formData, role: value})}
-                onGenerate={() => generateCharacterField('role')}
-                placeholder="Воин, Маг, Вор..."
-              />
-              <InputWithAI
-                label="Характеристики"
-                id="char-stats"
-                value={formData.stats}
-                onChange={(value) => setFormData({...formData, stats: value})}
-                onGenerate={() => generateCharacterField('stats')}
-                placeholder="Сила: 18, Ловкость: 14..."
-              />
-              <InputWithAI
-                label="Характер"
-                id="char-personality"
-                value={formData.personality}
-                onChange={(value) => setFormData({...formData, personality: value})}
-                onGenerate={() => generateCharacterField('personality')}
-                placeholder="Суровый защитник древних тайн..."
-                multiline
-              />
-              <InputWithAI
-                label="Предыстория"
-                id="char-backstory"
-                value={formData.backstory}
-                onChange={(value) => setFormData({...formData, backstory: value})}
-                onGenerate={() => generateCharacterField('backstory')}
-                placeholder="Последний из ордена..."
-                multiline
-                className="min-h-[100px]"
-              />
+              <div className="space-y-2">
+                <Label htmlFor="char-role">Роль</Label>
+                <Input 
+                  id="char-role" 
+                  placeholder="Воин, Маг, Вор..." 
+                  value={formData.role}
+                  onChange={(e) => setFormData({...formData, role: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="char-stats">Характеристики</Label>
+                <Input 
+                  id="char-stats" 
+                  placeholder="Сила: 18, Ловкость: 14..." 
+                  value={formData.stats}
+                  onChange={(e) => setFormData({...formData, stats: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="char-personality">Характер</Label>
+                <Textarea 
+                  id="char-personality" 
+                  placeholder="Суровый защитник древних тайн..." 
+                  value={formData.personality}
+                  onChange={(e) => setFormData({...formData, personality: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="char-backstory">Предыстория</Label>
+                <Textarea 
+                  id="char-backstory" 
+                  placeholder="Последний из ордена..." 
+                  className="min-h-[100px]" 
+                  value={formData.backstory}
+                  onChange={(e) => setFormData({...formData, backstory: e.target.value})}
+                />
+              </div>
               
               <ImageGenerator
                 currentImage={formData.avatar}
@@ -317,18 +300,19 @@ export const CharactersTab = ({
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">{character.stats}</p>
-                <div className="pt-2 border-t border-border/50">
-                  <p className="text-sm font-medium mb-1">Характер:</p>
-                  <p className="text-sm text-muted-foreground">{character.personality}</p>
+            <CardContent>
+              {character.personality && (
+                <div className="mb-3">
+                  <p className="text-sm text-muted-foreground mb-1">Характер:</p>
+                  <p className="text-sm line-clamp-2">{character.personality}</p>
                 </div>
-                <div className="pt-2 border-t border-border/50">
-                  <p className="text-sm font-medium mb-1">История:</p>
-                  <p className="text-sm text-muted-foreground line-clamp-3">{character.backstory}</p>
+              )}
+              {character.stats && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Характеристики:</p>
+                  <p className="text-xs font-mono bg-secondary/50 p-2 rounded">{character.stats}</p>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         ))}
@@ -377,41 +361,51 @@ export const CharactersTab = ({
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
               />
             </div>
-            <InputWithAI
-              label="Роль"
-              id="edit-char-role"
-              value={formData.role}
-              onChange={(value) => setFormData({...formData, role: value})}
-              onGenerate={() => generateCharacterField('role')}
-              placeholder="Воин, Маг, Вор..."
+            <div className="space-y-2">
+              <Label htmlFor="edit-char-role">Роль</Label>
+              <Input 
+                id="edit-char-role" 
+                placeholder="Воин, Маг, Вор..." 
+                value={formData.role}
+                onChange={(e) => setFormData({...formData, role: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-char-stats">Характеристики</Label>
+              <Input 
+                id="edit-char-stats" 
+                placeholder="Сила: 18, Ловкость: 14..." 
+                value={formData.stats}
+                onChange={(e) => setFormData({...formData, stats: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-char-personality">Характер</Label>
+              <Textarea 
+                id="edit-char-personality" 
+                placeholder="Суровый защитник древних тайн..." 
+                value={formData.personality}
+                onChange={(e) => setFormData({...formData, personality: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-char-backstory">Предыстория</Label>
+              <Textarea 
+                id="edit-char-backstory" 
+                placeholder="Последний из ордена..." 
+                className="min-h-[100px]" 
+                value={formData.backstory}
+                onChange={(e) => setFormData({...formData, backstory: e.target.value})}
+              />
+            </div>
+            
+            <ImageGenerator
+              currentImage={formData.avatar}
+              onImageGenerated={(url) => setFormData({...formData, avatar: url})}
+              placeholder="Опиши внешность персонажа для генерации портрета..."
+              label="Портрет персонажа"
             />
-            <InputWithAI
-              label="Характеристики"
-              id="edit-char-stats"
-              value={formData.stats}
-              onChange={(value) => setFormData({...formData, stats: value})}
-              onGenerate={() => generateCharacterField('stats')}
-              placeholder="Сила: 18, Ловкость: 14..."
-            />
-            <InputWithAI
-              label="Характер"
-              id="edit-char-personality"
-              value={formData.personality}
-              onChange={(value) => setFormData({...formData, personality: value})}
-              onGenerate={() => generateCharacterField('personality')}
-              placeholder="Суровый защитник древних тайн..."
-              multiline
-            />
-            <InputWithAI
-              label="Предыстория"
-              id="edit-char-backstory"
-              value={formData.backstory}
-              onChange={(value) => setFormData({...formData, backstory: value})}
-              onGenerate={() => generateCharacterField('backstory')}
-              placeholder="Последний из ордена..."
-              multiline
-              className="min-h-[100px]"
-            />
+            
             <Button 
               className="w-full gap-2" 
               onClick={handleUpdate}

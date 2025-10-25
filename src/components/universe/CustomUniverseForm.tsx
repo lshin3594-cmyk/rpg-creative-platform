@@ -3,9 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
-import { InputWithAI } from '@/components/ui/input-with-ai';
 import { plotGenres } from '../plot/plotGenres';
-import { useAIGeneration } from '@/hooks/useAIGeneration';
 
 interface CustomUniverseFormProps {
   onSubmit: (data: any) => void;
@@ -23,8 +21,6 @@ export const CustomUniverseForm = ({
     tags: [] as string[]
   });
   
-  const { generate } = useAIGeneration();
-
   const handleSubmit = () => {
     onSubmit({
       name: formData.name,
@@ -45,50 +41,38 @@ export const CustomUniverseForm = ({
     }));
   };
 
-  const generateField = async (field: 'name' | 'description' | 'genre') => {
-    const prompts = {
-      name: 'Придумай оригинальное название для фэнтези/фантастической вселенной. Только название, без описаний.',
-      description: 'Создай краткое интригующее описание фэнтези/фантастической вселенной. 1-2 предложения.',
-      genre: `Предложи подходящий жанр для вселенной: ${formData.name || 'новая'}, ${formData.description || ''}. Только название жанра (1-2 слова).`
-    };
-
-    const result = await generate(prompts[field]);
-    if (result) {
-      setFormData(prev => ({ ...prev, [field]: result }));
-    }
-  };
-
   return (
     <div className="space-y-6 py-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <InputWithAI
-          label="Название вселенной"
-          id="universe-name"
-          value={formData.name}
-          onChange={(value) => setFormData({...formData, name: value})}
-          onGenerate={() => generateField('name')}
-          placeholder="Новый Эдем"
-          required
-        />
-        <InputWithAI
-          label="Краткое описание"
-          id="universe-description"
-          value={formData.description}
-          onChange={(value) => setFormData({...formData, description: value})}
-          onGenerate={() => generateField('description')}
-          placeholder="Мир после апокалипсиса..."
-          required
-        />
+        <div className="space-y-2">
+          <Label htmlFor="universe-name">Название вселенной *</Label>
+          <Input 
+            id="universe-name" 
+            placeholder="Новый Эдем" 
+            value={formData.name}
+            onChange={(e) => setFormData({...formData, name: e.target.value})}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="universe-description">Краткое описание *</Label>
+          <Input
+            id="universe-description" 
+            placeholder="Мир после апокалипсиса..." 
+            value={formData.description}
+            onChange={(e) => setFormData({...formData, description: e.target.value})}
+          />
+        </div>
       </div>
 
-      <InputWithAI
-        label="Жанр"
-        id="universe-genre"
-        value={formData.genre}
-        onChange={(value) => setFormData({...formData, genre: value})}
-        onGenerate={() => generateField('genre')}
-        placeholder="Например: фэнтези, sci-fi, киберпанк..."
-      />
+      <div className="space-y-2">
+        <Label htmlFor="universe-genre">Жанр</Label>
+        <Input
+          id="universe-genre" 
+          placeholder="Например: фэнтези, sci-fi, киберпанк..." 
+          value={formData.genre}
+          onChange={(e) => setFormData({...formData, genre: e.target.value})}
+        />
+      </div>
 
       <div className="space-y-2">
         <Label>Теги (по желанию)</Label>
