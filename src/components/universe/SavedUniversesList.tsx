@@ -98,15 +98,13 @@ export const SavedUniversesList = ({ onSelect, onEdit }: SavedUniversesListProps
                 <div className="text-xs text-muted-foreground pt-2 border-t">
                   Создана: {formatDate(universe.createdAt)}
                 </div>
-                {onSelect && (
-                  <Button
-                    className="w-full"
-                    onClick={() => onSelect(universe)}
-                  >
-                    <Icon name="CheckCircle2" size={16} className="mr-2" />
-                    Выбрать вселенную
-                  </Button>
-                )}
+                <Button
+                  className="w-full"
+                  onClick={() => onSelect && onSelect(universe)}
+                >
+                  <Icon name="CheckCircle2" size={16} className="mr-2" />
+                  Выбрать вселенную
+                </Button>
               </div>
             </CardContent>
           </Card>

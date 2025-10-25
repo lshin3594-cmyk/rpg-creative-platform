@@ -49,11 +49,23 @@ const CreateFanfic = () => {
     'https://cdn.poehali.dev/files/7b8ad11e-21c5-441e-99ca-9c54c2c89171.jpg',
   ];
 
+  const handleUniverseSelect = (universe: Universe) => {
+    const data: UniverseData = {
+      name: universe.name,
+      description: universe.description,
+      canonSource: '',
+      sourceType: 'custom',
+      genre: universe.genre,
+      tags: universe.tags,
+    };
+    handleUniverseCreate(data);
+  };
+
   const handleUniverseCreate = async (data: UniverseData) => {
     setIsCreatingUniverse(true);
     
     try {
-      const savedUniverse = universeStorage.save({
+      universeStorage.save({
         name: data.name,
         description: data.description,
         genre: data.genre,
@@ -160,10 +172,10 @@ const CreateFanfic = () => {
       
       toast({
         title: "Фанфик готов!",
-        description: "История сгенерирована и сохранена в библиотеке"
+        description: "История сгенерирована и сохранена"
       });
       
-      navigate('/library');
+      navigate(`/story/${result.story_id}`);
     } catch (error) {
       toast({
         title: "Ошибка генерации",
@@ -267,6 +279,7 @@ const CreateFanfic = () => {
                 <TabsContent value="saved">
                   <SavedUniversesList
                     key={refreshKey}
+                    onSelect={handleUniverseSelect}
                     onEdit={setEditingUniverse}
                   />
                 </TabsContent>

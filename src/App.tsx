@@ -8,6 +8,7 @@ import { Navigation } from "./components/Navigation";
 import Index from "./pages/Index";
 import CreateFanfic from "./pages/CreateFanfic";
 import Library from "./pages/Library";
+import StoryView from "./pages/StoryView";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/create-fanfic" element={<CreateFanfic />} />
           <Route path="/library" element={<Library />} />
+          <Route path="/story/:id" element={<StoryView />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
