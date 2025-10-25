@@ -7,6 +7,16 @@ import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 import { canonUniverses, UniverseFormData } from './universeTypes';
 
+const categories = [
+  { value: 'all', label: 'Все', icon: 'Globe' },
+  { value: 'fantasy', label: 'Фэнтези', icon: 'Sparkles', tags: ['фэнтези', 'магия', 'эльфы', 'драконы'] },
+  { value: 'scifi', label: 'Sci-Fi', icon: 'Rocket', tags: ['sci-fi', 'космос', 'фантастика'] },
+  { value: 'modern', label: 'Современное', icon: 'Building', tags: ['современность', 'городское фэнтези', 'детектив'] },
+  { value: 'eastern', label: 'Восточное', icon: 'Cloud', tags: ['уся', 'культивация', 'китайское фэнтези', 'восточная философия', 'аниме', 'donghua'] },
+  { value: 'superhero', label: 'Супергерои', icon: 'Zap', tags: ['супергерои', 'комиксы'] },
+  { value: 'dark', label: 'Тёмное', icon: 'Moon', tags: ['grimdark', 'тёмное фэнтези', 'мистика', 'демоны', 'хаос'] }
+];
+
 interface CanonUniverseFormProps {
   formData: UniverseFormData;
   setFormData: (data: UniverseFormData) => void;
@@ -23,23 +33,53 @@ export const CanonUniverseForm = ({
   isCreating
 }: CanonUniverseFormProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
   const filteredUniverses = canonUniverses.filter(canon => {
     const query = searchQuery.toLowerCase();
-    return (
+    const matchesSearch = !searchQuery || (
       canon.name.toLowerCase().includes(query) ||
       canon.description.toLowerCase().includes(query) ||
       canon.source.toLowerCase().includes(query) ||
       canon.tags.some(tag => tag.toLowerCase().includes(query))
     );
+
+    if (!matchesSearch) return false;
+
+    if (selectedCategory === 'all') return true;
+
+    const category = categories.find(c => c.value === selectedCategory);
+    if (!category || !category.tags) return true;
+
+    return canon.tags.some(tag => 
+      category.tags!.some(catTag => 
+        tag.toLowerCase().includes(catTag.toLowerCase())
+      )
+    );
   });
 
   return (
     <div className="space-y-4 py-4">
-      <div className="space-y-2">
+      <div className="space-y-3">
         <p className="text-sm text-muted-foreground">
           ИИ изучит каноническую вселенную и будет следовать её правилам
         </p>
+        
+        <div className="flex flex-wrap gap-2">
+          {categories.map(cat => (
+            <Button
+              key={cat.value}
+              variant={selectedCategory === cat.value ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSelectedCategory(cat.value)}
+              className="gap-2"
+            >
+              <Icon name={cat.icon as any} size={14} />
+              {cat.label}
+            </Button>
+          ))}
+        </div>
+
         <div className="relative">
           <Icon name="Search" size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -51,11 +91,29 @@ export const CanonUniverseForm = ({
         </div>
       </div>
       
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <span>Найдено: {filteredUniverses.length}</span>
+        {(searchQuery || selectedCategory !== 'all') && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSearchQuery('');
+              setSelectedCategory('all');
+            }}
+            className="h-auto py-1 px-2 gap-1"
+          >
+            <Icon name="X" size={14} />
+            Сбросить
+          </Button>
+        )}
+      </div>
+
       {filteredUniverses.length === 0 ? (
         <div className="text-center py-12 space-y-2">
           <Icon name="Search" size={48} className="mx-auto text-muted-foreground opacity-50" />
           <p className="text-muted-foreground">Ничего не найдено</p>
-          <p className="text-sm text-muted-foreground">Попробуйте другой запрос</p>
+          <p className="text-sm text-muted-foreground">Попробуйте другую категорию или запрос</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-2">
