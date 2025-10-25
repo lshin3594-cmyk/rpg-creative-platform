@@ -187,24 +187,6 @@ export const UserProfile = () => {
               Открыть
             </Button>
           </div>
-
-          <div className="flex items-center justify-between p-4 rounded-lg bg-black/20 border border-purple-500/20">
-            <div className="flex items-center gap-3">
-              <Icon name="Library" size={20} className="text-purple-300" />
-              <div>
-                <p className="font-medium text-purple-100">Библиотека</p>
-                <p className="text-sm text-purple-300/70">Все приключения</p>
-              </div>
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => navigate('/library')}
-              className="border-purple-500/40 hover:bg-purple-500/20 text-purple-200"
-            >
-              Открыть
-            </Button>
-          </div>
         </CardContent>
       </Card>
 
