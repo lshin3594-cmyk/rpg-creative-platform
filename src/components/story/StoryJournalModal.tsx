@@ -95,7 +95,7 @@ export const StoryJournalModal = ({
                             className={msg.type === 'user' ? 'text-primary' : 'text-muted-foreground'}
                           />
                           <span className="text-xs font-medium">
-                            {msg.type === 'user' ? 'Игрок' : 'Мастер ИИ'}
+                            {msg.type === 'user' ? 'Игрок' : 'ИИ'}
                           </span>
                           <span className="text-xs text-muted-foreground ml-auto">
                             {new Date(msg.timestamp).toLocaleTimeString('ru', {

@@ -63,6 +63,14 @@ const CreateGame = () => {
 
   return (
     <div className="min-h-screen p-4 py-12 relative">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-[15%] left-[10%] w-2 h-2 bg-purple-300 rounded-full animate-twinkle"></div>
+        <div className="absolute top-[30%] right-[15%] w-1.5 h-1.5 bg-pink-200 rounded-full animate-twinkle-slow" style={{ animationDelay: '0.5s' }}></div>
+        <div className="absolute top-[50%] left-[20%] w-1 h-1 bg-purple-400 rounded-full animate-twinkle" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute bottom-[35%] right-[25%] w-2 h-2 bg-pink-300 rounded-full animate-twinkle-slow" style={{ animationDelay: '1.5s' }}></div>
+        <div className="absolute bottom-[20%] left-[35%] w-1.5 h-1.5 bg-purple-200 rounded-full animate-twinkle" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-[70%] right-[40%] w-1 h-1 bg-pink-400 rounded-full animate-twinkle-slow" style={{ animationDelay: '2.5s' }}></div>
+      </div>
       <Button
         variant="ghost"
         onClick={() => navigate('/')}

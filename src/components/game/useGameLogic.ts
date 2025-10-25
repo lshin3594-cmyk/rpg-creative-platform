@@ -10,6 +10,8 @@ export const useGameLogic = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingTime, setProcessingTime] = useState(0);
   const [currentEpisode, setCurrentEpisode] = useState(1);
+  const [turnsInEpisode, setTurnsInEpisode] = useState(0);
+  const [imagesInEpisode, setImagesInEpisode] = useState(0);
   const [gameSettings, setGameSettings] = useState<GameSettings | null>(null);
   const [showJournal, setShowJournal] = useState(false);
   const [showCreateChar, setShowCreateChar] = useState(false);
@@ -61,8 +63,16 @@ export const useGameLogic = () => {
     return '';
   };
 
+  const shouldGenerateIllustration = (): boolean => {
+    if (!autoIllustrations) return false;
+    if (imagesInEpisode >= 4) return false;
+    
+    const imageInterval = Math.floor(5 / 4);
+    return turnsInEpisode % Math.max(imageInterval, 1) === 0 || turnsInEpisode === 0;
+  };
+
   const generateIllustration = async (aiText: string): Promise<string | undefined> => {
-    if (!autoIllustrations) return undefined;
+    if (!shouldGenerateIllustration()) return undefined;
 
     try {
       const sceneDescription = aiText.slice(0, 500);
@@ -77,6 +87,7 @@ export const useGameLogic = () => {
       if (!response.ok) return undefined;
       
       const data = await response.json();
+      setImagesInEpisode(prev => prev + 1);
       return data.url;
     } catch (error) {
       console.error('Illustration generation failed:', error);
@@ -140,9 +151,17 @@ export const useGameLogic = () => {
       };
 
       setMessages(prev => [...prev, aiMessage]);
-      setCurrentEpisode(data.episode || currentEpisode);
+      
+      const newTurns = turnsInEpisode + 1;
+      setTurnsInEpisode(newTurns);
+      
+      if (newTurns >= 5) {
+        setCurrentEpisode(prev => prev + 1);
+        setTurnsInEpisode(0);
+        setImagesInEpisode(0);
+      }
 
-      if (autoIllustrations) {
+      if (shouldGenerateIllustration()) {
         setGeneratingIllustration(true);
         generateIllustration(data.text).then(illustrationUrl => {
           if (illustrationUrl) {

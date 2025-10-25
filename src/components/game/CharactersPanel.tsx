@@ -32,7 +32,7 @@ export const CharactersPanel = ({
             <Icon name="Crown" size={24} className="text-primary" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-foreground">Мастер</h3>
+            <h3 className="text-sm font-bold text-foreground">ИИ</h3>
             <button className="text-xs text-primary hover:text-primary/80 transition-colors flex items-center gap-1">
               <Icon name="Settings" size={12} />
               Настройки
@@ -133,7 +133,7 @@ export const CharactersPanel = ({
               />
             </div>
             <p className="text-[10px] text-muted-foreground/60">
-              Картинки для каждого эпизода
+              3-4 картинки на эпизод
             </p>
           </div>
         </div>

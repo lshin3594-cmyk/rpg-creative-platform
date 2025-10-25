@@ -42,7 +42,7 @@ export const GameHeader = ({ gameSettings, currentEpisode, onBack }: GameHeaderP
                 
                 <div className="flex items-center gap-2">
                   <Icon name="Zap" size={20} className="text-primary" />
-                  <span className="text-lg font-bold text-foreground">Ход: {currentEpisode}</span>
+                  <span className="text-lg font-bold text-foreground">Эпизод: {currentEpisode}</span>
                 </div>
 
                 <button className="text-primary hover:text-primary/80 transition-colors">

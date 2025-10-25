@@ -125,7 +125,7 @@ def build_system_prompt(role: str, narrative_mode: str, setting: str, game_name:
     Строит системный промт для DeepSeek в зависимости от настроек
     """
     
-    base = f"Ты - мастер ролевых игр, создающий захватывающую интерактивную историю '{game_name}'.\n\n"
+    base = f"Ты - ИИ-рассказчик, создающий захватывающую интерактивную историю '{game_name}'.\n\n"
     
     if setting:
         base += f"СЕТТИНГ ИГРЫ:\n{setting}\n\n"
