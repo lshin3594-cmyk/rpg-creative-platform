@@ -22,9 +22,11 @@ export const ImageGenerator = ({
 }: ImageGeneratorProps) => {
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [enhancedPrompt, setEnhancedPrompt] = useState('');
+  const [isTranslating, setIsTranslating] = useState(false);
   const { toast } = useToast();
 
-  const handleGenerate = async () => {
+  const handleTranslate = async () => {
     if (!prompt.trim()) {
       toast({
         title: "Ошибка",
@@ -34,7 +36,7 @@ export const ImageGenerator = ({
       return;
     }
 
-    setIsGenerating(true);
+    setIsTranslating(true);
     try {
       const translateResponse = await fetch(funcUrls['translate-prompt'], {
         method: 'POST',
@@ -45,7 +47,35 @@ export const ImageGenerator = ({
       if (!translateResponse.ok) throw new Error('Ошибка перевода');
 
       const translateData = await translateResponse.json();
-      const enhancedPrompt = translateData.translated;
+      setEnhancedPrompt(translateData.translated);
+      
+      toast({
+        title: "Готово",
+        description: "Промпт улучшен и переведен",
+      });
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось перевести промпт",
+        variant: "destructive"
+      });
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  const handleGenerate = async () => {
+    if (!enhancedPrompt.trim()) {
+      toast({
+        title: "Ошибка",
+        description: "Сначала создайте улучшенный промпт",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
 
       const response = await fetch(funcUrls['generate-image'], {
         method: 'POST',
@@ -58,6 +88,7 @@ export const ImageGenerator = ({
       const data = await response.json();
       onImageGenerated(data.url);
       setPrompt('');
+      setEnhancedPrompt('');
       
       toast({
         title: "Успешно",
@@ -104,21 +135,47 @@ export const ImageGenerator = ({
       )}
 
       <div className="space-y-2">
+        <Label>Ваше описание</Label>
         <Textarea
           placeholder={placeholder}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           className="min-h-[80px]"
         />
-        <p className="text-xs text-muted-foreground flex items-center gap-1">
-          <Icon name="Languages" size={12} />
-          Автоперевод на английский для лучшего качества
-        </p>
+        <Button 
+          onClick={handleTranslate} 
+          disabled={isTranslating || !prompt.trim()}
+          className="w-full gap-2"
+          variant="secondary"
+          size="sm"
+        >
+          {isTranslating ? (
+            <>
+              <Icon name="Loader2" size={16} className="animate-spin" />
+              Перевод...
+            </>
+          ) : (
+            <>
+              <Icon name="Languages" size={16} />
+              Улучшить и перевести
+            </>
+          )}
+        </Button>
       </div>
+
+      {enhancedPrompt && (
+        <div className="space-y-2 p-3 border-2 border-primary/30 rounded-lg bg-primary/5">
+          <div className="flex items-center gap-2">
+            <Icon name="Sparkles" size={16} className="text-primary" />
+            <Label className="text-sm font-semibold">Улучшенный промпт для FLUX</Label>
+          </div>
+          <p className="text-sm text-foreground/80 leading-relaxed">{enhancedPrompt}</p>
+        </div>
+      )}
 
       <Button 
         onClick={handleGenerate} 
-        disabled={isGenerating || !prompt.trim()}
+        disabled={isGenerating || !enhancedPrompt.trim()}
         className="w-full gap-2"
         variant="outline"
       >
@@ -129,8 +186,8 @@ export const ImageGenerator = ({
           </>
         ) : (
           <>
-            <Icon name="Sparkles" size={20} />
-            Сгенерировать через FLUX
+            <Icon name="Wand2" size={20} />
+            Сгенерировать изображение
           </>
         )}
       </Button>
