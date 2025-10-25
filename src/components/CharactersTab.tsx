@@ -134,14 +134,14 @@ export const CharactersTab = ({
     };
 
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+          'Authorization': `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY}`
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
+          model: 'deepseek-chat',
           messages: [{ role: 'user', content: prompts[field] }],
           max_tokens: 150
         })
