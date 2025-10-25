@@ -44,7 +44,7 @@ const CreateGame = () => {
     if (!setting.trim()) {
       toast({
         title: 'Ошибка',
-        description: 'Опишите сеттинг приключения',
+        description: 'Опишите сеттинг игры',
         variant: 'destructive'
       });
       return;
@@ -100,7 +100,7 @@ const CreateGame = () => {
 
           <div className="relative p-6 rounded-xl bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-purple-900/40 border border-purple-500/40 backdrop-blur-md">
             <Label htmlFor="setting" className="text-purple-100 text-base mb-4 block">
-              Опишите сеттинг приключения
+              Опишите сеттинг игры
             </Label>
             <Textarea
               id="setting"
