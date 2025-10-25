@@ -21,16 +21,10 @@ export const CustomUniverseForm = ({
     tags: [] as string[]
   });
   
-  const handleSubmit = (e?: React.MouseEvent) => {
-    e?.preventDefault();
-    e?.stopPropagation();
-    
-    console.log('CustomUniverseForm handleSubmit called', formData);
-    alert('Кнопка нажата! Name: ' + formData.name);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     
     if (!formData.name || !formData.description) {
-      console.error('Validation failed: name or description missing');
-      alert('Заполни название и описание!');
       return;
     }
     
@@ -54,7 +48,7 @@ export const CustomUniverseForm = ({
   };
 
   return (
-    <div className="space-y-6 py-4">
+    <form onSubmit={handleSubmit} className="space-y-6 py-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="universe-name">Название вселенной *</Label>
@@ -105,12 +99,10 @@ export const CustomUniverseForm = ({
         </div>
       </div>
 
-      <button 
-        type="button"
-        onClick={handleSubmit}
+      <Button 
+        type="submit"
+        className="w-full gap-2"
         disabled={isCreating || !formData.name || !formData.description}
-        className="w-full gap-2 inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 disabled:opacity-50 disabled:pointer-events-none"
-        style={{ pointerEvents: 'auto', cursor: 'pointer', zIndex: 9999 }}
       >
         {isCreating ? (
           <Icon name="Loader2" size={20} className="animate-spin" />
@@ -118,7 +110,7 @@ export const CustomUniverseForm = ({
           <Icon name="Plus" size={20} />
         )}
         {isCreating ? 'Создание...' : 'Создать вселенную'}
-      </button>
-    </div>
+      </Button>
+    </form>
   );
 };
