@@ -6,7 +6,7 @@ interface EpisodesTimelineProps {
 
 export const EpisodesTimeline = ({ currentEpisode }: EpisodesTimelineProps) => {
   return (
-    <div className="w-20 border-l bg-muted/20 flex flex-col items-center py-4 space-y-3">
+    <div className="w-20 border-l border-primary/20 bg-black/40 backdrop-blur-sm flex flex-col items-center py-4 space-y-3 relative z-10">
       <div className="text-xs font-semibold text-muted-foreground rotate-0 writing-mode-vertical">
         ЭПИЗОДЫ
       </div>
@@ -15,10 +15,10 @@ export const EpisodesTimeline = ({ currentEpisode }: EpisodesTimelineProps) => {
           {Array.from({ length: currentEpisode }, (_, i) => i + 1).map((ep) => (
             <button
               key={ep}
-              className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+              className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all border-2 ${
                 ep === currentEpisode
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted hover:bg-muted/80 text-muted-foreground'
+                  ? 'bg-primary border-primary text-black shadow-lg shadow-primary/50'
+                  : 'bg-black/60 border-primary/30 hover:border-primary/60 text-muted-foreground hover:text-foreground'
               }`}
             >
               {ep}

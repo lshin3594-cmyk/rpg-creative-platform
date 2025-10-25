@@ -6,6 +6,7 @@ import { GameHeader } from '@/components/game/GameHeader';
 import { StoryMessages } from '@/components/game/StoryMessages';
 import { StoryInput } from '@/components/game/StoryInput';
 import { EpisodesTimeline } from '@/components/game/EpisodesTimeline';
+import { StarryBackground } from '@/components/game/StarryBackground';
 import { useGameLogic } from '@/components/game/useGameLogic';
 
 interface GameScreenProps {
@@ -48,18 +49,21 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
   }
 
   return (
-    <div className="h-screen w-screen flex overflow-hidden bg-background">
-      <CharactersPanel
-        characters={characters}
-        agentsEnabled={agentsEnabled}
-        autoIllustrations={autoIllustrations}
-        onAgentsToggle={setAgentsEnabled}
-        onIllustrationsToggle={setAutoIllustrations}
-        onCreateCharacter={() => setShowCreateChar(true)}
-        onOpenJournal={() => setShowJournal(true)}
-      />
+    <div className="h-screen w-screen flex overflow-hidden bg-background relative">
+      <StarryBackground />
+      
+      <div className="relative z-10 flex w-full">
+        <CharactersPanel
+          characters={characters}
+          agentsEnabled={agentsEnabled}
+          autoIllustrations={autoIllustrations}
+          onAgentsToggle={setAgentsEnabled}
+          onIllustrationsToggle={setAutoIllustrations}
+          onCreateCharacter={() => setShowCreateChar(true)}
+          onOpenJournal={() => setShowJournal(true)}
+        />
 
-      <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col">
         <GameHeader
           gameSettings={gameSettings}
           currentEpisode={currentEpisode}
@@ -84,6 +88,7 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
           isProcessing={isProcessing}
           messagesCount={messages.length}
         />
+        </div>
       </div>
 
       <EpisodesTimeline currentEpisode={currentEpisode} />

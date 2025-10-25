@@ -204,4 +204,35 @@
   .clip-hexagon {
     clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
   }
+
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: 0.2;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes float-star {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .star {
+    position: absolute;
+    background: radial-gradient(
+      circle,
+      rgba(255, 215, 0, 1) 0%,
+      rgba(255, 215, 0, 0) 70%
+    );
+    border-radius: 50%;
+    animation: twinkle ease-in-out infinite;
+  }
 }
