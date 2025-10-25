@@ -17,6 +17,20 @@ export interface World {
   description: string;
   image: string;
   genre: string;
+  laws?: string;
+  physics?: string;
+  magic?: string;
+  technology?: string;
+}
+
+export interface Plot {
+  id: string;
+  name: string;
+  description: string;
+  mainConflict: string;
+  keyEvents: string;
+  resolution: string;
+  plotType: string;
 }
 
 export interface Story {
@@ -34,13 +48,16 @@ export interface Story {
 export const useDataManagement = () => {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [worlds, setWorlds] = useState<World[]>([]);
+  const [plots, setPlots] = useState<Plot[]>([]);
   const [savedStories, setSavedStories] = useState<Story[]>([]);
   const [isLoadingCharacters, setIsLoadingCharacters] = useState(false);
   const [isLoadingWorlds, setIsLoadingWorlds] = useState(false);
+  const [isLoadingPlots, setIsLoadingPlots] = useState(false);
   const [isLoadingStories, setIsLoadingStories] = useState(false);
   const [profileStats, setProfileStats] = useState({
     charactersCreated: 0,
     worldsCreated: 0,
+    plotsCreated: 0,
     storiesGenerated: 0,
     totalWords: 0
   });
@@ -223,6 +240,82 @@ export const useDataManagement = () => {
     }
   };
 
+  const loadPlots = async () => {
+    setIsLoadingPlots(true);
+    try {
+      const response = await fetch('https://functions.poehali.dev/f3c359fd-06ee-4643-bf4c-c6d7a7155696?type=plots');
+      const data = await response.json();
+      setPlots(data.map((p: any) => ({
+        ...p,
+        id: String(p.id)
+      })));
+      setProfileStats(prev => ({ ...prev, plotsCreated: data.length }));
+    } catch (error) {
+      console.error('Error loading plots:', error);
+    } finally {
+      setIsLoadingPlots(false);
+    }
+  };
+
+  const createPlot = async (data: Omit<Plot, 'id'>) => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/f3c359fd-06ee-4643-bf4c-c6d7a7155696?type=plots', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (response.ok) {
+        await loadPlots();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error creating plot:', error);
+      return false;
+    }
+  };
+
+  const updatePlot = async (id: string, data: Partial<Plot>) => {
+    try {
+      const response = await fetch(`https://functions.poehali.dev/f3c359fd-06ee-4643-bf4c-c6d7a7155696?type=plots&id=${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (response.ok) {
+        await loadPlots();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error updating plot:', error);
+      return false;
+    }
+  };
+
+  const deletePlot = async (id: string) => {
+    try {
+      const response = await fetch(`https://functions.poehali.dev/f3c359fd-06ee-4643-bf4c-c6d7a7155696?type=plots&id=${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        await loadPlots();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error deleting plot:', error);
+      return false;
+    }
+  };
+
   const deleteStory = async (id: number) => {
     try {
       const response = await fetch(`https://functions.poehali.dev/aaff4c60-19e2-4410-a5a6-48560de30278?id=${id}`, {
@@ -267,20 +360,26 @@ export const useDataManagement = () => {
   return {
     characters,
     worlds,
+    plots,
     savedStories,
     isLoadingCharacters,
     isLoadingWorlds,
+    isLoadingPlots,
     isLoadingStories,
     profileStats,
     loadCharacters,
     loadWorlds,
+    loadPlots,
     loadStories,
     createCharacter,
     createWorld,
+    createPlot,
     updateCharacter,
     updateWorld,
+    updatePlot,
     deleteCharacter,
     deleteWorld,
+    deletePlot,
     deleteStory,
     toggleFavorite
   };

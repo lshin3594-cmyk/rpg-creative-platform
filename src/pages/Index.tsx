@@ -32,18 +32,23 @@ const Index = () => {
   const {
     characters,
     worlds,
+    plots,
     savedStories,
     isLoadingStories,
     profileStats,
     loadCharacters,
     loadWorlds,
+    loadPlots,
     loadStories,
     createCharacter,
     createWorld,
+    createPlot,
     updateCharacter,
     updateWorld,
+    updatePlot,
     deleteCharacter,
     deleteWorld,
+    deletePlot,
     deleteStory,
     toggleFavorite
   } = useDataManagement();
@@ -81,6 +86,7 @@ const Index = () => {
     const initData = async () => {
       const loadedChars = await loadCharacters();
       await loadWorlds();
+      await loadPlots();
       await loadStories();
 
       if (!playerCharacterId && loadedChars.length > 0) {
@@ -114,6 +120,11 @@ const Index = () => {
     if (success) playCreateSound();
   };
 
+  const handleCreatePlot = async (data: any) => {
+    const success = await createPlot(data);
+    if (success) playCreateSound();
+  };
+
   const handleDeleteCharacter = async (id: string) => {
     const success = await deleteCharacter(id);
     if (success) playDeleteSound();
@@ -124,6 +135,11 @@ const Index = () => {
     if (success) playDeleteSound();
   };
 
+  const handleDeletePlot = async (id: string) => {
+    const success = await deletePlot(id);
+    if (success) playDeleteSound();
+  };
+
   const handleUpdateCharacter = async (id: string, data: any) => {
     const success = await updateCharacter(id, data);
     if (success) playCreateSound();
@@ -131,6 +147,11 @@ const Index = () => {
 
   const handleUpdateWorld = async (id: string, data: any) => {
     const success = await updateWorld(id, data);
+    if (success) playCreateSound();
+  };
+
+  const handleUpdatePlot = async (id: string, data: any) => {
+    const success = await updatePlot(id, data);
     if (success) playCreateSound();
   };
 
@@ -230,6 +251,7 @@ const Index = () => {
         setActiveTab={setActiveTab}
         characters={characters}
         worlds={worlds}
+        plots={plots}
         stories={savedStories}
         favoriteStories={savedStories.filter(s => s.is_favorite)}
         isLoadingStories={isLoadingStories}
@@ -240,12 +262,15 @@ const Index = () => {
         onCardClick={playCardSound}
         onDeleteCharacter={handleDeleteCharacter}
         onDeleteWorld={handleDeleteWorld}
+        onDeletePlot={handleDeletePlot}
         onDeleteStory={handleDeleteStory}
         onToggleFavorite={handleToggleFavorite}
         onCreateCharacter={handleCreateCharacter}
         onCreateWorld={handleCreateWorld}
+        onCreatePlot={handleCreatePlot}
         onUpdateCharacter={handleUpdateCharacter}
         onUpdateWorld={handleUpdateWorld}
+        onUpdatePlot={handleUpdatePlot}
       />
     </PageLayout>
   );

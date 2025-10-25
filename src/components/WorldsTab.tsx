@@ -14,6 +14,10 @@ interface World {
   description: string;
   image: string;
   genre: string;
+  laws?: string;
+  physics?: string;
+  magic?: string;
+  technology?: string;
 }
 
 interface WorldsTabProps {
@@ -43,7 +47,11 @@ export const WorldsTab = ({
     name: '',
     description: '',
     genre: '',
-    image: ''
+    image: '',
+    laws: '',
+    physics: '',
+    magic: '',
+    technology: ''
   });
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
@@ -66,7 +74,11 @@ export const WorldsTab = ({
         name: '',
         description: '',
         genre: '',
-        image: ''
+        image: '',
+        laws: '',
+        physics: '',
+        magic: '',
+        technology: ''
       });
       setIsCreateDialogOpen(false);
     } finally {
@@ -81,7 +93,11 @@ export const WorldsTab = ({
       name: world.name,
       description: world.description,
       genre: world.genre,
-      image: world.image
+      image: world.image,
+      laws: world.laws || '',
+      physics: world.physics || '',
+      magic: world.magic || '',
+      technology: world.technology || ''
     });
     setIsEditDialogOpen(true);
   };
@@ -98,7 +114,11 @@ export const WorldsTab = ({
         name: '',
         description: '',
         genre: '',
-        image: ''
+        image: '',
+        laws: '',
+        physics: '',
+        magic: '',
+        technology: ''
       });
     } finally {
       setIsCreating(false);
@@ -151,6 +171,60 @@ export const WorldsTab = ({
                   value={formData.description}
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
                 />
+              </div>
+
+              <div className="border-t border-border pt-4 space-y-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Icon name="BookText" size={18} className="text-primary" />
+                  <h3 className="font-semibold text-lg">Законы мира</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Опишите правила и ограничения, которые действуют в этом мире
+                </p>
+
+                <div className="space-y-2">
+                  <Label htmlFor="world-laws">Общие законы</Label>
+                  <Textarea 
+                    id="world-laws" 
+                    placeholder="Например: Время течет иначе, запрещены определенные заклинания..." 
+                    className="min-h-[80px]"
+                    value={formData.laws}
+                    onChange={(e) => setFormData({...formData, laws: e.target.value})}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="world-physics">Физика и природа</Label>
+                  <Textarea 
+                    id="world-physics" 
+                    placeholder="Гравитация, климат, география, фауна и флора..." 
+                    className="min-h-[80px]"
+                    value={formData.physics}
+                    onChange={(e) => setFormData({...formData, physics: e.target.value})}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="world-magic">Магия и сверхъестественное</Label>
+                  <Textarea 
+                    id="world-magic" 
+                    placeholder="Система магии, ее источник, ограничения, мистические существа..." 
+                    className="min-h-[80px]"
+                    value={formData.magic}
+                    onChange={(e) => setFormData({...formData, magic: e.target.value})}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="world-technology">Технологии и цивилизация</Label>
+                  <Textarea 
+                    id="world-technology" 
+                    placeholder="Уровень развития, доступные технологии, общественный строй..." 
+                    className="min-h-[80px]"
+                    value={formData.technology}
+                    onChange={(e) => setFormData({...formData, technology: e.target.value})}
+                  />
+                </div>
               </div>
               <Button 
                 className="w-full gap-2" 
@@ -273,6 +347,57 @@ export const WorldsTab = ({
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
               />
+            </div>
+
+            <div className="border-t border-border pt-4 space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Icon name="BookText" size={18} className="text-primary" />
+                <h3 className="font-semibold text-lg">Законы мира</h3>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-world-laws">Общие законы</Label>
+                <Textarea 
+                  id="edit-world-laws" 
+                  placeholder="Например: Время течет иначе, запрещены определенные заклинания..." 
+                  className="min-h-[80px]"
+                  value={formData.laws}
+                  onChange={(e) => setFormData({...formData, laws: e.target.value})}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-world-physics">Физика и природа</Label>
+                <Textarea 
+                  id="edit-world-physics" 
+                  placeholder="Гравитация, климат, география, фауна и флора..." 
+                  className="min-h-[80px]"
+                  value={formData.physics}
+                  onChange={(e) => setFormData({...formData, physics: e.target.value})}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-world-magic">Магия и сверхъестественное</Label>
+                <Textarea 
+                  id="edit-world-magic" 
+                  placeholder="Система магии, ее источник, ограничения, мистические существа..." 
+                  className="min-h-[80px]"
+                  value={formData.magic}
+                  onChange={(e) => setFormData({...formData, magic: e.target.value})}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-world-technology">Технологии и цивилизация</Label>
+                <Textarea 
+                  id="edit-world-technology" 
+                  placeholder="Уровень развития, доступные технологии, общественный строй..." 
+                  className="min-h-[80px]"
+                  value={formData.technology}
+                  onChange={(e) => setFormData({...formData, technology: e.target.value})}
+                />
+              </div>
             </div>
             <Button 
               className="w-full gap-2" 

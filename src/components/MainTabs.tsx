@@ -2,15 +2,27 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { CharactersTab } from '@/components/CharactersTab';
 import { WorldsTab } from '@/components/WorldsTab';
+import { PlotTab } from '@/components/PlotTab';
 import { StoriesTab } from '@/components/StoriesTab';
 import { ProfileTab } from '@/components/ProfileTab';
 import type { Character, World, Story } from '@/hooks/useDataManagement';
+
+interface Plot {
+  id: string;
+  name: string;
+  description: string;
+  mainConflict: string;
+  keyEvents: string;
+  resolution: string;
+  plotType: string;
+}
 
 interface MainTabsProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   characters: Character[];
   worlds: World[];
+  plots: Plot[];
   stories: Story[];
   favoriteStories: Story[];
   isLoadingStories: boolean;
@@ -30,8 +42,11 @@ interface MainTabsProps {
   onToggleFavorite: (id: number) => void;
   onCreateCharacter: (data: Omit<Character, 'id'>) => void;
   onCreateWorld: (data: Omit<World, 'id'>) => void;
+  onCreatePlot: (data: Omit<Plot, 'id'>) => void;
   onUpdateCharacter?: (id: string, data: Partial<Character>) => void;
   onUpdateWorld?: (id: string, data: Partial<World>) => void;
+  onUpdatePlot?: (id: string, data: Partial<Plot>) => void;
+  onDeletePlot: (id: string) => void;
 }
 
 export const MainTabs = ({
@@ -39,6 +54,7 @@ export const MainTabs = ({
   setActiveTab,
   characters,
   worlds,
+  plots,
   stories,
   favoriteStories,
   isLoadingStories,
@@ -49,27 +65,26 @@ export const MainTabs = ({
   onCardClick,
   onDeleteCharacter,
   onDeleteWorld,
+  onDeletePlot,
   onDeleteStory,
   onToggleFavorite,
   onCreateCharacter,
   onCreateWorld,
+  onCreatePlot,
   onUpdateCharacter,
-  onUpdateWorld
+  onUpdateWorld,
+  onUpdatePlot
 }: MainTabsProps) => {
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-5 mb-8">
+      <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 mb-8">
         <TabsTrigger value="characters" className="gap-2 tab-trigger-active transition-all">
           <Icon name="Users" size={18} />
           Персонажи
         </TabsTrigger>
-        <TabsTrigger value="worlds" className="gap-2 tab-trigger-active transition-all">
-          <Icon name="Globe" size={18} />
-          Миры
-        </TabsTrigger>
-        <TabsTrigger value="stories" className="gap-2 tab-trigger-active transition-all">
-          <Icon name="BookOpen" size={18} />
-          Сюжеты
+        <TabsTrigger value="world-story" className="gap-2 tab-trigger-active transition-all">
+          <Icon name="Map" size={18} />
+          Мир & Сюжет
         </TabsTrigger>
         <TabsTrigger value="favorites" className="gap-2 tab-trigger-active transition-all">
           <Icon name="Star" size={18} />
@@ -93,27 +108,39 @@ export const MainTabs = ({
         />
       </TabsContent>
 
-      <TabsContent value="worlds" className="tab-content-enter">
-        <WorldsTab 
-          worlds={worlds}
-          isCreateDialogOpen={isCreateDialogOpen}
-          setIsCreateDialogOpen={setIsCreateDialogOpen}
-          onCardClick={onCardClick}
-          onDelete={onDeleteWorld}
-          onCreate={onCreateWorld}
-          onUpdate={onUpdateWorld}
-        />
-      </TabsContent>
+      <TabsContent value="world-story" className="tab-content-enter">
+        <div className="space-y-8">
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Icon name="Globe" size={24} className="text-primary" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">Миры</h2>
+                <p className="text-sm text-muted-foreground">Создайте вселенную со своими законами и правилами</p>
+              </div>
+            </div>
+            <WorldsTab 
+              worlds={worlds}
+              isCreateDialogOpen={false}
+              setIsCreateDialogOpen={() => {}}
+              onCardClick={onCardClick}
+              onDelete={onDeleteWorld}
+              onCreate={onCreateWorld}
+              onUpdate={onUpdateWorld}
+            />
+          </div>
 
-      <TabsContent value="stories" className="tab-content-enter">
-        <StoriesTab
-          stories={stories}
-          isLoading={isLoadingStories}
-          onCreateNew={onOpenStoryDialog}
-          onCardClick={onCardClick}
-          onDelete={onDeleteStory}
-          onToggleFavorite={onToggleFavorite}
-        />
+          <div className="border-t border-border pt-8">
+            <PlotTab
+              plots={plots}
+              onCardClick={onCardClick}
+              onDelete={onDeletePlot}
+              onCreate={onCreatePlot}
+              onUpdate={onUpdatePlot}
+            />
+          </div>
+        </div>
       </TabsContent>
 
       <TabsContent value="favorites" className="tab-content-enter">
