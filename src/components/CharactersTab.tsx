@@ -283,9 +283,13 @@ export const CharactersTab = ({
             </div>
             <CardHeader className="text-center pb-2">
               <div className="flex justify-center mb-4">
-                <Avatar className="w-32 h-32 border-4 border-primary/30 shadow-lg shadow-primary/20">
-                  <AvatarImage src={character.avatar} alt={character.name} />
-                  <AvatarFallback>{character.name[0]}</AvatarFallback>
+                <Avatar className="w-32 h-32 border-4 border-purple-500/40 shadow-lg shadow-purple-500/30 transition-all duration-300 group-hover:border-purple-400 group-hover:shadow-purple-400/50 group-hover:shadow-2xl">
+                  <AvatarImage 
+                    src={character.avatar} 
+                    alt={character.name}
+                    className="opacity-60 blur-[2px] grayscale-[30%] group-hover:opacity-100 group-hover:blur-0 group-hover:grayscale-0 transition-all duration-500"
+                  />
+                  <AvatarFallback className="bg-gradient-to-br from-purple-600 to-pink-600 text-white text-3xl">{character.name[0]}</AvatarFallback>
                 </Avatar>
               </div>
               <CardTitle className="text-2xl font-serif">{character.name}</CardTitle>
