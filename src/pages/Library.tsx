@@ -129,15 +129,6 @@ const Library = () => {
         На главную
       </Button>
 
-      <Button
-        variant="ghost"
-        onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
-        className="absolute top-4 right-4 gap-2 text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 z-10"
-      >
-        <Icon name={showOnlyFavorites ? "Star" : "Star"} size={18} className={showOnlyFavorites ? "fill-yellow-400 text-yellow-400" : ""} />
-        {showOnlyFavorites ? 'Все игры' : 'Избранное'}
-      </Button>
-
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="text-center space-y-3">
           <h1 className="text-4xl font-bold tracking-tight text-purple-100 uppercase flex items-center justify-center gap-3">
