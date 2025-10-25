@@ -14,8 +14,8 @@ export const Navigation = () => {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-2 font-bold text-xl">
-            <Icon name="Wand2" size={24} className="text-primary" />
-            <span>Генератор историй</span>
+            <Icon name="Moon" size={24} className="text-primary" />
+            <span>Midnight Chronicles</span>
           </Link>
 
           <div className="flex items-center gap-2">
