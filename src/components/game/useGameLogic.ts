@@ -101,6 +101,9 @@ export const useGameLogic = () => {
     setIsProcessing(true);
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 90000);
+      
       const response = await fetch(AI_STORY_URL, {
         method: 'POST',
         headers: {
@@ -110,8 +113,11 @@ export const useGameLogic = () => {
           action: userAction + agentPrompt,
           settings: gameSettings,
           history: messages.map(m => ({ type: m.type, content: m.content }))
-        })
+        }),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) throw new Error('AI request failed');
 
@@ -150,12 +156,21 @@ export const useGameLogic = () => {
         });
       }
     } catch (error) {
-      console.error('Error:', error);
-      toast({
-        title: 'Ошибка ИИ',
-        description: 'Не удалось получить ответ. Попробуйте ещё раз.',
-        variant: 'destructive'
-      });
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.error('Request timeout');
+        toast({
+          title: 'Время ожидания истекло',
+          description: 'ИИ слишком долго думает. Попробуйте упростить запрос или повторить позже.',
+          variant: 'destructive'
+        });
+      } else {
+        console.error('Error:', error);
+        toast({
+          title: 'Ошибка ИИ',
+          description: 'Не удалось получить ответ. Попробуйте ещё раз.',
+          variant: 'destructive'
+        });
+      }
     } finally {
       setIsProcessing(false);
     }
