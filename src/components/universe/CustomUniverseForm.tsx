@@ -105,11 +105,12 @@ export const CustomUniverseForm = ({
         </div>
       </div>
 
-      <Button 
+      <button 
         type="button"
-        className="w-full gap-2" 
         onClick={handleSubmit}
         disabled={isCreating || !formData.name || !formData.description}
+        className="w-full gap-2 inline-flex items-center justify-center rounded-md text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 disabled:opacity-50 disabled:pointer-events-none"
+        style={{ pointerEvents: 'auto', cursor: 'pointer', zIndex: 9999 }}
       >
         {isCreating ? (
           <Icon name="Loader2" size={20} className="animate-spin" />
@@ -117,7 +118,7 @@ export const CustomUniverseForm = ({
           <Icon name="Plus" size={20} />
         )}
         {isCreating ? 'Создание...' : 'Создать вселенную'}
-      </Button>
+      </button>
     </div>
   );
 };
