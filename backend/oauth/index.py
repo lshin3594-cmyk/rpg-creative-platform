@@ -86,10 +86,22 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'body': json.dumps({'error': 'Missing VK credentials'})
                     }
                 
-                token_url = f'https://id.vk.com/oauth2/auth?client_id={vk_app_id}&client_secret={vk_app_secret}&redirect_uri={redirect_uri}&code={code}&grant_type=authorization_code'
+                token_url = f'https://id.vk.com/oauth2/auth'
+                token_params = {
+                    'grant_type': 'authorization_code',
+                    'code': code,
+                    'redirect_uri': redirect_uri,
+                    'client_id': vk_app_id,
+                    'client_secret': vk_app_secret
+                }
+                token_request = urllib.request.Request(
+                    token_url,
+                    data=urlencode(token_params).encode(),
+                    headers={'Content-Type': 'application/x-www-form-urlencoded'}
+                )
                 
                 try:
-                    with urllib.request.urlopen(token_url) as response:
+                    with urllib.request.urlopen(token_request) as response:
                         token_data = json.loads(response.read())
                 except Exception as e:
                     return {
