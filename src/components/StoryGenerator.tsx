@@ -49,6 +49,10 @@ interface StoryGeneratorProps {
   setPlayerInstructions?: (value: string) => void;
   autoGenerateNPCs?: boolean;
   setAutoGenerateNPCs?: (value: boolean) => void;
+  npcCount?: number;
+  setNpcCount?: (value: number) => void;
+  npcTypes?: string[];
+  setNpcTypes?: (value: string[]) => void;
 }
 
 export const StoryGenerator = ({
@@ -72,9 +76,33 @@ export const StoryGenerator = ({
   playerInstructions = '',
   setPlayerInstructions,
   autoGenerateNPCs = true,
-  setAutoGenerateNPCs
+  setAutoGenerateNPCs,
+  npcCount = 2,
+  setNpcCount,
+  npcTypes = [],
+  setNpcTypes
 }: StoryGeneratorProps) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  
+  const availableNpcTypes = [
+    { value: 'ally', label: 'Союзник', icon: 'Users', description: 'Помогает главному герою' },
+    { value: 'rival', label: 'Соперник', icon: 'Swords', description: 'Конкурирует за цели' },
+    { value: 'mentor', label: 'Наставник', icon: 'GraduationCap', description: 'Обучает и направляет' },
+    { value: 'love_interest', label: 'Любовный интерес', icon: 'Heart', description: 'Романтический персонаж' },
+    { value: 'antagonist', label: 'Антагонист', icon: 'Skull', description: 'Противостоит герою' },
+    { value: 'comic_relief', label: 'Комический', icon: 'Laugh', description: 'Разряжает обстановку' },
+    { value: 'mysterious', label: 'Загадочный', icon: 'Eye', description: 'Скрывает тайны' },
+    { value: 'merchant', label: 'Торговец', icon: 'ShoppingBag', description: 'Продает товары/услуги' },
+  ];
+  
+  const toggleNpcType = (type: string) => {
+    if (!setNpcTypes) return;
+    if (npcTypes.includes(type)) {
+      setNpcTypes(npcTypes.filter(t => t !== type));
+    } else {
+      setNpcTypes([...npcTypes, type]);
+    }
+  };
   return (
     <div className="flex justify-center mb-8">
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -207,6 +235,63 @@ export const StoryGenerator = ({
                         onCheckedChange={setAutoGenerateNPCs}
                       />
                     </div>
+                    {autoGenerateNPCs && (
+                      <div className="space-y-4 mt-4 p-4 bg-muted/30 rounded-lg border border-border">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="npc-count">Количество NPC</Label>
+                            <span className="text-sm text-muted-foreground font-mono">{npcCount}</span>
+                          </div>
+                          <Slider
+                            id="npc-count"
+                            min={0}
+                            max={5}
+                            step={1}
+                            value={[npcCount]}
+                            onValueChange={(value) => setNpcCount?.(value[0])}
+                            className="w-full"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Сколько второстепенных персонажей добавить в историю. 0 — только ваши персонажи.
+                          </p>
+                        </div>
+
+                        {npcCount > 0 && (
+                          <div className="space-y-2">
+                            <Label>Типы персонажей (опционально)</Label>
+                            <p className="text-xs text-muted-foreground mb-3">
+                              Выберите желаемые архетипы. Если ничего не выбрано — AI решит сам.
+                            </p>
+                            <div className="grid grid-cols-2 gap-2">
+                              {availableNpcTypes.map((type) => (
+                                <button
+                                  key={type.value}
+                                  type="button"
+                                  onClick={() => toggleNpcType(type.value)}
+                                  className={`p-3 rounded-lg border-2 transition-all text-left hover:scale-105 ${
+                                    npcTypes.includes(type.value)
+                                      ? 'border-primary bg-primary/10'
+                                      : 'border-border hover:border-primary/50'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <Icon name={type.icon as any} size={16} className="flex-shrink-0" />
+                                    <span className="text-sm font-medium">{type.label}</span>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground">{type.description}</p>
+                                </button>
+                              ))}
+                            </div>
+                            {npcTypes.length > 0 && (
+                              <p className="text-xs text-primary mt-2 flex items-center gap-1">
+                                <Icon name="Check" size={12} />
+                                Выбрано: {npcTypes.length} тип(ов)
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                     {!autoGenerateNPCs && (
                       <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
                         <p className="text-xs text-amber-800 dark:text-amber-200 flex items-start gap-2">
