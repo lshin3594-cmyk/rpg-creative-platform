@@ -139,9 +139,9 @@ export const StoryGenerator = ({
     <div className="flex justify-center mb-8">
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
         <DialogTrigger asChild>
-          <Button size="lg" className="gap-3 text-lg py-6 px-8">
-            <Icon name="Sparkles" size={24} />
-            Создать историю с ИИ
+          <Button size="lg" className="gap-3 text-lg py-7 px-10 bg-primary hover:bg-primary/90 shadow-2xl hover:scale-105 transition-all">
+            <Icon name="Sparkles" size={28} className="animate-pulse" />
+            Начать приключение
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
