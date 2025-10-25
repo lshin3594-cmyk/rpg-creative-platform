@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { Navigation } from "./components/Navigation";
+import { StarryBackground } from "./components/game/StarryBackground";
 import Index from "./pages/Index";
 import CreateGame from "./pages/CreateGame";
 import CreateFanfic from "./pages/CreateFanfic";
@@ -22,6 +23,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
+        <StarryBackground />
         <Toaster />
         <Sonner />
         <BrowserRouter>
