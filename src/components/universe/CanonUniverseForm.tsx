@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -9,6 +9,7 @@ import { canonUniverses, UniverseFormData } from './universeTypes';
 
 const categories = [
   { value: 'all', label: 'Все', icon: 'Globe' },
+  { value: 'favorites', label: 'Избранное', icon: 'Star' },
   { value: 'fantasy', label: 'Фэнтези', icon: 'Sparkles', tags: ['фэнтези', 'магия', 'эльфы', 'драконы'] },
   { value: 'scifi', label: 'Sci-Fi', icon: 'Rocket', tags: ['sci-fi', 'космос', 'фантастика'] },
   { value: 'modern', label: 'Современное', icon: 'Building', tags: ['современность', 'городское фэнтези', 'детектив'] },
@@ -16,6 +17,8 @@ const categories = [
   { value: 'superhero', label: 'Супергерои', icon: 'Zap', tags: ['супергерои', 'комиксы'] },
   { value: 'dark', label: 'Тёмное', icon: 'Moon', tags: ['grimdark', 'тёмное фэнтези', 'мистика', 'демоны', 'хаос'] }
 ];
+
+const FAVORITES_KEY = 'canon-universes-favorites';
 
 interface CanonUniverseFormProps {
   formData: UniverseFormData;
@@ -34,6 +37,28 @@ export const CanonUniverseForm = ({
 }: CanonUniverseFormProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [favorites, setFavorites] = useState<string[]>([]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(FAVORITES_KEY);
+    if (saved) {
+      try {
+        setFavorites(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to load favorites:', e);
+      }
+    }
+  }, []);
+
+  const toggleFavorite = (e: React.MouseEvent, universeName: string) => {
+    e.stopPropagation();
+    const newFavorites = favorites.includes(universeName)
+      ? favorites.filter(f => f !== universeName)
+      : [...favorites, universeName];
+    
+    setFavorites(newFavorites);
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(newFavorites));
+  };
 
   const filteredUniverses = canonUniverses.filter(canon => {
     const query = searchQuery.toLowerCase();
@@ -47,6 +72,7 @@ export const CanonUniverseForm = ({
     if (!matchesSearch) return false;
 
     if (selectedCategory === 'all') return true;
+    if (selectedCategory === 'favorites') return favorites.includes(canon.name);
 
     const category = categories.find(c => c.value === selectedCategory);
     if (!category || !category.tags) return true;
@@ -66,18 +92,26 @@ export const CanonUniverseForm = ({
         </p>
         
         <div className="flex flex-wrap gap-2">
-          {categories.map(cat => (
-            <Button
-              key={cat.value}
-              variant={selectedCategory === cat.value ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedCategory(cat.value)}
-              className="gap-2"
-            >
-              <Icon name={cat.icon as any} size={14} />
-              {cat.label}
-            </Button>
-          ))}
+          {categories.map(cat => {
+            const count = cat.value === 'favorites' ? favorites.length : undefined;
+            return (
+              <Button
+                key={cat.value}
+                variant={selectedCategory === cat.value ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedCategory(cat.value)}
+                className="gap-2"
+              >
+                <Icon name={cat.icon as any} size={14} />
+                {cat.label}
+                {count !== undefined && count > 0 && (
+                  <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-primary text-primary-foreground">
+                    {count}
+                  </span>
+                )}
+              </Button>
+            );
+          })}
         </div>
 
         <div className="relative">
@@ -117,40 +151,55 @@ export const CanonUniverseForm = ({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-2">
-          {filteredUniverses.map((canon, idx) => (
-          <Card 
-            key={idx}
-            className="cursor-pointer hover:border-primary/50 transition-colors"
-            onClick={() => handleCanonSelect(canon)}
-          >
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Icon name={canon.icon as any} size={20} />
-                {canon.name}
-              </CardTitle>
-              <CardDescription className="text-xs">
-                {canon.description}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p className="text-xs text-muted-foreground">
-                Источник: {canon.source}
-              </p>
-              <div className="flex flex-wrap gap-1">
-                {canon.tags.slice(0, 3).map((tag, i) => (
-                  <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                    {tag}
-                  </span>
-                ))}
-                {canon.tags.length > 3 && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                    +{canon.tags.length - 3}
-                  </span>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+          {filteredUniverses.map((canon, idx) => {
+            const isFavorite = favorites.includes(canon.name);
+            return (
+              <Card 
+                key={idx}
+                className="cursor-pointer hover:border-primary/50 transition-colors relative"
+                onClick={() => handleCanonSelect(canon)}
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => toggleFavorite(e, canon.name)}
+                  className="absolute top-2 right-2 h-8 w-8 p-0 z-10"
+                >
+                  <Icon 
+                    name="Star" 
+                    size={16} 
+                    className={isFavorite ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'} 
+                  />
+                </Button>
+                <CardHeader className="pb-3 pr-12">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Icon name={canon.icon as any} size={20} />
+                    {canon.name}
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    {canon.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    Источник: {canon.source}
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {canon.tags.slice(0, 3).map((tag, i) => (
+                      <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                        {tag}
+                      </span>
+                    ))}
+                    {canon.tags.length > 3 && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                        +{canon.tags.length - 3}
+                      </span>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
       
