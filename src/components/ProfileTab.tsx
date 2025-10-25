@@ -7,6 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ActionsSettings } from './settings/ActionsSettings';
 
 interface ProfileStats {
   charactersCreated: number;
@@ -15,12 +17,21 @@ interface ProfileStats {
   totalWords: number;
 }
 
+interface Action {
+  id: string;
+  icon: string;
+  text: string;
+  description: string;
+}
+
 interface ProfileTabProps {
   stats: ProfileStats;
   onPlaySound?: () => void;
+  actions?: Action[];
+  onActionsChange?: (actions: Action[]) => void;
 }
 
-export const ProfileTab = ({ stats, onPlaySound }: ProfileTabProps) => {
+export const ProfileTab = ({ stats, onPlaySound, actions = [], onActionsChange }: ProfileTabProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
     name: 'Мастер Историй',
@@ -28,13 +39,36 @@ export const ProfileTab = ({ stats, onPlaySound }: ProfileTabProps) => {
     avatar: 'https://cdn.poehali.dev/files/11a64f46-796a-4ce6-9051-28d80e0c7bdd.jpg'
   });
 
+  const defaultActions: Action[] = [
+    { id: '1', icon: 'Swords', text: 'Атаковать', description: 'Я атакую' },
+    { id: '2', icon: 'Shield', text: 'Защититься', description: 'Я принимаю оборонительную позицию' },
+    { id: '3', icon: 'MessageCircle', text: 'Поговорить', description: 'Я начинаю диалог' },
+    { id: '4', icon: 'Eye', text: 'Осмотреться', description: 'Я внимательно осматриваюсь' },
+    { id: '5', icon: 'Search', text: 'Исследовать', description: 'Я исследую окружение' },
+    { id: '6', icon: 'Footprints', text: 'Отступить', description: 'Я осторожно отступаю' },
+    { id: '7', icon: 'EyeOff', text: 'Спрятаться', description: 'Я прячусь' },
+    { id: '8', icon: 'Zap', text: 'Бежать', description: 'Я бегу' },
+    { id: '9', icon: 'Heart', text: 'Помочь', description: 'Я предлагаю помощь' },
+    { id: '10', icon: 'Brain', text: 'Подумать', description: 'Я обдумываю ситуацию' },
+    { id: '11', icon: 'Package', text: 'Использовать предмет', description: 'Я использую предмет' },
+    { id: '12', icon: 'Wand2', text: 'Сотворить заклинание', description: 'Я творю заклинание' }
+  ];
+
+  const currentActions = actions.length > 0 ? actions : defaultActions;
+
   const handleSave = () => {
     setIsEditing(false);
     onPlaySound?.();
   };
 
   return (
-    <div className="animate-fade-in max-w-4xl mx-auto">
+    <Tabs defaultValue="profile" className="animate-fade-in max-w-6xl mx-auto">
+      <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+        <TabsTrigger value="profile">Профиль</TabsTrigger>
+        <TabsTrigger value="settings">Настройки</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="profile">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card className="border-primary/20 backdrop-blur-sm bg-card/80">
           <CardHeader className="pb-3">
@@ -213,6 +247,16 @@ export const ProfileTab = ({ stats, onPlaySound }: ProfileTabProps) => {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </TabsContent>
+
+      <TabsContent value="settings">
+        {onActionsChange && (
+          <ActionsSettings
+            actions={currentActions}
+            onChange={onActionsChange}
+          />
+        )}
+      </TabsContent>
+    </Tabs>
   );
 };

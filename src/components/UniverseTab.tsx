@@ -7,8 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { plotGenres } from './plot/plotGenres';
 
 interface Universe {
   id: string;
@@ -21,6 +21,10 @@ interface Universe {
   timeline: string;
   canonSource: string;
   isCustom: boolean;
+  mainConflict?: string;
+  keyEvents?: string;
+  resolution?: string;
+  genres?: string[];
   learnedAt?: Date;
 }
 
@@ -45,6 +49,7 @@ export const UniverseTab = ({
   const [isCreating, setIsCreating] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isLearning, setIsLearning] = useState<string | null>(null);
+  const [isGeneratingPlot, setIsGeneratingPlot] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -54,8 +59,70 @@ export const UniverseTab = ({
     locations: '',
     timeline: '',
     canonSource: '',
-    isCustom: true
+    isCustom: true,
+    mainConflict: '',
+    keyEvents: '',
+    resolution: '',
+    genres: [] as string[]
   });
+
+  const toggleGenre = (genre: string) => {
+    setFormData(prev => ({
+      ...prev,
+      genres: prev.genres.includes(genre)
+        ? prev.genres.filter(g => g !== genre)
+        : [...prev.genres, genre]
+    }));
+  };
+
+  const handleGeneratePlot = async () => {
+    if (!formData.name) return;
+    
+    setIsGeneratingPlot(true);
+    try {
+      const genresText = formData.genres.length > 0 
+        ? formData.genres.map(g => plotGenres.find(pg => pg.value === g)?.label).join(', ')
+        : 'универсальный';
+      
+      const prompt = `Создай сюжет для вселенной "${formData.name}".
+Жанры: ${genresText}
+Описание мира: ${formData.description}
+${formData.lore ? `История: ${formData.lore}` : ''}
+
+Верни JSON:
+{
+  "mainConflict": "основной конфликт 1-2 предложения",
+  "keyEvents": "ключевые события через новую строку",
+  "resolution": "развязка 1-2 предложения"
+}`;
+
+      const response = await fetch('https://functions.poehali.dev/25ab42fa-62e6-42e0-9d90-8e0a40bd65a1', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+
+      const data = await response.json();
+      if (data.content) {
+        try {
+          const jsonMatch = data.content.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const plotData = JSON.parse(jsonMatch[0]);
+            setFormData(prev => ({
+              ...prev,
+              mainConflict: plotData.mainConflict || '',
+              keyEvents: plotData.keyEvents || '',
+              resolution: plotData.resolution || ''
+            }));
+          }
+        } catch (e) {
+          console.error('Failed to parse plot data:', e);
+        }
+      }
+    } finally {
+      setIsGeneratingPlot(false);
+    }
+  };
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -82,7 +149,11 @@ export const UniverseTab = ({
         locations: '',
         timeline: '',
         canonSource: '',
-        isCustom: true
+        isCustom: true,
+        mainConflict: '',
+        keyEvents: '',
+        resolution: '',
+        genres: []
       });
       setIsCreateDialogOpen(false);
     } finally {
@@ -148,43 +219,226 @@ export const UniverseTab = ({
       locations: '',
       timeline: '',
       canonSource: canon.source,
-      isCustom: false
+      isCustom: false,
+      mainConflict: '',
+      keyEvents: '',
+      resolution: '',
+      genres: []
     });
+  };
+
+  const getGenreIcon = (genre: string) => {
+    return plotGenres.find(g => g.value === genre)?.icon || 'Sparkles';
+  };
+
+  const getGenreLabel = (genre: string) => {
+    return plotGenres.find(g => g.value === genre)?.label || genre;
   };
 
   return (
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-3xl font-serif font-semibold">Библиотека вселенных</h2>
+          <h2 className="text-3xl font-serif font-semibold">Вселенные</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Создайте свою вселенную или выберите каноническую
+            Создайте мир со своими правилами и сюжетом, или выберите каноническую вселенную
           </p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Icon name="Plus" size={20} />
-              Добавить вселенную
+              Создать вселенную
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-2xl font-serif">Создание вселенной</DialogTitle>
               <DialogDescription>
-                Выберите каноническую вселенную или создайте свою
+                Выберите каноническую вселенную или создайте свою со всеми деталями
               </DialogDescription>
             </DialogHeader>
             
-            <Tabs defaultValue="canon" className="w-full">
+            <Tabs defaultValue="custom" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="canon">Каноническая</TabsTrigger>
                 <TabsTrigger value="custom">Своя вселенная</TabsTrigger>
+                <TabsTrigger value="canon">Каноническая</TabsTrigger>
               </TabsList>
               
-              <TabsContent value="canon" className="space-y-4">
+              <TabsContent value="custom" className="space-y-6 py-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="universe-name">Название вселенной *</Label>
+                    <Input 
+                      id="universe-name" 
+                      placeholder="Новый Эдем" 
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value, isCustom: true, canonSource: ''})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="universe-description">Краткое описание *</Label>
+                    <Input
+                      id="universe-description" 
+                      placeholder="Мир после апокалипсиса..." 
+                      value={formData.description}
+                      onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="border-t pt-6 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Icon name="Globe" size={20} className="text-primary" />
+                    <h3 className="font-semibold text-lg">Детали мира</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="universe-lore">История и лор</Label>
+                      <Textarea 
+                        id="universe-lore" 
+                        placeholder="Ключевые исторические события..."
+                        className="min-h-[100px]"
+                        value={formData.lore}
+                        onChange={(e) => setFormData({...formData, lore: e.target.value})}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="universe-rules">Правила и законы</Label>
+                      <Textarea 
+                        id="universe-rules" 
+                        placeholder="Физические, магические, социальные правила..."
+                        className="min-h-[100px]"
+                        value={formData.rules}
+                        onChange={(e) => setFormData({...formData, rules: e.target.value})}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="universe-characters">Ключевые персонажи</Label>
+                      <Textarea 
+                        id="universe-characters" 
+                        placeholder="Главные герои, злодеи, важные NPC..."
+                        className="min-h-[100px]"
+                        value={formData.characters}
+                        onChange={(e) => setFormData({...formData, characters: e.target.value})}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="universe-locations">Локации</Label>
+                      <Textarea 
+                        id="universe-locations" 
+                        placeholder="Города, континенты, планеты..."
+                        className="min-h-[100px]"
+                        value={formData.locations}
+                        onChange={(e) => setFormData({...formData, locations: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="universe-timeline">Хронология</Label>
+                    <Textarea 
+                      id="universe-timeline" 
+                      placeholder="Временная линия, эпохи, важные даты..."
+                      className="min-h-[80px]"
+                      value={formData.timeline}
+                      onChange={(e) => setFormData({...formData, timeline: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="border-t pt-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Icon name="BookOpen" size={20} className="text-primary" />
+                      <h3 className="font-semibold text-lg">Сюжет вселенной</h3>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleGeneratePlot}
+                      disabled={isGeneratingPlot || !formData.name}
+                      className="gap-2"
+                    >
+                      {isGeneratingPlot ? (
+                        <Icon name="Loader2" size={16} className="animate-spin" />
+                      ) : (
+                        <Icon name="Wand2" size={16} />
+                      )}
+                      {isGeneratingPlot ? 'Генерация...' : 'Сгенерировать сюжет'}
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Жанры сюжета</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                      {plotGenres.map((genre) => (
+                        <Button
+                          key={genre.value}
+                          variant={formData.genres.includes(genre.value) ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => toggleGenre(genre.value)}
+                          className="justify-start gap-2"
+                        >
+                          <Icon name={genre.icon as any} size={14} />
+                          {genre.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="universe-conflict">Основной конфликт</Label>
+                    <Textarea 
+                      id="universe-conflict" 
+                      placeholder="Опишите главный конфликт или проблему..."
+                      className="min-h-[80px]"
+                      value={formData.mainConflict}
+                      onChange={(e) => setFormData({...formData, mainConflict: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="universe-events">Ключевые события</Label>
+                    <Textarea 
+                      id="universe-events" 
+                      placeholder="Перечислите важные события (каждое с новой строки)..."
+                      className="min-h-[80px]"
+                      value={formData.keyEvents}
+                      onChange={(e) => setFormData({...formData, keyEvents: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="universe-resolution">Возможная развязка</Label>
+                    <Textarea 
+                      id="universe-resolution" 
+                      placeholder="Как может развиваться история..."
+                      className="min-h-[80px]"
+                      value={formData.resolution}
+                      onChange={(e) => setFormData({...formData, resolution: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <Button 
+                  className="w-full gap-2" 
+                  onClick={handleCreate}
+                  disabled={isCreating || !formData.name || !formData.description}
+                >
+                  {isCreating ? (
+                    <Icon name="Loader2" size={20} className="animate-spin" />
+                  ) : (
+                    <Icon name="Plus" size={20} />
+                  )}
+                  {isCreating ? 'Создание...' : 'Создать вселенную'}
+                </Button>
+              </TabsContent>
+              
+              <TabsContent value="canon" className="space-y-4 py-4">
                 <p className="text-sm text-muted-foreground">
-                  ИИ изучит каноническую вселенную и будет следовать её правилам в историях
+                  ИИ изучит каноническую вселенную и будет следовать её правилам
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {canonUniverses.map((canon, idx) => (
@@ -242,95 +496,6 @@ export const UniverseTab = ({
                   </div>
                 )}
               </TabsContent>
-              
-              <TabsContent value="custom" className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="universe-name">Название вселенной</Label>
-                  <Input 
-                    id="universe-name" 
-                    placeholder="Новый Эдем" 
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value, isCustom: true, canonSource: ''})}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="universe-description">Краткое описание</Label>
-                  <Textarea 
-                    id="universe-description" 
-                    placeholder="Опишите основную концепцию вселенной..." 
-                    className="min-h-[100px]"
-                    value={formData.description}
-                    onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="universe-lore">История и лор</Label>
-                    <Textarea 
-                      id="universe-lore" 
-                      placeholder="Ключевые исторические события..."
-                      className="min-h-[120px]"
-                      value={formData.lore}
-                      onChange={(e) => setFormData({...formData, lore: e.target.value})}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="universe-rules">Правила и законы</Label>
-                    <Textarea 
-                      id="universe-rules" 
-                      placeholder="Физические, магические, социальные правила..."
-                      className="min-h-[120px]"
-                      value={formData.rules}
-                      onChange={(e) => setFormData({...formData, rules: e.target.value})}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="universe-characters">Ключевые персонажи</Label>
-                    <Textarea 
-                      id="universe-characters" 
-                      placeholder="Главные герои, злодеи, важные NPC..."
-                      className="min-h-[120px]"
-                      value={formData.characters}
-                      onChange={(e) => setFormData({...formData, characters: e.target.value})}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="universe-locations">Локации</Label>
-                    <Textarea 
-                      id="universe-locations" 
-                      placeholder="Города, континенты, планеты..."
-                      className="min-h-[120px]"
-                      value={formData.locations}
-                      onChange={(e) => setFormData({...formData, locations: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="universe-timeline">Хронология</Label>
-                  <Textarea 
-                    id="universe-timeline" 
-                    placeholder="Временная линия, эпохи, важные даты..."
-                    className="min-h-[100px]"
-                    value={formData.timeline}
-                    onChange={(e) => setFormData({...formData, timeline: e.target.value})}
-                  />
-                </div>
-
-                <Button 
-                  className="w-full gap-2" 
-                  onClick={handleCreate}
-                  disabled={isCreating || !formData.name || !formData.description}
-                >
-                  {isCreating ? (
-                    <Icon name="Loader2" size={20} className="animate-spin" />
-                  ) : (
-                    <Icon name="Plus" size={20} />
-                  )}
-                  {isCreating ? 'Создание...' : 'Создать вселенную'}
-                </Button>
-              </TabsContent>
             </Tabs>
           </DialogContent>
         </Dialog>
@@ -341,13 +506,13 @@ export const UniverseTab = ({
           <div className="inline-flex p-6 rounded-full bg-primary/10">
             <Icon name="Globe" size={48} className="text-primary" />
           </div>
-          <h3 className="text-2xl font-serif font-semibold">Нет добавленных вселенных</h3>
+          <h3 className="text-2xl font-serif font-semibold">Нет созданных вселенных</h3>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Создайте свою вселенную или выберите каноническую, чтобы ИИ следовал её правилам
+            Создайте свою вселенную с уникальными правилами и сюжетом
           </p>
           <Button size="lg" className="gap-2" onClick={() => setIsCreateDialogOpen(true)}>
             <Icon name="Plus" size={20} />
-            Добавить первую вселенную
+            Создать первую вселенную
           </Button>
         </div>
       ) : (
@@ -385,12 +550,12 @@ export const UniverseTab = ({
               <CardHeader className="relative z-10">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <Icon name="Globe" size={20} className="text-primary" />
                       {!universe.isCustom && (
                         <Badge variant="secondary" className="text-xs gap-1">
                           <Icon name="BookOpen" size={12} />
-                          Каноническая
+                          Канон
                         </Badge>
                       )}
                       {universe.learnedAt && (
@@ -398,6 +563,14 @@ export const UniverseTab = ({
                           <Icon name="Check" size={12} />
                           Изучена
                         </Badge>
+                      )}
+                      {universe.genres && universe.genres.length > 0 && (
+                        universe.genres.slice(0, 2).map(genre => (
+                          <Badge key={genre} variant="outline" className="text-xs gap-1">
+                            <Icon name={getGenreIcon(genre) as any} size={10} />
+                            {getGenreLabel(genre)}
+                          </Badge>
+                        ))
                       )}
                     </div>
                     <CardTitle className="text-xl font-serif mb-2">{universe.name}</CardTitle>
@@ -414,12 +587,23 @@ export const UniverseTab = ({
                     <strong>Источник:</strong> {universe.canonSource}
                   </div>
                 )}
+
+                {universe.mainConflict && (
+                  <div className="border-t pt-3">
+                    <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                      <Icon name="Flame" size={12} />
+                      Конфликт:
+                    </p>
+                    <p className="text-sm line-clamp-2">{universe.mainConflict}</p>
+                  </div>
+                )}
                 
-                <div className="flex gap-2 text-xs text-muted-foreground">
+                <div className="flex gap-2 text-xs flex-wrap">
                   {universe.lore && <Badge variant="outline" className="gap-1"><Icon name="Book" size={10} />Лор</Badge>}
                   {universe.rules && <Badge variant="outline" className="gap-1"><Icon name="Scale" size={10} />Правила</Badge>}
                   {universe.characters && <Badge variant="outline" className="gap-1"><Icon name="Users" size={10} />Персонажи</Badge>}
                   {universe.locations && <Badge variant="outline" className="gap-1"><Icon name="Map" size={10} />Локации</Badge>}
+                  {universe.keyEvents && <Badge variant="outline" className="gap-1"><Icon name="ListChecks" size={10} />События</Badge>}
                 </div>
 
                 {!universe.learnedAt && onLearnCanon && (
@@ -433,7 +617,7 @@ export const UniverseTab = ({
                     {isLearning === universe.id ? (
                       <>
                         <Icon name="Loader2" size={14} className="animate-spin" />
-                        Изучаю вселенную...
+                        Изучаю...
                       </>
                     ) : (
                       <>

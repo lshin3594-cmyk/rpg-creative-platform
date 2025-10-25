@@ -1,8 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
 import { CharactersTab } from '@/components/CharactersTab';
-import { WorldsTab } from '@/components/WorldsTab';
-import { PlotTab } from '@/components/PlotTab';
+import { UniverseTab } from '@/components/UniverseTab';
 import { StoriesTab } from '@/components/StoriesTab';
 import { ProfileTab } from '@/components/ProfileTab';
 import type { Character, World, Story } from '@/hooks/useDataManagement';
@@ -82,9 +81,9 @@ export const MainTabs = ({
           <Icon name="Users" size={18} />
           Персонажи
         </TabsTrigger>
-        <TabsTrigger value="world-story" className="gap-2 tab-trigger-active transition-all">
-          <Icon name="Map" size={18} />
-          Мир & Сюжет
+        <TabsTrigger value="universe" className="gap-2 tab-trigger-active transition-all">
+          <Icon name="Globe" size={18} />
+          Вселенные
         </TabsTrigger>
         <TabsTrigger value="favorites" className="gap-2 tab-trigger-active transition-all">
           <Icon name="Star" size={18} />
@@ -108,39 +107,14 @@ export const MainTabs = ({
         />
       </TabsContent>
 
-      <TabsContent value="world-story" className="tab-content-enter">
-        <div className="space-y-8">
-          <div>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Icon name="Globe" size={24} className="text-primary" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold">Миры</h2>
-                <p className="text-sm text-muted-foreground">Создайте вселенную со своими законами и правилами</p>
-              </div>
-            </div>
-            <WorldsTab 
-              worlds={worlds}
-              isCreateDialogOpen={false}
-              setIsCreateDialogOpen={() => {}}
-              onCardClick={onCardClick}
-              onDelete={onDeleteWorld}
-              onCreate={onCreateWorld}
-              onUpdate={onUpdateWorld}
-            />
-          </div>
-
-          <div className="border-t border-border pt-8">
-            <PlotTab
-              plots={plots}
-              onCardClick={onCardClick}
-              onDelete={onDeletePlot}
-              onCreate={onCreatePlot}
-              onUpdate={onUpdatePlot}
-            />
-          </div>
-        </div>
+      <TabsContent value="universe" className="tab-content-enter">
+        <UniverseTab
+          universes={[]}
+          onCardClick={onCardClick}
+          onDelete={onDeleteWorld}
+          onCreate={onCreateWorld as any}
+          onUpdate={onUpdateWorld as any}
+        />
       </TabsContent>
 
       <TabsContent value="favorites" className="tab-content-enter">
