@@ -1,50 +1,32 @@
-import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { plotGenres } from '../plot/plotGenres';
+import { UniverseFormData } from './universeTypes';
 
 interface CustomUniverseFormProps {
-  onSubmit: (data: any) => void;
+  formData: UniverseFormData;
+  setFormData: (data: UniverseFormData) => void;
+  toggleGenre: (genre: string) => void;
+  handleGeneratePlot: () => void;
+  isGeneratingPlot: boolean;
+  handleCreate: () => void;
   isCreating: boolean;
 }
 
 export const CustomUniverseForm = ({
-  onSubmit,
+  formData,
+  setFormData,
+  toggleGenre,
+  handleGeneratePlot,
+  isGeneratingPlot,
+  handleCreate,
   isCreating
 }: CustomUniverseFormProps) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    genre: '',
-    tags: [] as string[]
-  });
-  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.name || !formData.description) {
-      return;
-    }
-    
-    onSubmit({
-      name: formData.name,
-      description: formData.description,
-      canonSource: '',
-      sourceType: 'custom' as const,
-      genre: formData.genre || 'фэнтези',
-      tags: formData.tags
-    });
-  };
-
-  const toggleTag = (tag: string) => {
-    setFormData(prev => ({
-      ...prev,
-      tags: prev.tags.includes(tag) 
-        ? prev.tags.filter(t => t !== tag)
-        : [...prev.tags, tag]
-    }));
+    handleCreate();
   };
 
   return (
@@ -71,24 +53,14 @@ export const CustomUniverseForm = ({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="universe-genre">Жанр</Label>
-        <Input
-          id="universe-genre" 
-          placeholder="Например: фэнтези, sci-fi, киберпанк..." 
-          value={formData.genre}
-          onChange={(e) => setFormData({...formData, genre: e.target.value})}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label>Теги (по желанию)</Label>
+        <Label>Жанры</Label>
         <div className="flex flex-wrap gap-2">
           {plotGenres.slice(0, 8).map((genre) => (
             <Button
               key={genre.value}
-              variant={formData.tags.includes(genre.label) ? 'default' : 'outline'}
+              variant={formData.genres.includes(genre.value) ? 'default' : 'outline'}
               size="sm"
-              onClick={() => toggleTag(genre.label)}
+              onClick={() => toggleGenre(genre.value)}
               className="gap-2"
               type="button"
             >
