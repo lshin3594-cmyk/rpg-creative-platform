@@ -1,13 +1,18 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
 import { useNavigate } from 'react-router-dom';
+import { PreviewModal } from '@/components/PreviewModal';
 
 const Index = () => {
   const navigate = useNavigate();
+  const [showPreview, setShowPreview] = useState(true);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex items-center justify-center p-4">
+      <PreviewModal open={showPreview} onOpenChange={setShowPreview} />
+      
       <Card className="max-w-2xl w-full shadow-2xl border-2">
         <CardContent className="p-12 space-y-8">
           <div className="text-center space-y-4">
