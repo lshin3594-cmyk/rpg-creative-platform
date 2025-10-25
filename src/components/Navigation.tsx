@@ -6,7 +6,7 @@ export const Navigation = () => {
   const location = useLocation();
   
   const navItems = [
-    { path: '/', label: 'Генератор РПГ', icon: 'Gamepad2' },
+    { path: '/create-fanfic', label: 'Генерация', icon: 'Sparkles' },
   ];
 
   return (
