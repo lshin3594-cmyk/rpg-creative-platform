@@ -16,7 +16,8 @@ interface Plot {
 interface PlotCardProps {
   plot: Plot;
   index: number;
-  onCardClick: () => void;
+  onCardClick?: () => void;
+  onPreview?: (e: React.MouseEvent, plot: Plot) => void;
   onEdit?: (e: React.MouseEvent, plot: Plot) => void;
   onDelete?: (e: React.MouseEvent, id: string) => void;
   deletingId: string | null;
@@ -28,17 +29,26 @@ export const PlotCard = ({
   plot,
   index,
   onCardClick,
+  onPreview,
   onEdit,
   onDelete,
   deletingId,
   getGenreIcon,
   getGenreLabel
 }: PlotCardProps) => {
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (onPreview) {
+      onPreview(e, plot);
+    } else if (onCardClick) {
+      onCardClick();
+    }
+  };
+
   return (
     <Card 
       key={plot.id}
       className="border-2 border-primary/20 hover:border-primary/50 transition-all duration-300 hover:scale-105 cursor-pointer backdrop-blur-sm bg-card/80 overflow-hidden relative group"
-      onClick={onCardClick}
+      onClick={handleCardClick}
       style={{
         animationDelay: `${index * 100}ms`,
         animation: 'fade-in 0.5s ease-out forwards'

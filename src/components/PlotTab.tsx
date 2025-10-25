@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { PlotCreateDialog } from './plot/PlotCreateDialog';
 import { PlotEditDialog } from './plot/PlotEditDialog';
+import { PlotPreviewDialog } from './plot/PlotPreviewDialog';
 import { PlotCard } from './plot/PlotCard';
 import { plotGenres } from './plot/plotGenres';
 
@@ -36,6 +37,8 @@ export const PlotTab = ({
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingPlot, setEditingPlot] = useState<Plot | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [previewPlot, setPreviewPlot] = useState<Plot | null>(null);
+  const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -177,6 +180,12 @@ ${formData.description ? `Краткое описание: ${formData.descriptio
     return plotGenres.find(g => g.value === genre)?.label || genre;
   };
 
+  const handlePreview = (e: React.MouseEvent, plot: Plot) => {
+    e.stopPropagation();
+    setPreviewPlot(plot);
+    setIsPreviewDialogOpen(true);
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="flex justify-between items-center mb-6">
@@ -221,7 +230,7 @@ ${formData.description ? `Краткое описание: ${formData.descriptio
               key={plot.id}
               plot={plot}
               index={index}
-              onCardClick={onCardClick}
+              onPreview={handlePreview}
               onEdit={onUpdate ? handleEdit : undefined}
               onDelete={onDelete ? handleDelete : undefined}
               deletingId={deletingId}
@@ -243,6 +252,14 @@ ${formData.description ? `Краткое описание: ${formData.descriptio
         isGenerating={isGenerating}
         onUpdate={handleUpdate}
         isCreating={isCreating}
+      />
+
+      <PlotPreviewDialog
+        plot={previewPlot}
+        isOpen={isPreviewDialogOpen}
+        onOpenChange={setIsPreviewDialogOpen}
+        getGenreIcon={getGenreIcon}
+        getGenreLabel={getGenreLabel}
       />
     </div>
   );

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ActionInputModes } from './story/ActionInputModes';
 
 interface StoryMessage {
   type: 'story' | 'action' | 'choices';
@@ -37,20 +37,10 @@ export const InteractiveStory = ({
   const [messages, setMessages] = useState<StoryMessage[]>([
     { type: 'story', content: initialStory, timestamp: new Date() }
   ]);
-  const [customAction, setCustomAction] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [inputMode, setInputMode] = useState<'free' | 'structured'>('structured');
 
-  const quickActions = [
-    { icon: 'Swords', text: 'Атаковать', action: 'Я атакую врага' },
-    { icon: 'Shield', text: 'Защититься', action: 'Я принимаю оборонительную позицию' },
-    { icon: 'MessageCircle', text: 'Поговорить', action: 'Я пытаюсь начать диалог' },
-    { icon: 'Eye', text: 'Осмотреться', action: 'Я внимательно осматриваюсь вокруг' },
-    { icon: 'Search', text: 'Исследовать', action: 'Я исследую окружение' },
-    { icon: 'Footprints', text: 'Отступить', action: 'Я осторожно отступаю назад' }
-  ];
-
-  const handleAction = async (actionText: string) => {
+  const handleActionSubmit = async (actionText: string, dialogue?: string) => {
     if (isGenerating) return;
 
     onPlaySound?.();
@@ -59,8 +49,6 @@ export const InteractiveStory = ({
       content: actionText, 
       timestamp: new Date() 
     }]);
-    setCustomAction('');
-    setShowCustomInput(false);
     setIsGenerating(true);
 
     try {
@@ -74,12 +62,6 @@ export const InteractiveStory = ({
       console.error('Error continuing story:', error);
     } finally {
       setIsGenerating(false);
-    }
-  };
-
-  const handleCustomAction = () => {
-    if (customAction.trim()) {
-      handleAction(customAction);
     }
   };
 
@@ -139,69 +121,14 @@ export const InteractiveStory = ({
           </div>
         </ScrollArea>
 
-        <div className="pt-4 border-t border-border space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">Что вы делаете?</p>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowCustomInput(!showCustomInput)}
-              className="text-xs"
-            >
-              <Icon name="Edit" size={14} className="mr-1" />
-              Своё действие
-            </Button>
-          </div>
-
-          {showCustomInput && (
-            <div className="space-y-2 animate-fade-in">
-              <Textarea
-                value={customAction}
-                onChange={(e) => setCustomAction(e.target.value)}
-                placeholder="Опишите своё действие..."
-                className="min-h-[80px]"
-                disabled={isGenerating}
-              />
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleCustomAction}
-                  disabled={isGenerating || !customAction.trim()}
-                  className="flex-1"
-                >
-                  <Icon name="Send" size={16} className="mr-2" />
-                  Продолжить
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowCustomInput(false);
-                    setCustomAction('');
-                  }}
-                  disabled={isGenerating}
-                >
-                  Отмена
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {!showCustomInput && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {quickActions.map((action, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleAction(action.action)}
-                  disabled={isGenerating}
-                  className="justify-start gap-2"
-                >
-                  <Icon name={action.icon as any} size={16} />
-                  {action.text}
-                </Button>
-              ))}
-            </div>
-          )}
+        <div className="pt-4 border-t border-border">
+          <p className="text-sm font-medium mb-3">Что вы делаете?</p>
+          <ActionInputModes
+            onSubmit={handleActionSubmit}
+            isGenerating={isGenerating}
+            mode={inputMode}
+            onModeChange={setInputMode}
+          />
         </div>
       </CardContent>
     </Card>
