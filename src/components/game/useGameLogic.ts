@@ -39,6 +39,15 @@ export const useGameLogic = () => {
         rating: settings.rating || '18+',
         eloquenceLevel: 1
       });
+      
+      if (settings.initialCharacters && settings.initialCharacters.length > 0) {
+        const validChars = settings.initialCharacters.filter((c: any) => c.name && c.role);
+        if (validChars.length > 0) {
+          console.log('📋 Loading initial characters:', validChars);
+          setCharacters(validChars);
+        }
+      }
+      
       storyInitializedRef.current = false;
     } else {
       console.warn('⚠️ No game settings found in localStorage');

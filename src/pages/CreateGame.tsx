@@ -18,6 +18,7 @@ const CreateGame = () => {
   const [narrativeMode, setNarrativeMode] = useState<'first' | 'third' | 'love-interest'>('third');
   const [genre, setGenre] = useState('Фэнтези');
   const [rating, setRating] = useState('18+');
+  const [characters, setCharacters] = useState<Array<{name: string; role: string; description: string}>>([]);
 
   const generateRandomName = () => {
     const names = [
@@ -63,11 +64,26 @@ const CreateGame = () => {
       playerCount: 1,
       genre,
       rating,
+      initialCharacters: characters,
       createdAt: new Date().toISOString()
     };
 
     localStorage.setItem('current-game-settings', JSON.stringify(gameSettings));
     navigate('/story/new');
+  };
+
+  const addCharacter = () => {
+    setCharacters([...characters, { name: '', role: '', description: '' }]);
+  };
+
+  const updateCharacter = (index: number, field: 'name' | 'role' | 'description', value: string) => {
+    const updated = [...characters];
+    updated[index][field] = value;
+    setCharacters(updated);
+  };
+
+  const removeCharacter = (index: number) => {
+    setCharacters(characters.filter((_, i) => i !== index));
   };
 
   return (
@@ -327,6 +343,66 @@ const CreateGame = () => {
                 </select>
               </div>
             </div>
+          </div>
+
+          <div className="relative p-6 rounded-xl bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-purple-900/40 border border-purple-500/40 backdrop-blur-md">
+            <div className="flex items-center justify-between mb-4">
+              <Label className="text-purple-100 text-base">
+                Персонажи (необязательно)
+              </Label>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={addCharacter}
+                className="gap-2 text-yellow-400 hover:text-yellow-300 hover:bg-yellow-400/10"
+              >
+                <Icon name="UserPlus" size={16} />
+                Добавить
+              </Button>
+            </div>
+
+            {characters.length === 0 ? (
+              <div className="text-center py-8 text-purple-300/60 text-sm">
+                <Icon name="Users" size={40} className="mx-auto mb-2 opacity-40" />
+                <p>Персонажи появятся по ходу истории</p>
+                <p className="text-xs mt-1">Или создайте их заранее</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {characters.map((char, idx) => (
+                  <div key={idx} className="p-4 bg-black/40 border border-purple-500/30 rounded-lg space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1 space-y-3">
+                        <Input
+                          value={char.name}
+                          onChange={(e) => updateCharacter(idx, 'name', e.target.value)}
+                          placeholder="Имя персонажа"
+                          className="bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50"
+                        />
+                        <Input
+                          value={char.role}
+                          onChange={(e) => updateCharacter(idx, 'role', e.target.value)}
+                          placeholder="Роль (воин, маг, торговец...)"
+                          className="bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50"
+                        />
+                        <Textarea
+                          value={char.description}
+                          onChange={(e) => updateCharacter(idx, 'description', e.target.value)}
+                          placeholder="Внешность и характер..."
+                          className="min-h-[60px] resize-none bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50"
+                        />
+                      </div>
+                      <button
+                        onClick={() => removeCharacter(idx)}
+                        className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded transition-colors"
+                      >
+                        <Icon name="X" size={18} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="relative p-6 rounded-xl bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-purple-900/40 border border-purple-500/40 backdrop-blur-md">
