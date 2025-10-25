@@ -336,6 +336,12 @@ export const useGameLogic = () => {
           ? `Начни историю в сеттинге: ${gameSettings.setting}`
           : 'Начни захватывающую историю';
 
+        console.log('🚀 Sending request to AI backend:', {
+          url: AI_STORY_URL,
+          action: startAction,
+          settings: gameSettings
+        });
+
         const response = await fetch(AI_STORY_URL, {
           method: 'POST',
           headers: {
