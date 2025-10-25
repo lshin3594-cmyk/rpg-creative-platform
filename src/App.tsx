@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { Navigation } from "./components/Navigation";
 import Index from "./pages/Index";
+import CreateGame from "./pages/CreateGame";
 import CreateFanfic from "./pages/CreateFanfic";
 import Library from "./pages/Library";
 import StoryView from "./pages/StoryView";
@@ -27,6 +28,7 @@ const App = () => (
           <Navigation />
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/create-game" element={<CreateGame />} />
             <Route path="/create-fanfic" element={<CreateFanfic />} />
             <Route path="/library" element={<Library />} />
             <Route path="/story/:id" element={<StoryView />} />

@@ -1,15 +1,10 @@
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
-import { StoryGenerator } from '@/components/StoryGenerator';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
-  const [gameStarted, setGameStarted] = useState(false);
-
-  if (gameStarted) {
-    return <StoryGenerator />;
-  }
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background flex items-center justify-center p-4">
@@ -52,7 +47,7 @@ const Index = () => {
           <Button 
             size="lg" 
             className="w-full h-16 text-xl gap-3 shadow-lg hover:shadow-xl transition-all"
-            onClick={() => setGameStarted(true)}
+            onClick={() => navigate('/create-game')}
           >
             <Icon name="Play" size={24} />
             Начать новую историю

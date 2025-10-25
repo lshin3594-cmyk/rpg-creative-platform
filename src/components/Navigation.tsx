@@ -18,6 +18,11 @@ export const Navigation = () => {
     { path: '/profile', label: 'Профиль', icon: 'User' },
   ];
 
+  // Скрываем навигацию в игре
+  if (location.pathname.startsWith('/story/')) {
+    return null;
+  }
+
   return (
     <>
       <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
