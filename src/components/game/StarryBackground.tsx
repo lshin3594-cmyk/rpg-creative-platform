@@ -28,15 +28,15 @@ export const StarryBackground = () => {
       fadeSpeed: number;
     }> = [];
 
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 300; i++) {
       stars.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        size: Math.random() * 2 + 0.5,
+        size: Math.random() * 2.5 + 0.5,
         speed: Math.random() * 0.1 + 0.05,
         opacity: Math.random(),
-        maxOpacity: Math.random() * 0.5 + 0.3,
-        fadeSpeed: Math.random() * 0.01 + 0.005,
+        maxOpacity: Math.random() * 0.7 + 0.3,
+        fadeSpeed: Math.random() * 0.02 + 0.008,
       });
     }
 
@@ -57,20 +57,21 @@ export const StarryBackground = () => {
           0,
           star.x,
           star.y,
-          star.size * 3
+          star.size * 4
         );
-        gradient.addColorStop(0, `rgba(255, 215, 0, ${star.opacity})`);
-        gradient.addColorStop(0.5, `rgba(255, 215, 0, ${star.opacity * 0.5})`);
-        gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+        gradient.addColorStop(0, `rgba(147, 51, 234, ${star.opacity * 0.8})`);
+        gradient.addColorStop(0.3, `rgba(99, 102, 241, ${star.opacity * 0.6})`);
+        gradient.addColorStop(0.6, `rgba(59, 130, 246, ${star.opacity * 0.3})`);
+        gradient.addColorStop(1, 'rgba(147, 51, 234, 0)');
 
         ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+        ctx.arc(star.x, star.y, star.size * 1.5, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
         ctx.beginPath();
-        ctx.arc(star.x, star.y, star.size * 0.5, 0, Math.PI * 2);
+        ctx.arc(star.x, star.y, star.size * 0.6, 0, Math.PI * 2);
         ctx.fill();
       });
 
@@ -89,7 +90,9 @@ export const StarryBackground = () => {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ background: 'radial-gradient(ellipse at bottom, #1a1a2e 0%, #0a0a0f 100%)' }}
+      style={{ 
+        background: 'radial-gradient(ellipse at top, #1e1b4b 0%, #0f172a 50%, #000000 100%)'
+      }}
     />
   );
 };
