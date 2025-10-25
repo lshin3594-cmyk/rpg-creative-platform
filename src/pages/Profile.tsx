@@ -4,10 +4,12 @@ import { AuthModal } from '@/components/AuthModal';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const { user, isLoading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -35,7 +37,14 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 flex items-center justify-center">
+    <div className="min-h-screen p-4 flex items-center justify-center relative">
+      <Button
+        onClick={() => navigate('/create-game')}
+        className="absolute top-4 right-4 gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-none shadow-lg shadow-purple-500/50 z-10"
+      >
+        <Icon name="UserPlus" size={18} />
+        Создать персонажа
+      </Button>
       <UserProfile />
     </div>
   );
