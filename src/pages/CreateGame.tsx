@@ -14,6 +14,8 @@ const CreateGame = () => {
   const [gameName, setGameName] = useState('');
   const [setting, setSetting] = useState('');
   const [aiInstructions, setAiInstructions] = useState('');
+  const [role, setRole] = useState<'hero' | 'author'>('hero');
+  const [narrativeMode, setNarrativeMode] = useState<'first' | 'third' | 'love-interest'>('third');
 
   const generateRandomName = () => {
     const names = [
@@ -54,6 +56,9 @@ const CreateGame = () => {
       name: gameName,
       setting,
       aiInstructions,
+      role,
+      narrativeMode,
+      playerCount: 1,
       createdAt: new Date().toISOString()
     };
 
@@ -133,6 +138,117 @@ const CreateGame = () => {
                   💡 Чем подробнее опишешь - тем лучше ИИ поймёт
                 </span>
               )}
+            </div>
+          </div>
+
+          <div className="relative p-6 rounded-xl bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-purple-900/40 border border-purple-500/40 backdrop-blur-md">
+            <Label className="text-purple-100 text-base mb-4 block">
+              Ваша роль в игре
+            </Label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setRole('hero')}
+                className={`
+                  p-4 rounded-lg border-2 transition-all text-left
+                  ${
+                    role === 'hero'
+                      ? 'border-purple-400 bg-purple-500/30'
+                      : 'border-purple-500/30 bg-black/20 hover:border-purple-400/50'
+                  }
+                `}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <Icon name="User" size={20} className="text-purple-300" />
+                  <span className="font-bold text-purple-100">Герой</span>
+                </div>
+                <p className="text-xs text-purple-200/70">
+                  Вы управляете главным персонажем, ИИ ведёт сюжет и NPC
+                </p>
+              </button>
+              <button
+                onClick={() => setRole('author')}
+                className={`
+                  p-4 rounded-lg border-2 transition-all text-left
+                  ${
+                    role === 'author'
+                      ? 'border-purple-400 bg-purple-500/30'
+                      : 'border-purple-500/30 bg-black/20 hover:border-purple-400/50'
+                  }
+                `}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <Icon name="BookOpen" size={20} className="text-purple-300" />
+                  <span className="font-bold text-purple-100">Автор</span>
+                </div>
+                <p className="text-xs text-purple-200/70">
+                  Вы управляете сюжетом и всеми персонажами
+                </p>
+              </button>
+            </div>
+          </div>
+
+          <div className="relative p-6 rounded-xl bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-purple-900/40 border border-purple-500/40 backdrop-blur-md">
+            <Label className="text-purple-100 text-base mb-4 block">
+              Режим повествования
+            </Label>
+            <div className="space-y-3">
+              <button
+                onClick={() => setNarrativeMode('first')}
+                className={`
+                  w-full p-4 rounded-lg border-2 transition-all text-left
+                  ${
+                    narrativeMode === 'first'
+                      ? 'border-purple-400 bg-purple-500/30'
+                      : 'border-purple-500/30 bg-black/20 hover:border-purple-400/50'
+                  }
+                `}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Icon name="Eye" size={18} className="text-purple-300" />
+                  <span className="font-bold text-purple-100">От первого лица</span>
+                </div>
+                <p className="text-xs text-purple-200/70">
+                  "Я вижу темный коридор..." — погружение в персонажа
+                </p>
+              </button>
+              <button
+                onClick={() => setNarrativeMode('third')}
+                className={`
+                  w-full p-4 rounded-lg border-2 transition-all text-left
+                  ${
+                    narrativeMode === 'third'
+                      ? 'border-purple-400 bg-purple-500/30'
+                      : 'border-purple-500/30 bg-black/20 hover:border-purple-400/50'
+                  }
+                `}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Icon name="Users" size={18} className="text-purple-300" />
+                  <span className="font-bold text-purple-100">От третьего лица</span>
+                </div>
+                <p className="text-xs text-purple-200/70">
+                  "Он видит темный коридор..." — классическое повествование
+                </p>
+              </button>
+              <button
+                onClick={() => setNarrativeMode('love-interest')}
+                className={`
+                  w-full p-4 rounded-lg border-2 transition-all text-left
+                  ${
+                    narrativeMode === 'love-interest'
+                      ? 'border-pink-400 bg-pink-500/30'
+                      : 'border-purple-500/30 bg-black/20 hover:border-pink-400/50'
+                  }
+                `}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Icon name="Heart" size={18} className="text-pink-300" />
+                  <span className="font-bold text-purple-100">Романтический фокус</span>
+                </div>
+                <p className="text-xs text-purple-200/70">
+                  От третьего лица + переключение на мысли любовного интереса
+                </p>
+              </button>
             </div>
           </div>
 
