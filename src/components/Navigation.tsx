@@ -7,8 +7,6 @@ export const Navigation = () => {
   
   const navItems = [
     { path: '/', label: 'Генератор РПГ', icon: 'Gamepad2' },
-    { path: '/create-fanfic', label: 'Создать фанфик', icon: 'PenTool' },
-    { path: '/library', label: 'Библиотека', icon: 'Library' },
   ];
 
   return (
