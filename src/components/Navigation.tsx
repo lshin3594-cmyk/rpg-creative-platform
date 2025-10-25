@@ -13,11 +13,6 @@ export const Navigation = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { isPlaying, toggle } = useBackgroundMusic();
   
-  const navItems = [
-    { path: '/my-saves', label: 'Мои сохранения', icon: 'Save' },
-    { path: '/profile', label: 'Профиль', icon: 'User' },
-  ];
-
   // Скрываем навигацию в игре
   if (location.pathname.startsWith('/story/')) {
     return null;
@@ -34,47 +29,25 @@ export const Navigation = () => {
             </Link>
 
             <div className="flex items-center gap-2">
-              {navItems.map((item) => (
-                <Button
-                  key={item.path}
-                  asChild
-                  variant={location.pathname === item.path ? 'default' : 'ghost'}
-                >
-                  <Link to={item.path} className="flex items-center gap-2">
-                    <Icon name={item.icon as any} size={18} />
-                    <span className="hidden md:inline">{item.label}</span>
-                  </Link>
-                </Button>
-              ))}
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  toggle();
-                }}
-                className="gap-2"
-                title={isPlaying ? 'Выключить музыку' : 'Включить музыку'}
-              >
-                <Icon name={isPlaying ? 'Volume2' : 'VolumeX'} size={18} />
-                <span className="hidden md:inline">{isPlaying ? 'Музыка' : 'Тишина'}</span>
-              </Button>
-
               {!isLoading && (
                 user ? (
-                  <Button asChild variant="ghost" size="sm">
-                    <Link to="/profile" className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.avatar_url} alt={user.username} />
-                        <AvatarFallback className="text-xs">
-                          {user.username.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="hidden md:inline">{user.username}</span>
-                    </Link>
-                  </Button>
+                  <>
+                    <Button asChild variant="ghost" size="sm">
+                      <Link to="/profile" className="flex items-center gap-2">
+                        <Icon name="User" size={18} />
+                        <span className="hidden md:inline">Профиль</span>
+                      </Link>
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {/* TODO: logout */}}
+                      className="gap-2"
+                    >
+                      <Icon name="LogOut" size={18} />
+                      <span className="hidden md:inline">Выход</span>
+                    </Button>
+                  </>
                 ) : (
                   <Button 
                     variant="outline" 
