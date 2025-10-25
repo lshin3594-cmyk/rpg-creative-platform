@@ -203,13 +203,21 @@ const CreateGame = () => {
                   }
                 `}
               >
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-2">
                   <Icon name="Eye" size={18} className="text-purple-300" />
                   <span className="font-bold text-purple-100">От первого лица</span>
                 </div>
-                <p className="text-xs text-purple-200/70">
-                  "Я вижу темный коридор..." — погружение в персонажа
+                <p className="text-xs text-purple-200/70 mb-2">
+                  Полное погружение в персонажа
                 </p>
+                {narrativeMode === 'first' && (
+                  <div className="mt-3 p-3 bg-black/40 rounded border border-purple-400/30">
+                    <p className="text-xs text-purple-100/90 italic leading-relaxed">
+                      "Я медленно открываю дверь. Петли скрипят. Холодный воздух обжигает лицо. 
+                      В темноте что-то шевелится..."
+                    </p>
+                  </div>
+                )}
               </button>
               <button
                 onClick={() => setNarrativeMode('third')}
@@ -222,13 +230,21 @@ const CreateGame = () => {
                   }
                 `}
               >
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-2">
                   <Icon name="Users" size={18} className="text-purple-300" />
                   <span className="font-bold text-purple-100">От третьего лица</span>
                 </div>
-                <p className="text-xs text-purple-200/70">
-                  "Он видит темный коридор..." — классическое повествование
+                <p className="text-xs text-purple-200/70 mb-2">
+                  Классическое повествование
                 </p>
+                {narrativeMode === 'third' && (
+                  <div className="mt-3 p-3 bg-black/40 rounded border border-purple-400/30">
+                    <p className="text-xs text-purple-100/90 italic leading-relaxed">
+                      "Она медленно открывает дверь. Петли скрипят. Холодный воздух обжигает её лицо. 
+                      В темноте что-то шевелится..."
+                    </p>
+                  </div>
+                )}
               </button>
               <button
                 onClick={() => setNarrativeMode('love-interest')}
@@ -241,13 +257,24 @@ const CreateGame = () => {
                   }
                 `}
               >
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-2">
                   <Icon name="Heart" size={18} className="text-pink-300" />
                   <span className="font-bold text-purple-100">Романтический фокус</span>
                 </div>
-                <p className="text-xs text-purple-200/70">
-                  От третьего лица + переключение на мысли любовного интереса
+                <p className="text-xs text-purple-200/70 mb-2">
+                  Переключение между персонажами с упором на романтику
                 </p>
+                {narrativeMode === 'love-interest' && (
+                  <div className="mt-3 p-3 bg-black/40 rounded border border-pink-400/30">
+                    <p className="text-xs text-purple-100/90 italic leading-relaxed mb-2">
+                      "Она медленно открывает дверь. Холодный воздух обжигает лицо."
+                    </p>
+                    <p className="text-xs text-pink-200/90 italic leading-relaxed">
+                      💭 *Он смотрит на неё. Сердце бьётся чаще. "Какая же она смелая...", — думает он, 
+                      не в силах отвести взгляд.*
+                    </p>
+                  </div>
+                )}
               </button>
             </div>
           </div>
