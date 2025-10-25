@@ -21,11 +21,16 @@ export const CustomUniverseForm = ({
     tags: [] as string[]
   });
   
-  const handleSubmit = () => {
+  const handleSubmit = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    
     console.log('CustomUniverseForm handleSubmit called', formData);
+    alert('Кнопка нажата! Name: ' + formData.name);
     
     if (!formData.name || !formData.description) {
       console.error('Validation failed: name or description missing');
+      alert('Заполни название и описание!');
       return;
     }
     
