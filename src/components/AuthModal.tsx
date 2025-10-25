@@ -21,6 +21,29 @@ export const AuthModal = ({ open, onClose }: AuthModalProps) => {
   const [loginData, setLoginData] = useState({ login: '', password: '' });
   const [registerData, setRegisterData] = useState({ email: '', username: '', password: '', confirmPassword: '' });
 
+  const handleVkLogin = () => {
+    const redirectUri = `${window.location.origin}/auth/vk/callback`;
+    window.location.href = `https://oauth.vk.com/authorize?client_id=VK_APP_ID&display=page&redirect_uri=${redirectUri}&response_type=code&v=5.131`;
+  };
+
+  const handleTelegramLogin = (user: any) => {
+    fetch('https://functions.poehali.dev/cd68042f-5d2d-437d-83a5-6139b999a084', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider: 'telegram', auth_data: user })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
+        window.location.reload();
+      }
+    })
+    .catch(err => {
+      toast({ title: 'Ошибка входа через Telegram', variant: 'destructive' });
+    });
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -127,6 +150,43 @@ export const AuthModal = ({ open, onClose }: AuthModalProps) => {
                   </>
                 )}
               </Button>
+
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Или войти через
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleVkLogin}
+                  className="gap-2"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M15.07 2H8.93C3.33 2 2 3.33 2 8.93v6.14C2 20.67 3.33 22 8.93 22h6.14c5.6 0 6.93-1.33 6.93-6.93V8.93C22 3.33 20.67 2 15.07 2zm3.15 14.51c-.19.52-.95 1.09-1.6 1.24-.33.08-.7.12-1.11.12-1.07 0-2.42-.37-4.01-1.37-2.34-1.47-4.23-4.12-5.28-6.6-.33-.77-.12-1.4.24-1.8.41-.47 1.02-.71 1.7-.71.31 0 .64.06.96.17.75.26 1.27.97 1.62 1.59.32.55.6 1.27.77 1.97.09.37.04.68-.13.92-.18.26-.48.42-.85.48-.13.02-.25.04-.36.08.32.76.79 1.48 1.37 2.09.58.61 1.28 1.12 2.02 1.47.04-.11.08-.24.11-.38.08-.37.26-.66.54-.84.26-.17.58-.25.93-.15.7.2 1.4.51 1.91.87.58.4 1.23.93 1.46 1.68z"/>
+                  </svg>
+                  ВКонтакте
+                </Button>
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => toast({ title: 'Telegram Login в разработке' })}
+                  className="gap-2"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.03-1.99 1.27-5.62 3.72-.53.36-1.01.54-1.44.53-.47-.01-1.38-.27-2.05-.49-.82-.27-1.47-.42-1.42-.88.03-.24.37-.48 1.02-.73 4-1.74 6.68-2.88 8.03-3.44 3.82-1.59 4.62-1.87 5.14-1.88.11 0 .37.03.54.17.14.11.18.26.2.37.01.06.03.21.01.33z"/>
+                  </svg>
+                  Telegram
+                </Button>
+              </div>
             </form>
           </TabsContent>
 

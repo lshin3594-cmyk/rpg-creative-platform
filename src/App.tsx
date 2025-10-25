@@ -11,6 +11,7 @@ import CreateFanfic from "./pages/CreateFanfic";
 import Library from "./pages/Library";
 import StoryView from "./pages/StoryView";
 import Profile from "./pages/Profile";
+import MySaves from "./pages/MySaves";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/library" element={<Library />} />
             <Route path="/story/:id" element={<StoryView />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/my-saves" element={<MySaves />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

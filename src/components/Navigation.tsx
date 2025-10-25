@@ -13,6 +13,7 @@ export const Navigation = () => {
   
   const navItems = [
     { path: '/create-fanfic', label: 'Генерация', icon: 'Sparkles' },
+    { path: '/my-saves', label: 'Мои сохранения', icon: 'Save' },
   ];
 
   return (
