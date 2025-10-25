@@ -197,6 +197,56 @@
     animation-delay: 0.1s;
   }
 
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: 0.3;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+  }
+
+  @keyframes twinkle-slow {
+    0%,
+    100% {
+      opacity: 0.2;
+      transform: scale(0.8);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(1.1);
+    }
+  }
+
+  @keyframes cosmic-glow {
+    0%,
+    100% {
+      box-shadow:
+        0 0 10px rgba(168, 85, 247, 0.2),
+        0 0 20px rgba(236, 72, 153, 0.1);
+    }
+    50% {
+      box-shadow:
+        0 0 20px rgba(168, 85, 247, 0.4),
+        0 0 40px rgba(236, 72, 153, 0.2);
+    }
+  }
+
+  .animate-twinkle {
+    animation: twinkle 2s ease-in-out infinite;
+  }
+
+  .animate-twinkle-slow {
+    animation: twinkle-slow 3s ease-in-out infinite;
+  }
+
+  .animate-cosmic-glow {
+    animation: cosmic-glow 3s ease-in-out infinite;
+  }
+
   .delay-200 {
     animation-delay: 0.2s;
   }

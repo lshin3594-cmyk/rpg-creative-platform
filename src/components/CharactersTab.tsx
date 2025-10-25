@@ -247,13 +247,22 @@ export const CharactersTab = ({
         {characters.map((character, index) => (
           <Card 
             key={character.id}
-            className="border-2 border-primary/20 hover:border-primary/50 transition-all duration-300 hover:scale-105 cursor-pointer backdrop-blur-sm bg-card/80 relative group"
+            className="border-2 border-purple-500/30 hover:border-purple-400/60 transition-all duration-500 hover:scale-105 cursor-pointer backdrop-blur-sm bg-gradient-to-br from-purple-950/40 via-black/60 to-pink-950/40 relative group overflow-hidden hover:shadow-[0_0_30px_rgba(168,85,247,0.4),0_0_60px_rgba(236,72,153,0.2)]"
             onClick={onCardClick}
             style={{
               animationDelay: `${index * 100}ms`,
               animation: 'fade-in 0.5s ease-out forwards'
             }}
           >
+            {/* Звёзды на фоне */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute top-[10%] left-[15%] w-1 h-1 bg-purple-300 rounded-full animate-twinkle" style={{ animationDelay: '0s' }}></div>
+              <div className="absolute top-[25%] right-[20%] w-1.5 h-1.5 bg-pink-200 rounded-full animate-twinkle-slow" style={{ animationDelay: '0.5s' }}></div>
+              <div className="absolute top-[45%] left-[25%] w-0.5 h-0.5 bg-purple-400 rounded-full animate-twinkle" style={{ animationDelay: '1s' }}></div>
+              <div className="absolute bottom-[30%] right-[15%] w-1 h-1 bg-pink-300 rounded-full animate-twinkle-slow" style={{ animationDelay: '1.5s' }}></div>
+              <div className="absolute bottom-[15%] left-[30%] w-1 h-1 bg-purple-200 rounded-full animate-twinkle" style={{ animationDelay: '2s' }}></div>
+              <div className="absolute top-[60%] right-[40%] w-0.5 h-0.5 bg-pink-400 rounded-full animate-twinkle-slow" style={{ animationDelay: '2.5s' }}></div>
+            </div>
             <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
               {onUpdate && (
                 <Button
