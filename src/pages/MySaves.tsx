@@ -1,111 +1,41 @@
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useAuthenticatedFetch } from '@/hooks/useAuthenticatedFetch';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { AuthModal } from '@/components/AuthModal';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
-
-interface Character {
-  id: number;
-  name: string;
-  age?: string;
-  gender?: string;
-  personality?: string;
-  created_at: string;
-}
-
-interface World {
-  id: number;
-  name: string;
-  description?: string;
-  created_at: string;
-}
-
-interface Story {
-  id: number;
-  title?: string;
-  genre?: string;
-  status?: string;
-  message_count?: number;
-  created_at: string;
-}
+import { storyStorage, type SavedStory } from '@/lib/storyStorage';
+import { formatDistanceToNow } from 'date-fns';
+import { ru } from 'date-fns/locale';
 
 const MySaves = () => {
-  const { user, isLoading } = useAuth();
-  const { fetchWithAuth } = useAuthenticatedFetch();
+  const navigate = useNavigate();
   const { toast } = useToast();
-  const [showAuthModal, setShowAuthModal] = useState(false);
-
-  const [characters, setCharacters] = useState<Character[]>([]);
-  const [worlds, setWorlds] = useState<World[]>([]);
-  const [stories, setStories] = useState<Story[]>([]);
-  const [loadingData, setLoadingData] = useState(true);
+  const [stories, setStories] = useState<SavedStory[]>([]);
 
   useEffect(() => {
-    if (user) {
-      loadUserData();
-    } else {
-      setLoadingData(false);
-    }
-  }, [user]);
+    loadStories();
+  }, []);
 
-  const loadUserData = async () => {
-    setLoadingData(true);
-    try {
-      const [charsRes, storiesRes] = await Promise.all([
-        fetchWithAuth('https://functions.poehali.dev/bdf99cda-0137-4587-8760-d89f239695a5'),
-        fetchWithAuth('https://functions.poehali.dev/a28e6e4e-e49d-4a08-8e5f-b7bff0a0d6da')
-      ]);
+  const loadStories = () => {
+    const savedStories = storyStorage.getAll();
+    setStories(savedStories.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()));
+  };
 
-      if (charsRes.ok) {
-        const charsData = await charsRes.json();
-        setCharacters(charsData.characters || []);
-      }
-
-      if (storiesRes.ok) {
-        const storiesData = await storiesRes.json();
-        setStories(storiesData.stories || []);
-      }
-    } catch (error) {
-      console.error('Error loading data:', error);
+  const handleDelete = (id: string) => {
+    if (window.confirm('Удалить эту историю? Действие необратимо.')) {
+      storyStorage.delete(id);
+      loadStories();
       toast({
-        title: 'Ошибка загрузки',
-        description: 'Не удалось загрузить сохранения',
-        variant: 'destructive'
+        title: 'Удалено',
+        description: 'История удалена из библиотеки'
       });
-    } finally {
-      setLoadingData(false);
     }
   };
 
-  if (isLoading || loadingData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Icon name="Loader2" className="animate-spin" size={32} />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="text-center space-y-4">
-          <Icon name="Lock" size={48} className="mx-auto text-muted-foreground" />
-          <h2 className="text-2xl font-bold">Требуется авторизация</h2>
-          <p className="text-muted-foreground">Войдите для просмотра своих сохранений</p>
-          <Button onClick={() => setShowAuthModal(true)} className="gap-2">
-            <Icon name="LogIn" size={16} />
-            Войти
-          </Button>
-        </div>
-        <AuthModal open={showAuthModal} onClose={() => setShowAuthModal(false)} />
-      </div>
-    );
-  }
+  const handlePlay = (id: string) => {
+    navigate(`/story/${id}`);
+  };
 
   return (
     <div className="min-h-screen p-4 md:p-8">
@@ -113,126 +43,76 @@ const MySaves = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Icon name="Save" size={32} />
-              Мои сохранения
+              <Icon name="Library" size={32} />
+              Мои истории
             </h1>
             <p className="text-muted-foreground mt-1">
-              Все ваши персонажи, миры и истории
+              Все сохранённые приключения
             </p>
           </div>
-          <Button onClick={loadUserData} variant="outline" size="sm" className="gap-2">
-            <Icon name="RefreshCw" size={16} />
-            Обновить
+          <Button onClick={() => navigate('/')} className="gap-2">
+            <Icon name="Plus" size={16} />
+            Новая история
           </Button>
         </div>
 
-        <Tabs defaultValue="characters" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="characters" className="gap-2">
-              <Icon name="Users" size={16} />
-              Персонажи ({characters.length})
-            </TabsTrigger>
-            <TabsTrigger value="worlds" className="gap-2">
-              <Icon name="Globe" size={16} />
-              Миры ({worlds.length})
-            </TabsTrigger>
-            <TabsTrigger value="stories" className="gap-2">
-              <Icon name="BookOpen" size={16} />
-              Истории ({stories.length})
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="characters" className="space-y-4 mt-4">
-            {characters.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Icon name="UserX" size={48} className="mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">Персонажи не созданы</p>
-                  <Button asChild variant="outline" className="mt-4">
-                    <a href="/create-fanfic">Создать персонажа</a>
-                  </Button>
+        {stories.length === 0 ? (
+          <Card>
+            <CardContent className="py-16 text-center">
+              <Icon name="BookX" size={64} className="mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Пока нет историй</h3>
+              <p className="text-muted-foreground mb-6">Начните новое приключение!</p>
+              <Button onClick={() => navigate('/')} size="lg" className="gap-2">
+                <Icon name="Play" size={20} />
+                Начать историю
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {stories.map((story) => (
+              <Card key={story.id} className="hover:shadow-lg transition-all group">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 line-clamp-1">
+                    <Icon name="BookOpen" size={18} className="flex-shrink-0" />
+                    <span className="truncate">{story.title}</span>
+                  </CardTitle>
+                  <CardDescription className="flex flex-col gap-1">
+                    <span>{story.messages.length} сообщений</span>
+                    <span className="text-xs">
+                      {formatDistanceToNow(story.updatedAt, { addSuffix: true, locale: ru })}
+                    </span>
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground line-clamp-3 min-h-[60px]">
+                      {story.messages[0]?.content || 'Нет содержимого'}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => handlePlay(story.id)}
+                        size="sm" 
+                        className="flex-1 gap-2"
+                      >
+                        <Icon name="Play" size={16} />
+                        Продолжить
+                      </Button>
+                      <Button
+                        onClick={() => handleDelete(story.id)}
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                      >
+                        <Icon name="Trash2" size={16} />
+                      </Button>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {characters.map((char) => (
-                  <Card key={char.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Icon name="User" size={18} />
-                        {char.name}
-                      </CardTitle>
-                      <CardDescription>
-                        {char.age && `${char.age} лет`}
-                        {char.age && char.gender && ' • '}
-                        {char.gender}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                        {char.personality || 'Без описания'}
-                      </p>
-                      <div className="flex justify-between items-center text-xs text-muted-foreground">
-                        <span>ID: {char.id}</span>
-                        <span>{new Date(char.created_at).toLocaleDateString('ru-RU')}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="worlds" className="space-y-4 mt-4">
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Icon name="Construction" size={48} className="mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Раздел в разработке</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="stories" className="space-y-4 mt-4">
-            {stories.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Icon name="BookX" size={48} className="mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">Истории не созданы</p>
-                  <Button asChild variant="outline" className="mt-4">
-                    <a href="/create-fanfic">Создать историю</a>
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2">
-                {stories.map((story) => (
-                  <Card key={story.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Icon name="BookOpen" size={18} />
-                        {story.title || `История #${story.id}`}
-                      </CardTitle>
-                      <CardDescription className="flex gap-2 flex-wrap">
-                        {story.genre && <Badge variant="secondary">{story.genre}</Badge>}
-                        {story.status && (
-                          <Badge variant={story.status === 'active' ? 'default' : 'outline'}>
-                            {story.status === 'active' ? 'Активна' : story.status}
-                          </Badge>
-                        )}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex justify-between items-center text-sm text-muted-foreground">
-                        <span>{story.message_count || 0} сообщений</span>
-                        <span>{new Date(story.created_at).toLocaleDateString('ru-RU')}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

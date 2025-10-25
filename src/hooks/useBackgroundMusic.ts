@@ -49,6 +49,7 @@ export const useBackgroundMusic = () => {
   };
 
   const toggle = () => {
+    console.log('Toggle music clicked, current state:', isPlaying);
     if (isPlaying) {
       pause();
     } else {

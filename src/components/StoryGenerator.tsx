@@ -2,7 +2,16 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { StoryJournal } from './story/StoryJournal';
+import { storyStorage } from '@/lib/storyStorage';
+import { useToast } from '@/hooks/use-toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface Message {
   type: 'user' | 'ai';
@@ -11,15 +20,34 @@ interface Message {
   id: string;
 }
 
-export const StoryGenerator = () => {
+interface StoryGeneratorProps {
+  storyId?: string;
+}
+
+export const StoryGenerator = ({ storyId }: StoryGeneratorProps = {}) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentInput, setCurrentInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showJournal, setShowJournal] = useState(true);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editInput, setEditInput] = useState('');
+  const [currentStoryId, setCurrentStoryId] = useState<string>(storyId || '');
+  const [storyTitle, setStoryTitle] = useState('Новая история');
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (storyId) {
+      const story = storyStorage.getById(storyId);
+      if (story) {
+        setMessages(story.messages);
+        setStoryTitle(story.title);
+        setCurrentStoryId(storyId);
+      }
+    }
+  }, [storyId]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -133,6 +161,51 @@ export const StoryGenerator = () => {
     }
   };
 
+  const handleSaveStory = () => {
+    if (messages.length === 0) {
+      toast({
+        title: 'Нечего сохранять',
+        description: 'Начните историю перед сохранением',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    const id = currentStoryId || Date.now().toString();
+    const title = messages[0]?.content.slice(0, 50) || 'Новая история';
+    
+    storyStorage.save({
+      id,
+      title,
+      messages,
+      createdAt: currentStoryId ? storyStorage.getById(currentStoryId)?.createdAt || new Date() : new Date(),
+      updatedAt: new Date()
+    });
+
+    setCurrentStoryId(id);
+    setStoryTitle(title);
+
+    toast({
+      title: 'Сохранено!',
+      description: 'История сохранена в вашей библиотеке'
+    });
+  };
+
+  const handleNewStory = () => {
+    if (messages.length > 0) {
+      const confirm = window.confirm('Начать новую историю? Текущий прогресс будет потерян, если не сохранён.');
+      if (!confirm) return;
+    }
+    setMessages([]);
+    setCurrentStoryId('');
+    setStoryTitle('Новая история');
+    navigate('/');
+  };
+
+  const handleGoToLibrary = () => {
+    navigate('/my-saves');
+  };
+
   return (
     <div className="h-screen w-screen flex overflow-hidden bg-background">
       <div className="flex-1 flex">
@@ -154,9 +227,44 @@ export const StoryGenerator = () => {
                 <Icon name="BookOpen" size={24} className="text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-bold">Твоя история</h2>
-                <p className="text-sm text-muted-foreground">Ролевая новелла без ограничений</p>
+                <h2 className="text-xl font-bold">{storyTitle}</h2>
+                <p className="text-sm text-muted-foreground">
+                  {messages.length === 0 ? 'Начни свою историю' : `${messages.length} сообщений`}
+                </p>
               </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSaveStory}
+                disabled={messages.length === 0}
+                className="gap-2"
+              >
+                <Icon name="Save" size={18} />
+                <span className="hidden md:inline">Сохранить</span>
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <Icon name="MoreVertical" size={18} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleNewStory}>
+                    <Icon name="Plus" size={16} className="mr-2" />
+                    Новая история
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleGoToLibrary}>
+                    <Icon name="Library" size={16} className="mr-2" />
+                    Мои сохранения
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/')}>
+                    <Icon name="Home" size={16} className="mr-2" />
+                    На главную
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 

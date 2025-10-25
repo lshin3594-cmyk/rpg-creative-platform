@@ -14,8 +14,8 @@ export const Navigation = () => {
   const { isPlaying, toggle } = useBackgroundMusic();
   
   const navItems = [
-    { path: '/create-fanfic', label: 'Генерация', icon: 'Sparkles' },
     { path: '/my-saves', label: 'Мои сохранения', icon: 'Save' },
+    { path: '/profile', label: 'Профиль', icon: 'User' },
   ];
 
   return (
@@ -45,7 +45,11 @@ export const Navigation = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={toggle}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggle();
+                }}
                 className="gap-2"
                 title={isPlaying ? 'Выключить музыку' : 'Включить музыку'}
               >
