@@ -31,11 +31,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'body': ''
         }
     
-    if entity_type not in ['characters', 'worlds']:
+    if entity_type not in ['characters', 'worlds', 'plots']:
         return {
             'statusCode': 400,
             'headers': {'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': 'Invalid entity type. Use characters or worlds'})
+            'body': json.dumps({'error': 'Invalid entity type. Use characters, worlds, or plots'})
         }
     
     conn = get_db_connection()
@@ -49,10 +49,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     FROM t_p56538376_rpg_creative_platfor.characters 
                     ORDER BY created_at DESC
                 ''')
-            else:
+            elif entity_type == 'worlds':
                 cur.execute('''
                     SELECT id, name, description, image, genre, created_at 
                     FROM t_p56538376_rpg_creative_platfor.worlds 
+                    ORDER BY created_at DESC
+                ''')
+            else:
+                cur.execute('''
+                    SELECT id, name, description, genre, hooks, conflict, resolution, created_at 
+                    FROM t_p56538376_rpg_creative_platfor.plots 
                     ORDER BY created_at DESC
                 ''')
             
@@ -87,7 +93,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
                     RETURNING id, name, role, avatar, stats, personality, backstory, character_type, created_at
                 ''', (name, role, avatar, stats, personality, backstory, character_type))
-            else:
+            elif entity_type == 'worlds':
                 name = body.get('name', '')
                 description = body.get('description', '')
                 image = body.get('image', '')
@@ -99,6 +105,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     VALUES (%s, %s, %s, %s)
                     RETURNING id, name, description, image, genre, created_at
                 ''', (name, description, image, genre))
+            else:
+                name = body.get('name', '')
+                description = body.get('description', '')
+                genre = body.get('genre', '')
+                hooks = body.get('hooks', '')
+                conflict = body.get('conflict', '')
+                resolution = body.get('resolution', '')
+                
+                cur.execute('''
+                    INSERT INTO t_p56538376_rpg_creative_platfor.plots 
+                    (name, description, genre, hooks, conflict, resolution)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    RETURNING id, name, description, genre, hooks, conflict, resolution, created_at
+                ''', (name, description, genre, hooks, conflict, resolution))
             
             entity = cur.fetchone()
             conn.commit()
@@ -148,7 +168,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     RETURNING id, name, role, avatar, stats, personality, backstory, character_type, created_at
                 '''
                 cur.execute(query, update_values)
-            else:
+            elif entity_type == 'worlds':
                 update_fields = []
                 update_values = []
                 
@@ -170,6 +190,30 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     SET {', '.join(update_fields)}
                     WHERE id = %s
                     RETURNING id, name, description, image, genre, created_at
+                '''
+                cur.execute(query, update_values)
+            else:
+                update_fields = []
+                update_values = []
+                
+                for field in ['name', 'description', 'genre', 'hooks', 'conflict', 'resolution']:
+                    if field in body:
+                        update_fields.append(f'{field} = %s')
+                        update_values.append(body[field])
+                
+                if not update_fields:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'No fields to update'})
+                    }
+                
+                update_values.append(entity_id)
+                query = f'''
+                    UPDATE t_p56538376_rpg_creative_platfor.plots 
+                    SET {', '.join(update_fields)}
+                    WHERE id = %s
+                    RETURNING id, name, description, genre, hooks, conflict, resolution, created_at
                 '''
                 cur.execute(query, update_values)
             
