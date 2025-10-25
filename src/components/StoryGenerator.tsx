@@ -1,14 +1,8 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
-import { useState } from 'react';
-import { NarrativeSettings } from '@/components/NarrativeSettings';
-import { CharacterWorldSelectors } from '@/components/story-generator/CharacterWorldSelectors';
-import { PlotSelector } from '@/components/story-generator/PlotSelector';
-import { StoryPromptInput } from '@/components/story-generator/StoryPromptInput';
-import { AdvancedSettings } from '@/components/story-generator/AdvancedSettings';
-import { NPCSettings } from '@/components/story-generator/NPCSettings';
-import { GenerationStatus } from '@/components/story-generator/GenerationStatus';
 
 interface Character {
   id: string;
@@ -81,41 +75,11 @@ export const StoryGenerator = ({
   onOpenChange,
   storyPrompt,
   setStoryPrompt,
-  selectedCharacter,
-  setSelectedCharacter,
-  selectedWorld,
-  setSelectedWorld,
   isGenerating,
   generatedStory,
   onGenerate,
-  onStartStory,
-  characters,
-  worlds,
-  plots,
-  episodeLength = 1500,
-  setEpisodeLength,
-  imagesPerEpisode = 2,
-  setImagesPerEpisode,
-  playerInstructions = '',
-  setPlayerInstructions,
-  autoGenerateNPCs = true,
-  setAutoGenerateNPCs,
-  npcCount = 2,
-  setNpcCount,
-  npcTypes = [],
-  setNpcTypes,
-  selectedPlot = '',
-  setSelectedPlot,
-  narrativeMode = 'story',
-  setNarrativeMode,
-  playerCharacterId = '',
-  setPlayerCharacterId,
-  selectedNarrativeCharacters = [],
-  setSelectedNarrativeCharacters
+  onStartStory
 }: StoryGeneratorProps) => {
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [showPlotDetails, setShowPlotDetails] = useState(false);
-
   return (
     <div className="flex justify-center mb-8">
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -125,89 +89,77 @@ export const StoryGenerator = ({
             Начать приключение
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-serif">Генератор историй</DialogTitle>
+            <DialogTitle className="text-2xl font-serif">Создать историю</DialogTitle>
             <DialogDescription>
-              Опиши сюжет, и DeepSeek создаст уникальную историю без цензуры
+              Опиши, что хочешь — ИИ сгенерирует интерактивную историю
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <NarrativeSettings
-              narrativeMode={narrativeMode}
-              setNarrativeMode={setNarrativeMode!}
-              playerCharacterId={playerCharacterId}
-              setPlayerCharacterId={setPlayerCharacterId!}
-              characters={characters}
-              selectedNarrativeCharacters={selectedNarrativeCharacters}
-              setSelectedNarrativeCharacters={setSelectedNarrativeCharacters}
-            />
-            
-            <CharacterWorldSelectors
-              selectedCharacter={selectedCharacter}
-              setSelectedCharacter={setSelectedCharacter}
-              selectedWorld={selectedWorld}
-              setSelectedWorld={setSelectedWorld}
-              characters={characters}
-              worlds={worlds}
-            />
-
-            <PlotSelector
-              plots={plots}
-              selectedPlot={selectedPlot}
-              setSelectedPlot={setSelectedPlot}
-              showPlotDetails={showPlotDetails}
-              setShowPlotDetails={setShowPlotDetails}
-            />
-
-            <StoryPromptInput
-              storyPrompt={storyPrompt}
-              setStoryPrompt={setStoryPrompt}
-              selectedPlot={selectedPlot}
-            />
-
-            <div className="space-y-3">
-              <button
-                type="button"
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors font-medium"
-              >
-                <Icon 
-                  name={showAdvanced ? 'ChevronUp' : 'ChevronDown'} 
-                  size={16} 
-                />
-                {showAdvanced ? 'Скрыть' : 'Показать'} расширенные настройки
-              </button>
-
-              {showAdvanced && (
-                <div className="space-y-4 animate-fade-in">
-                  <AdvancedSettings
-                    episodeLength={episodeLength}
-                    setEpisodeLength={setEpisodeLength}
-                    imagesPerEpisode={imagesPerEpisode}
-                    setImagesPerEpisode={setImagesPerEpisode}
-                    playerInstructions={playerInstructions}
-                    setPlayerInstructions={setPlayerInstructions}
-                  />
-
-                  <NPCSettings
-                    autoGenerateNPCs={autoGenerateNPCs}
-                    setAutoGenerateNPCs={setAutoGenerateNPCs}
-                    npcCount={npcCount}
-                    setNpcCount={setNpcCount}
-                    npcTypes={npcTypes}
-                    setNpcTypes={setNpcTypes}
-                  />
-                </div>
-              )}
+            <div className="space-y-2">
+              <Label htmlFor="story-prompt" className="text-base">Опиши идею истории</Label>
+              <Textarea
+                id="story-prompt"
+                placeholder="Например: Я — детектив в киберпанк-городе, расследую убийство. Мрачная атмосфера, опасные районы..."
+                value={storyPrompt}
+                onChange={(e) => setStoryPrompt(e.target.value)}
+                className="min-h-[150px] text-base"
+              />
+              <p className="text-sm text-muted-foreground">
+                💡 Укажи жанр, главного героя, сеттинг — остальное ИИ додумает сам
+              </p>
             </div>
 
-            <GenerationStatus
-              isGenerating={isGenerating}
-              generatedStory={generatedStory}
-              onGenerate={onGenerate}
-              onStartStory={onStartStory}
-            />
+            <Button 
+              onClick={onGenerate} 
+              disabled={isGenerating || !storyPrompt.trim()}
+              className="w-full gap-2"
+              size="lg"
+            >
+              {isGenerating ? (
+                <>
+                  <Icon name="Loader2" size={20} className="animate-spin" />
+                  Создаю историю...
+                </>
+              ) : (
+                <>
+                  <Icon name="Wand2" size={20} />
+                  Создать историю
+                </>
+              )}
+            </Button>
+            
+            {isGenerating && (
+              <div className="space-y-2 p-4 bg-primary/5 border border-primary/20 rounded-lg animate-fade-in">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Icon name="Sparkles" size={16} className="text-primary animate-pulse" />
+                  <span className="font-medium">ИИ создаёт твою историю...</span>
+                </div>
+              </div>
+            )}
+            
+            {generatedStory && (
+              <div className="space-y-4 mt-6 p-4 bg-muted/50 rounded-lg border-2 border-primary/20">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Icon name="CheckCircle2" size={20} className="text-green-500" />
+                    <Label className="text-base font-semibold">История готова!</Label>
+                  </div>
+                  <div className="max-h-[200px] overflow-y-auto p-3 bg-background rounded border">
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed">{generatedStory}</p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={onStartStory} 
+                  className="w-full gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
+                  size="lg"
+                >
+                  <Icon name="Play" size={20} />
+                  Начать играть
+                </Button>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
