@@ -16,19 +16,19 @@ export const StoryMessages = forwardRef<HTMLDivElement, StoryMessagesProps>(
     return (
       <ScrollArea className="flex-1" ref={ref}>
         <div className="p-6">
-          {messages.length === 0 ? (
+          {messages.length === 0 && !isProcessing ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center space-y-4 max-w-md">
                 <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10">
-                  <Icon name="Sparkles" size={36} className="text-primary" />
+                  <Icon name="Rocket" size={36} className="text-primary" />
                 </div>
-                <h3 className="text-2xl font-bold">Начните историю</h3>
+                <h3 className="text-2xl font-bold">Готовимся к старту...</h3>
                 <p className="text-muted-foreground">
-                  {gameSettings.setting || 'Опишите своё первое действие или ситуацию'}
+                  ИИ создаёт начало истории
                 </p>
               </div>
             </div>
-          ) : (
+          ) : messages.length > 0 ? (
             <div className="space-y-6 max-w-4xl mx-auto">
               {messages.map((message) => (
                 <div
@@ -105,6 +105,23 @@ export const StoryMessages = forwardRef<HTMLDivElement, StoryMessagesProps>(
                   </div>
                 </div>
               )}
+            </div>
+          ) : (
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center space-y-4 max-w-md">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10">
+                  <Icon name="Rocket" size={36} className="text-primary animate-pulse" />
+                </div>
+                <h3 className="text-2xl font-bold">Пристегнитесь, мы отправляемся</h3>
+                <div className="flex items-center justify-center gap-2">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                  <span className="text-sm text-muted-foreground">{processingTime} сек</span>
+                </div>
+              </div>
             </div>
           )}
         </div>
