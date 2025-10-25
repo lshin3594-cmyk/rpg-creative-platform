@@ -284,6 +284,52 @@ const CreateGame = () => {
           </div>
 
           <div className="relative p-6 rounded-xl bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-purple-900/40 border border-purple-500/40 backdrop-blur-md">
+            <Label className="text-purple-100 text-base mb-4 block">
+              Жанр и рейтинг
+            </Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="genre" className="text-purple-200/80 text-sm mb-2 block">
+                  Жанр
+                </Label>
+                <select
+                  id="genre"
+                  value={genre}
+                  onChange={(e) => setGenre(e.target.value)}
+                  className="w-full p-3 rounded-lg bg-black/30 border border-purple-500/30 text-white focus:border-purple-400 focus:outline-none"
+                >
+                  <option value="Фэнтези">Фэнтези</option>
+                  <option value="Киберпанк">Киберпанк</option>
+                  <option value="Ужасы">Ужасы</option>
+                  <option value="Романтика">Романтика</option>
+                  <option value="Детектив">Детектив</option>
+                  <option value="Научная фантастика">Научная фантастика</option>
+                  <option value="Постапокалипсис">Постапокалипсис</option>
+                  <option value="Историческое">Историческое</option>
+                  <option value="Драма">Драма</option>
+                  <option value="Приключения">Приключения</option>
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="rating" className="text-purple-200/80 text-sm mb-2 block">
+                  Рейтинг
+                </Label>
+                <select
+                  id="rating"
+                  value={rating}
+                  onChange={(e) => setRating(e.target.value)}
+                  className="w-full p-3 rounded-lg bg-black/30 border border-purple-500/30 text-white focus:border-purple-400 focus:outline-none"
+                >
+                  <option value="6+">6+ (Для детей)</option>
+                  <option value="12+">12+ (Подростки)</option>
+                  <option value="16+">16+ (Взрослые темы)</option>
+                  <option value="18+">18+ (Без цензуры)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative p-6 rounded-xl bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-purple-900/40 border border-purple-500/40 backdrop-blur-md">
             <Label htmlFor="aiInstructions" className="text-purple-100 text-base mb-4 block">
               Рекомендации ИИ по сюжету и ведению
             </Label>
