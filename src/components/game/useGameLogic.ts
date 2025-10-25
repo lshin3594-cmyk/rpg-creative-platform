@@ -17,7 +17,7 @@ export const useGameLogic = () => {
   const [showJournal, setShowJournal] = useState(false);
   const [showCreateChar, setShowCreateChar] = useState(false);
   const [agentsEnabled, setAgentsEnabled] = useState(true);
-  const [autoIllustrations, setAutoIllustrations] = useState(false);
+  const [autoIllustrations, setAutoIllustrations] = useState(true);
   const [generatingIllustration, setGeneratingIllustration] = useState(false);
   const turnCountRef = useRef(0);
   const storyInitializedRef = useRef(false);
@@ -89,6 +89,7 @@ export const useGameLogic = () => {
       
       const data = await response.json();
       setImagesInEpisode(prev => prev + 1);
+      
       return data.url;
     } catch (error) {
       console.error('Illustration generation failed:', error);
