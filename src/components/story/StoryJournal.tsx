@@ -94,11 +94,11 @@ export const StoryJournal = ({ messages }: StoryJournalProps) => {
   });
 
   return (
-    <div className="w-80 border-l bg-muted/30 flex flex-col">
-      <div className="p-4 border-b bg-background">
+    <div className="w-96 border-r bg-muted/20 flex flex-col">
+      <div className="p-4 border-b bg-background/95 backdrop-blur">
         <div className="flex items-center gap-2 mb-4">
           <Icon name="BookMarked" size={20} className="text-primary" />
-          <h3 className="font-bold">Журнал приключений</h3>
+          <h3 className="font-bold text-lg">Журнал</h3>
         </div>
         <div className="flex gap-1 bg-muted rounded-lg p-1">
           <button

@@ -107,7 +107,7 @@ export const StoryGenerator = ({
     if (isOpen && messages.length === 0) {
       setMessages([]);
       setCurrentInput('');
-      setShowJournal(false);
+      setShowJournal(true);
     }
   }, [isOpen]);
 
@@ -196,11 +196,22 @@ export const StoryGenerator = ({
             Начать приключение
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-6xl h-[90vh] flex flex-col p-0">
+        <DialogContent className="max-w-7xl h-[90vh] flex flex-col p-0">
           <div className="flex-1 flex overflow-hidden">
+            {showJournal && (
+              <StoryJournal messages={messages} />
+            )}
             <div className="flex-1 flex flex-col">
               <div className="p-4 border-b bg-gradient-to-r from-primary/10 to-background flex items-center justify-between">
                 <div className="flex items-center gap-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowJournal(!showJournal)}
+                    className="gap-2"
+                  >
+                    <Icon name={showJournal ? 'PanelLeftClose' : 'PanelLeftOpen'} size={20} />
+                  </Button>
                   <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                     <Icon name="BookOpen" size={24} className="text-primary" />
                   </div>
@@ -209,15 +220,6 @@ export const StoryGenerator = ({
                     <p className="text-sm text-muted-foreground">Ролевая новелла без ограничений</p>
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowJournal(!showJournal)}
-                  className="gap-2"
-                >
-                  <Icon name="Book" size={18} />
-                  {showJournal ? 'Скрыть журнал' : 'Журнал'}
-                </Button>
               </div>
 
               <ScrollArea className="flex-1 p-6" ref={scrollRef}>
@@ -383,10 +385,6 @@ export const StoryGenerator = ({
                 </p>
               </div>
             </div>
-
-            {showJournal && (
-              <StoryJournal messages={messages} />
-            )}
           </div>
         </DialogContent>
       </Dialog>
