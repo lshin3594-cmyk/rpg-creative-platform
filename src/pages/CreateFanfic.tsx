@@ -7,9 +7,12 @@ import { CanonUniverseForm } from '@/components/universe/CanonUniverseForm';
 import { CustomUniverseForm } from '@/components/universe/CustomUniverseForm';
 import { CharacterForm } from '@/components/universe/CharacterForm';
 import { GenerationSettings } from '@/components/universe/GenerationSettings';
+import { SavedUniversesList } from '@/components/universe/SavedUniversesList';
+import { EditUniverseDialog } from '@/components/universe/EditUniverseDialog';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { universeStorage, type Universe } from '@/lib/universeStorage';
 
 interface UniverseData {
   name: string;
@@ -34,6 +37,9 @@ const CreateFanfic = () => {
   const [rating, setRating] = useState('teen');
   const [customPrompt, setCustomPrompt] = useState('');
 
+  const [editingUniverse, setEditingUniverse] = useState<Universe | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -47,6 +53,13 @@ const CreateFanfic = () => {
     setIsCreatingUniverse(true);
     
     try {
+      const savedUniverse = universeStorage.save({
+        name: data.name,
+        description: data.description,
+        genre: data.genre,
+        tags: data.tags,
+      });
+
       const response = await fetch('https://functions.poehali.dev/afd406e2-2b81-4659-ad8f-4fe5be7c1242', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -69,7 +82,7 @@ const CreateFanfic = () => {
       
       toast({
         title: "Вселенная создана!",
-        description: `${data.name} готова к заселению персонажами`
+        description: `${data.name} сохранена и готова к заселению персонажами`
       });
     } catch (error) {
       toast({
@@ -222,7 +235,7 @@ const CreateFanfic = () => {
           <CardContent className="pt-6">
             {step === 'universe' && (
               <Tabs defaultValue="canon">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsList className="grid w-full grid-cols-3 mb-6">
                   <TabsTrigger value="canon">
                     <Icon name="Library" size={16} className="mr-2" />
                     Канонические вселенные
@@ -230,6 +243,10 @@ const CreateFanfic = () => {
                   <TabsTrigger value="custom">
                     <Icon name="Wand2" size={16} className="mr-2" />
                     Своя вселенная
+                  </TabsTrigger>
+                  <TabsTrigger value="saved">
+                    <Icon name="Bookmark" size={16} className="mr-2" />
+                    Сохранённые
                   </TabsTrigger>
                 </TabsList>
 
@@ -244,6 +261,13 @@ const CreateFanfic = () => {
                   <CustomUniverseForm
                     onSubmit={handleUniverseCreate}
                     isCreating={isCreatingUniverse}
+                  />
+                </TabsContent>
+
+                <TabsContent value="saved">
+                  <SavedUniversesList
+                    key={refreshKey}
+                    onEdit={setEditingUniverse}
                   />
                 </TabsContent>
               </Tabs>
@@ -364,6 +388,13 @@ const CreateFanfic = () => {
           </CardContent>
         </Card>
       </div>
+
+      <EditUniverseDialog
+        universe={editingUniverse}
+        open={!!editingUniverse}
+        onOpenChange={(open) => !open && setEditingUniverse(null)}
+        onSave={() => setRefreshKey(prev => prev + 1)}
+      />
     </PageLayout>
   );
 };
