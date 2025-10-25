@@ -86,22 +86,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'body': json.dumps({'error': 'Missing VK credentials'})
                     }
                 
-                token_url = f'https://id.vk.com/oauth2/auth'
-                token_params = {
-                    'grant_type': 'authorization_code',
-                    'code': code,
-                    'redirect_uri': redirect_uri,
-                    'client_id': vk_app_id,
-                    'client_secret': vk_app_secret
-                }
-                token_request = urllib.request.Request(
-                    token_url,
-                    data=urlencode(token_params).encode(),
-                    headers={'Content-Type': 'application/x-www-form-urlencoded'}
-                )
+                token_url = f'https://oauth.vk.com/access_token?client_id={vk_app_id}&client_secret={vk_app_secret}&redirect_uri={redirect_uri}&code={code}'
                 
                 try:
-                    with urllib.request.urlopen(token_request) as response:
+                    with urllib.request.urlopen(token_url) as response:
                         token_data = json.loads(response.read())
                 except Exception as e:
                     return {
@@ -117,13 +105,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'body': json.dumps({'error': 'VK auth failed', 'details': token_data})
                     }
                 
-                vk_user_id = str(token_data.get('user_id', token_data.get('user', {}).get('user_id', '')))
-                user_info_data = token_data.get('user', {})
-                user_info = {
-                    'first_name': user_info_data.get('first_name', ''),
-                    'last_name': user_info_data.get('last_name', ''),
-                    'photo_200': user_info_data.get('avatar', '')
-                } if user_info_data else None
+                vk_user_id = str(token_data['user_id'])
+                user_info = get_vk_user_info(token_data['access_token'])
                 
                 cursor = conn.cursor()
                 cursor.execute("SELECT id, username, email FROM users WHERE vk_id = %s", (vk_user_id,))
