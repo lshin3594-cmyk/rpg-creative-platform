@@ -27,6 +27,7 @@ export const useGameLogic = () => {
     const settingsJson = localStorage.getItem('current-game-settings');
     if (settingsJson) {
       setGameSettings(JSON.parse(settingsJson));
+      storyInitializedRef.current = false;
     }
   }, []);
 
@@ -179,6 +180,9 @@ export const useGameLogic = () => {
   useEffect(() => {
     if (gameSettings && messages.length === 0 && !isProcessing && !storyInitializedRef.current) {
       storyInitializedRef.current = true;
+      
+      const abortController = new AbortController();
+      
       const startStory = async () => {
         setIsProcessing(true);
         try {
@@ -195,10 +199,11 @@ export const useGameLogic = () => {
               action: startAction,
               settings: gameSettings,
               history: []
-            })
+            }),
+            signal: abortController.signal
           });
 
-          if (!response.ok) throw new Error('AI request failed');
+          if (!response.ok) throw new Error(`AI request failed: ${response.status}`);
 
           const data = await response.json();
           
@@ -227,6 +232,10 @@ export const useGameLogic = () => {
             }).catch(() => setGeneratingIllustration(false));
           }
         } catch (error) {
+          if (error instanceof Error && error.name === 'AbortError') {
+            console.log('Auto-start aborted');
+            return;
+          }
           console.error('Auto-start error:', error);
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           console.error('Error details:', errorMessage);
@@ -241,8 +250,12 @@ export const useGameLogic = () => {
       };
 
       startStory();
+      
+      return () => {
+        abortController.abort();
+      };
     }
-  }, [gameSettings]);
+  }, [gameSettings, messages.length, isProcessing, autoIllustrations, toast]);
 
   return {
     messages,
