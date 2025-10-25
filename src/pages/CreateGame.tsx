@@ -164,7 +164,7 @@ const CreateGame = () => {
             className="flex-1 gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-none text-lg py-6"
           >
             <Icon name="Rocket" size={20} />
-            Начать приключение
+            Начать игру
           </Button>
         </div>
       </div>

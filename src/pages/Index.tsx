@@ -9,14 +9,14 @@ const Index = () => {
 
   const menuItems = [
     {
-      title: 'НАЧАТЬ ПРИКЛЮЧЕНИЕ',
+      title: 'НАЧАТЬ ИГРУ',
       description: 'Создайте игру с нуля',
       icon: 'Play',
       onClick: () => navigate('/create-game'),
     },
     {
-      title: 'ВЫБРАТЬ ПРИКЛЮЧЕНИЕ',
-      description: 'Продолжите свои предыдущие приключения',
+      title: 'ВЫБРАТЬ ИГРУ',
+      description: 'Продолжите свои предыдущие игры',
       icon: 'BookMarked',
       onClick: () => navigate('/library'),
     },
