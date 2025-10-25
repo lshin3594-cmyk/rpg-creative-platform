@@ -112,6 +112,12 @@ const Library = () => {
     return labels[rating] || rating;
   };
 
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+
+  const displayedStories = showOnlyFavorites 
+    ? filteredStories.filter(s => s.is_favorite)
+    : filteredStories;
+
   return (
     <div className="min-h-screen p-4 py-12 relative">
       <Button
@@ -123,14 +129,23 @@ const Library = () => {
         На главную
       </Button>
 
+      <Button
+        variant="ghost"
+        onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+        className="absolute top-4 right-4 gap-2 text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 z-10"
+      >
+        <Icon name={showOnlyFavorites ? "Star" : "Star"} size={18} className={showOnlyFavorites ? "fill-yellow-400 text-yellow-400" : ""} />
+        {showOnlyFavorites ? 'Все игры' : 'Избранное'}
+      </Button>
+
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="text-center space-y-3">
           <h1 className="text-4xl font-bold tracking-tight text-purple-100 uppercase flex items-center justify-center gap-3">
             <Icon name="Library" size={36} />
-            Библиотека историй
+            Библиотека игр
           </h1>
           <p className="text-purple-200/70">
-            Все ваши сгенерированные истории
+            Все ваши сгенерированные игры
           </p>
         </div>
 
@@ -148,28 +163,34 @@ const Library = () => {
           {isLoading ? (
             <div className="text-center py-12">
               <Icon name="Loader2" size={48} className="mx-auto animate-spin text-purple-400" />
-              <p className="text-purple-200/70 mt-4">Загрузка историй...</p>
+              <p className="text-purple-200/70 mt-4">Загрузка игр...</p>
             </div>
-          ) : filteredStories.length === 0 ? (
+          ) : displayedStories.length === 0 ? (
             <div className="p-12 rounded-xl bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-purple-900/40 border border-purple-500/40 backdrop-blur-md text-center">
               <Icon name="BookOpen" size={64} className="mx-auto text-purple-300/50 mb-4" />
-              <h3 className="text-lg font-semibold mb-2 text-purple-100">Пока нет историй</h3>
+              <h3 className="text-lg font-semibold mb-2 text-purple-100">
+                {showOnlyFavorites ? 'Нет избранных игр' : 'Пока нет игр'}
+              </h3>
               <p className="text-purple-200/70 mb-4">
-                {searchQuery ? 'Ничего не найдено. Попробуйте изменить запрос.' : 'Создайте свою первую историю!'}
+                {showOnlyFavorites 
+                  ? 'Добавьте игры в избранное, нажав на звёздочку' 
+                  : searchQuery 
+                    ? 'Ничего не найдено. Попробуйте изменить запрос.' 
+                    : 'Создайте свою первую игру!'}
               </p>
-              {!searchQuery && (
+              {!searchQuery && !showOnlyFavorites && (
                 <Button
                   onClick={() => navigate('/create-game')}
                   className="gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-none"
                 >
                   <Icon name="Plus" size={18} />
-                  Создать историю
+                  Создать игру
                 </Button>
               )}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredStories.map((story) => (
+              {displayedStories.map((story) => (
                 <div 
                   key={story.id} 
                   className="p-6 rounded-xl bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-purple-900/40 border border-purple-500/40 backdrop-blur-md hover:border-purple-400/60 transition-all"
