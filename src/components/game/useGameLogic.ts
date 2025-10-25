@@ -31,8 +31,12 @@ export const useGameLogic = () => {
   useEffect(() => {
     const settingsJson = localStorage.getItem('current-game-settings');
     if (settingsJson) {
-      setGameSettings(JSON.parse(settingsJson));
+      const settings = JSON.parse(settingsJson);
+      console.log('🎮 Game settings loaded:', settings);
+      setGameSettings(settings);
       storyInitializedRef.current = false;
+    } else {
+      console.warn('⚠️ No game settings found in localStorage');
     }
   }, []);
 
@@ -285,8 +289,36 @@ export const useGameLogic = () => {
   };
 
   useEffect(() => {
-    if (gameSettings && messages.length === 0 && !isProcessing && !storyInitializedRef.current) {
-      storyInitializedRef.current = true;
+    console.log('🔍 Autostart check:', {
+      hasSettings: !!gameSettings,
+      messagesCount: messages.length,
+      isProcessing,
+      initialized: storyInitializedRef.current,
+      settingName: gameSettings?.name
+    });
+
+    if (!gameSettings) {
+      console.log('⏳ Waiting for game settings...');
+      return;
+    }
+
+    if (messages.length > 0) {
+      console.log('📚 Messages already exist, skipping autostart');
+      return;
+    }
+
+    if (storyInitializedRef.current) {
+      console.log('🔒 Story already initialized, skipping');
+      return;
+    }
+
+    if (isProcessing) {
+      console.log('⚙️ Already processing, skipping');
+      return;
+    }
+
+    console.log('✅ All checks passed! Starting story automatically...');
+    storyInitializedRef.current = true;
       setIsProcessing(true);
       setProcessingTime(0);
       
