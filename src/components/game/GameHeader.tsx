@@ -20,50 +20,66 @@ export const GameHeader = ({ gameSettings, currentEpisode, onBack }: GameHeaderP
 
   return (
     <>
-      <div className="p-4 border-b bg-gradient-to-r from-primary/10 to-background flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-            <Icon name="BookOpen" size={24} className="text-primary" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold">{gameSettings.name}</h2>
-            <p className="text-sm text-muted-foreground">
-              Эпизод {currentEpisode} • {gameSettings.role === 'author' ? 'Автор' : 'Герой'}
-            </p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setShowSettings(true)}>
-            <Icon name="Info" size={16} className="mr-2" />
-            Сеттинг
+      <div className="relative p-4 border-b border-primary/30 bg-black/80 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setShowSettings(true)}
+            className="border border-primary/50 hover:border-primary hover:bg-primary/10 transition-all"
+          >
+            <Icon name="FileText" size={16} className="mr-2" />
+            Саммари партии
           </Button>
-          <Button variant="ghost" size="icon" onClick={onBack}>
-            <Icon name="X" size={20} />
-          </Button>
+
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-xl" />
+              <div className="relative flex items-center gap-4 px-8 py-3 bg-black/60 border-2 border-primary/60 clip-hexagon">
+                <button className="text-primary hover:text-primary/80 transition-colors">
+                  <Icon name="ChevronLeft" size={24} />
+                </button>
+                
+                <div className="flex items-center gap-2">
+                  <Icon name="Zap" size={20} className="text-primary" />
+                  <span className="text-lg font-bold text-foreground">Ход: {currentEpisode}</span>
+                </div>
+
+                <button className="text-primary hover:text-primary/80 transition-colors">
+                  <Icon name="ChevronRight" size={24} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="text-right mr-4">
+              <div className="text-xs text-muted-foreground">{gameSettings.role === 'author' ? 'Автор' : 'Герой'}</div>
+            </div>
+            <Button variant="ghost" size="icon" onClick={onBack} className="hover:bg-primary/10">
+              <Icon name="X" size={20} />
+            </Button>
+          </div>
         </div>
       </div>
 
       <Dialog open={showSettings} onOpenChange={setShowSettings}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl bg-black/95 border-primary/30">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Icon name="BookOpen" size={24} className="text-primary" />
-              Сеттинг игры
+            <DialogTitle className="flex items-center gap-2 text-primary">
+              <Icon name="BookOpen" size={24} />
+              {gameSettings.name}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-            <div>
-              <h3 className="font-semibold mb-2">Название</h3>
-              <p className="text-muted-foreground">{gameSettings.name}</p>
-            </div>
             {gameSettings.setting && (
               <div>
-                <h3 className="font-semibold mb-2">Описание мира</h3>
-                <p className="text-muted-foreground whitespace-pre-wrap">{gameSettings.setting}</p>
+                <h3 className="text-sm font-semibold mb-2 text-primary/80">Описание мира</h3>
+                <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{gameSettings.setting}</p>
               </div>
             )}
             <div>
-              <h3 className="font-semibold mb-2">Ваша роль</h3>
+              <h3 className="text-sm font-semibold mb-2 text-primary/80">Ваша роль</h3>
               <p className="text-muted-foreground">
                 {gameSettings.role === 'author' ? 'Автор — вы управляете историей и персонажами' : 'Герой — вы играете за главного героя'}
               </p>
