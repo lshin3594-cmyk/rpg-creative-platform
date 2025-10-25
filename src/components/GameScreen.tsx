@@ -59,6 +59,62 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
   }, []);
 
   useEffect(() => {
+    // Автостарт истории - ИИ делает первый ход
+    if (gameSettings && messages.length === 0 && !isProcessing) {
+      const startStory = async () => {
+        setIsProcessing(true);
+        try {
+          const startAction = gameSettings.setting 
+            ? `Начни историю в сеттинге: ${gameSettings.setting}`
+            : 'Начни захватывающую историю';
+
+          const response = await fetch(AI_STORY_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              action: startAction,
+              settings: gameSettings,
+              history: []
+            })
+          });
+
+          if (!response.ok) throw new Error('AI request failed');
+
+          const data = await response.json();
+          
+          const aiMessage: Message = {
+            type: 'ai',
+            content: data.text,
+            timestamp: new Date(),
+            id: Date.now().toString(),
+            episode: data.episode || 1
+          };
+
+          setMessages([aiMessage]);
+          setCurrentEpisode(data.episode || 1);
+
+          if (data.characters && data.characters.length > 0) {
+            setCharacters(data.characters);
+          }
+        } catch (error) {
+          console.error('Auto-start error:', error);
+          toast({
+            title: 'Ошибка запуска',
+            description: 'Не удалось начать историю. Попробуйте ввести первое действие.',
+            variant: 'destructive'
+          });
+        } finally {
+          setIsProcessing(false);
+        }
+      };
+
+      startStory();
+    }
+  }, [gameSettings]);
+
+  useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
