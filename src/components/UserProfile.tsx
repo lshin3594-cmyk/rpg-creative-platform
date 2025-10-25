@@ -333,13 +333,27 @@ export const UserProfile = () => {
 
             {/* Правая колонка - превью */}
             <div className="space-y-4">
-              <div className="aspect-[3/4] bg-black/30 rounded-lg overflow-hidden border-2 border-dashed border-purple-500/40 flex items-center justify-center">
+              <div className="aspect-[3/4] bg-black/30 rounded-lg overflow-hidden border-2 border-dashed border-purple-500/40 flex items-center justify-center relative group">
                 {newCharacter.avatar ? (
-                  <img
-                    src={newCharacter.avatar}
-                    alt="Avatar preview"
-                    className="w-full h-full object-cover"
-                  />
+                  <>
+                    <img
+                      src={newCharacter.avatar}
+                      alt="Avatar preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="gap-2 bg-purple-600/90 hover:bg-purple-700 text-white border-none"
+                        onClick={generateAvatar}
+                        disabled={isGenerating || !newCharacter.name || !newCharacter.personality}
+                      >
+                        <Icon name="RefreshCw" size={14} />
+                        Перегенерировать
+                      </Button>
+                    </div>
+                  </>
                 ) : (
                   <div className="text-center text-purple-300/50 p-4">
                     <Icon name="Image" size={48} className="mx-auto mb-2 opacity-50" />
@@ -362,7 +376,7 @@ export const UserProfile = () => {
                 ) : (
                   <>
                     <Icon name="Sparkles" size={16} />
-                    Сгенерировать портрет
+                    {newCharacter.avatar ? 'Перегенерировать портрет' : 'Сгенерировать портрет'}
                   </>
                 )}
               </Button>
