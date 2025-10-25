@@ -7,11 +7,12 @@ interface StoryMessagesProps {
   messages: Message[];
   gameSettings: GameSettings;
   isProcessing: boolean;
+  processingTime: number;
   generatingIllustration: boolean;
 }
 
 export const StoryMessages = forwardRef<HTMLDivElement, StoryMessagesProps>(
-  ({ messages, gameSettings, isProcessing, generatingIllustration }, ref) => {
+  ({ messages, gameSettings, isProcessing, processingTime, generatingIllustration }, ref) => {
     return (
       <ScrollArea className="flex-1" ref={ref}>
         <div className="p-6">
@@ -80,7 +81,10 @@ export const StoryMessages = forwardRef<HTMLDivElement, StoryMessagesProps>(
                           <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '150ms' }} />
                           <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '300ms' }} />
                         </div>
-                        <span className="text-sm text-muted-foreground">Мастер создаёт историю...</span>
+                        <div className="flex flex-col">
+                          <span className="text-sm text-muted-foreground">Пристегнитесь, мы отправляемся</span>
+                          <span className="text-xs text-muted-foreground/60">{processingTime} сек</span>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -8,6 +8,7 @@ export const useGameLogic = () => {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [currentInput, setCurrentInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingTime, setProcessingTime] = useState(0);
   const [currentEpisode, setCurrentEpisode] = useState(1);
   const [gameSettings, setGameSettings] = useState<GameSettings | null>(null);
   const [showJournal, setShowJournal] = useState(false);
@@ -17,6 +18,7 @@ export const useGameLogic = () => {
   const [generatingIllustration, setGeneratingIllustration] = useState(false);
   const turnCountRef = useRef(0);
   const storyInitializedRef = useRef(false);
+  const timerIntervalRef = useRef<number | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -99,6 +101,12 @@ export const useGameLogic = () => {
     
     setCurrentInput('');
     setIsProcessing(true);
+    setProcessingTime(0);
+    
+    // Запускаем таймер
+    timerIntervalRef.current = window.setInterval(() => {
+      setProcessingTime(prev => prev + 1);
+    }, 1000);
 
     try {
       const controller = new AbortController();
@@ -172,6 +180,10 @@ export const useGameLogic = () => {
         });
       }
     } finally {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
       setIsProcessing(false);
     }
   };
@@ -196,8 +208,15 @@ export const useGameLogic = () => {
     if (gameSettings && messages.length === 0 && !isProcessing && !storyInitializedRef.current) {
       storyInitializedRef.current = true;
       setIsProcessing(true);
+      setProcessingTime(0);
+      
+      // Запускаем таймер
+      timerIntervalRef.current = window.setInterval(() => {
+        setProcessingTime(prev => prev + 1);
+      }, 1000);
       
       const abortController = new AbortController();
+      const timeoutId = setTimeout(() => abortController.abort(), 90000);
       
       const startStory = async () => {
         try {
@@ -217,6 +236,8 @@ export const useGameLogic = () => {
             }),
             signal: abortController.signal
           });
+          
+          clearTimeout(timeoutId);
 
           if (!response.ok) throw new Error(`AI request failed: ${response.status}`);
 
@@ -260,6 +281,10 @@ export const useGameLogic = () => {
             variant: 'destructive'
           });
         } finally {
+          if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+          }
           setIsProcessing(false);
         }
       };
@@ -268,6 +293,10 @@ export const useGameLogic = () => {
       
       return () => {
         abortController.abort();
+        if (timerIntervalRef.current) {
+          clearInterval(timerIntervalRef.current);
+          timerIntervalRef.current = null;
+        }
       };
     }
   }, [gameSettings, messages.length, isProcessing, autoIllustrations, toast]);
@@ -277,6 +306,7 @@ export const useGameLogic = () => {
     characters,
     currentInput,
     isProcessing,
+    processingTime,
     currentEpisode,
     gameSettings,
     showJournal,

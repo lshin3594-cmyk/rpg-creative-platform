@@ -18,6 +18,7 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
     characters,
     currentInput,
     isProcessing,
+    processingTime,
     currentEpisode,
     gameSettings,
     showJournal,
@@ -70,6 +71,7 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
           messages={messages}
           gameSettings={gameSettings}
           isProcessing={isProcessing}
+          processingTime={processingTime}
           generatingIllustration={generatingIllustration}
         />
 
