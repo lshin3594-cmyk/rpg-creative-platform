@@ -319,98 +319,97 @@ export const useGameLogic = () => {
 
     console.log('✅ All checks passed! Starting story automatically...');
     storyInitializedRef.current = true;
-      setIsProcessing(true);
-      setProcessingTime(0);
-      
-      // Запускаем таймер
-      timerIntervalRef.current = window.setInterval(() => {
-        setProcessingTime(prev => prev + 1);
-      }, 1000);
-      
-      const abortController = new AbortController();
-      const timeoutId = setTimeout(() => abortController.abort(), 90000);
-      
-      const startStory = async () => {
-        try {
-          const startAction = gameSettings.setting 
-            ? `Начни историю в сеттинге: ${gameSettings.setting}`
-            : 'Начни захватывающую историю';
+    setIsProcessing(true);
+    setProcessingTime(0);
+    
+    // Запускаем таймер
+    timerIntervalRef.current = window.setInterval(() => {
+      setProcessingTime(prev => prev + 1);
+    }, 1000);
+    
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(), 90000);
+    
+    const startStory = async () => {
+      try {
+        const startAction = gameSettings.setting 
+          ? `Начни историю в сеттинге: ${gameSettings.setting}`
+          : 'Начни захватывающую историю';
 
-          const response = await fetch(AI_STORY_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              action: startAction,
-              settings: gameSettings,
-              history: []
-            }),
-            signal: abortController.signal
-          });
-          
-          clearTimeout(timeoutId);
+        const response = await fetch(AI_STORY_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            action: startAction,
+            settings: gameSettings,
+            history: []
+          }),
+          signal: abortController.signal
+        });
+        
+        clearTimeout(timeoutId);
 
-          if (!response.ok) throw new Error(`AI request failed: ${response.status}`);
+        if (!response.ok) throw new Error(`AI request failed: ${response.status}`);
 
-          const data = await response.json();
-          
-          const aiMessage: Message = {
-            type: 'ai',
-            content: data.text,
-            timestamp: new Date(),
-            id: Date.now().toString(),
-            episode: data.episode || 1
-          };
+        const data = await response.json();
+        
+        const aiMessage: Message = {
+          type: 'ai',
+          content: data.text,
+          timestamp: new Date(),
+          id: Date.now().toString(),
+          episode: data.episode || 1
+        };
 
-          setMessages([aiMessage]);
-          setCurrentEpisode(data.episode || 1);
+        setMessages([aiMessage]);
+        setCurrentEpisode(data.episode || 1);
 
-          if (data.characters && data.characters.length > 0) {
-            setCharacters(data.characters);
-          }
-
-          if (autoIllustrations) {
-            setGeneratingIllustration(true);
-            generateIllustration(data.text).then(illustrationUrl => {
-              if (illustrationUrl) {
-                setMessages([{ ...aiMessage, illustration: illustrationUrl }]);
-              }
-              setGeneratingIllustration(false);
-            }).catch(() => setGeneratingIllustration(false));
-          }
-        } catch (error) {
-          if (error instanceof Error && error.name === 'AbortError') {
-            console.log('Auto-start aborted');
-            return;
-          }
-          console.error('Auto-start error:', error);
-          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          console.error('Error details:', errorMessage);
-          toast({
-            title: 'Ошибка запуска',
-            description: `Не удалось начать историю: ${errorMessage}`,
-            variant: 'destructive'
-          });
-        } finally {
-          if (timerIntervalRef.current) {
-            clearInterval(timerIntervalRef.current);
-            timerIntervalRef.current = null;
-          }
-          setIsProcessing(false);
+        if (data.characters && data.characters.length > 0) {
+          setCharacters(data.characters);
         }
-      };
 
-      startStory();
-      
-      return () => {
-        abortController.abort();
+        if (autoIllustrations) {
+          setGeneratingIllustration(true);
+          generateIllustration(data.text).then(illustrationUrl => {
+            if (illustrationUrl) {
+              setMessages([{ ...aiMessage, illustration: illustrationUrl }]);
+            }
+            setGeneratingIllustration(false);
+          }).catch(() => setGeneratingIllustration(false));
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.log('Auto-start aborted');
+          return;
+        }
+        console.error('Auto-start error:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error('Error details:', errorMessage);
+        toast({
+          title: 'Ошибка запуска',
+          description: `Не удалось начать историю: ${errorMessage}`,
+          variant: 'destructive'
+        });
+      } finally {
         if (timerIntervalRef.current) {
           clearInterval(timerIntervalRef.current);
           timerIntervalRef.current = null;
         }
-      };
-    }
+        setIsProcessing(false);
+      }
+    };
+
+    startStory();
+    
+    return () => {
+      abortController.abort();
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    };
   }, [gameSettings, messages.length, isProcessing, autoIllustrations, toast]);
 
   return {
