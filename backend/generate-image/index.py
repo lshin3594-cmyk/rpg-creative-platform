@@ -1,11 +1,10 @@
 import json
-import os
-import requests
+import urllib.parse
 from typing import Dict, Any
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Business: Generates images using FLUX AI model
+    Business: Generates images using Pollinations.ai free API
     Args: event with httpMethod, body containing prompt
           context with request_id
     Returns: HTTP response with generated image URL
@@ -54,44 +53,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     
-    api_key = os.environ.get('POEHALI_API_KEY')
-    if not api_key:
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps({'error': 'API key not configured'}),
-            'isBase64Encoded': False
-        }
+    encoded_prompt = urllib.parse.quote(prompt)
+    image_url = f'https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=1024&model=flux&nologo=true'
     
-    try:
-        response = requests.post(
-            'https://api.poehali.dev/generate-image',
-            headers={'Authorization': f'Bearer {api_key}'},
-            json={'prompt': prompt},
-            timeout=60
-        )
-        response.raise_for_status()
-        data = response.json()
-        
-        return {
-            'statusCode': 200,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps({'url': data.get('url')}),
-            'isBase64Encoded': False
-        }
-    except requests.exceptions.RequestException as e:
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps({'error': f'Image generation failed: {str(e)}'}),
-            'isBase64Encoded': False
-        }
+    return {
+        'statusCode': 200,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        },
+        'body': json.dumps({'url': image_url}),
+        'isBase64Encoded': False
+    }
