@@ -20,7 +20,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, X-User-Id',
+                'Access-Control-Allow-Headers': 'Content-Type, X-User-Id, X-Auth-Token',
                 'Access-Control-Max-Age': '86400'
             },
             'body': '',
@@ -42,12 +42,24 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     if method == 'GET':
         params = event.get('queryStringParameters') or {}
+        headers = event.get('headers', {})
+        user_id = headers.get('X-User-Id') or headers.get('x-user-id')
         universe_id = params.get('universe_id')
         
         conn = psycopg2.connect(database_url)
         cur = conn.cursor(cursor_factory=RealDictCursor)
         
-        if universe_id:
+        if user_id and universe_id:
+            cur.execute(
+                "SELECT * FROM characters WHERE user_id = %s AND universe_id = %s ORDER BY created_at DESC",
+                (int(user_id), int(universe_id))
+            )
+        elif user_id:
+            cur.execute(
+                "SELECT * FROM characters WHERE user_id = %s ORDER BY created_at DESC",
+                (int(user_id),)
+            )
+        elif universe_id:
             cur.execute(
                 "SELECT * FROM characters WHERE universe_id = %s ORDER BY created_at DESC",
                 (int(universe_id),)
@@ -71,6 +83,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     if method == 'POST':
         body_data = json.loads(event.get('body', '{}'))
+        headers = event.get('headers', {})
+        user_id = headers.get('X-User-Id') or headers.get('x-user-id')
         
         name: str = body_data.get('name')
         universe_id: int = body_data.get('universe_id')
@@ -99,15 +113,26 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         conn = psycopg2.connect(database_url)
         cur = conn.cursor()
         
-        cur.execute(
-            """INSERT INTO characters 
-               (name, universe_id, age, gender, appearance, personality, backstory, 
-                abilities, strengths, weaknesses, goals, character_role, role, character_type) 
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) 
-               RETURNING id""",
-            (name, universe_id, age, gender, appearance, personality, backstory,
-             abilities, strengths, weaknesses, goals, character_role, character_role, 'fanfic')
-        )
+        if user_id:
+            cur.execute(
+                """INSERT INTO characters 
+                   (name, user_id, universe_id, age, gender, appearance, personality, backstory, 
+                    abilities, strengths, weaknesses, goals, character_role, role, character_type) 
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) 
+                   RETURNING id""",
+                (name, int(user_id), universe_id, age, gender, appearance, personality, backstory,
+                 abilities, strengths, weaknesses, goals, character_role, character_role, 'fanfic')
+            )
+        else:
+            cur.execute(
+                """INSERT INTO characters 
+                   (name, universe_id, age, gender, appearance, personality, backstory, 
+                    abilities, strengths, weaknesses, goals, character_role, role, character_type) 
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) 
+                   RETURNING id""",
+                (name, universe_id, age, gender, appearance, personality, backstory,
+                 abilities, strengths, weaknesses, goals, character_role, character_role, 'fanfic')
+            )
         character_id = cur.fetchone()[0]
         conn.commit()
         cur.close()
