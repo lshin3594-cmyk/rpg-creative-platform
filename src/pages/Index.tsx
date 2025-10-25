@@ -217,6 +217,7 @@ const Index = () => {
         generatedStory={generatedStory}
         onGenerate={handleGenerateStory}
         onStartStory={handleStartStory}
+        onContinue={handleContinueStory}
         characters={characters}
         worlds={worlds}
         plots={plots}

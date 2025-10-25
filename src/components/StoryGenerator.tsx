@@ -1,8 +1,9 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useState, useRef, useEffect } from 'react';
 
 interface Character {
   id: string;
@@ -30,6 +31,12 @@ interface Plot {
   keyEvents: string;
   resolution: string;
   genres: string[];
+}
+
+interface Message {
+  type: 'user' | 'ai';
+  content: string;
+  timestamp: Date;
 }
 
 interface StoryGeneratorProps {
@@ -68,6 +75,7 @@ interface StoryGeneratorProps {
   setPlayerCharacterId?: (id: string) => void;
   selectedNarrativeCharacters?: string[];
   setSelectedNarrativeCharacters?: (ids: string[]) => void;
+  onContinue?: (action: string) => Promise<string>;
 }
 
 export const StoryGenerator = ({
@@ -75,11 +83,72 @@ export const StoryGenerator = ({
   onOpenChange,
   storyPrompt,
   setStoryPrompt,
-  isGenerating,
-  generatedStory,
   onGenerate,
-  onStartStory
+  onContinue
 }: StoryGeneratorProps) => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [currentInput, setCurrentInput] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      setMessages([]);
+      setCurrentInput('');
+    }
+  }, [isOpen]);
+
+  const handleSendMessage = async () => {
+    if (!currentInput.trim() || isProcessing) return;
+
+    const userMessage: Message = {
+      type: 'user',
+      content: currentInput.trim(),
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    const userInput = currentInput.trim();
+    setCurrentInput('');
+    setIsProcessing(true);
+
+    try {
+      if (messages.length === 0) {
+        setStoryPrompt(userInput);
+        await onGenerate();
+      }
+
+      if (onContinue) {
+        const aiResponse = await onContinue(userInput);
+        const aiMessage: Message = {
+          type: 'ai',
+          content: aiResponse,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, aiMessage]);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setIsProcessing(false);
+      inputRef.current?.focus();
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
   return (
     <div className="flex justify-center mb-8">
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -89,77 +158,127 @@ export const StoryGenerator = ({
             Начать приключение
           </Button>
         </DialogTrigger>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-serif">Создать историю</DialogTitle>
-            <DialogDescription>
-              Опиши, что хочешь — ИИ сгенерирует интерактивную историю
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="story-prompt" className="text-base">Опиши идею истории</Label>
-              <Textarea
-                id="story-prompt"
-                placeholder="Например: Я — детектив в киберпанк-городе, расследую убийство. Мрачная атмосфера, опасные районы..."
-                value={storyPrompt}
-                onChange={(e) => setStoryPrompt(e.target.value)}
-                className="min-h-[150px] text-base"
-              />
-              <p className="text-sm text-muted-foreground">
-                💡 Укажи жанр, главного героя, сеттинг — остальное ИИ додумает сам
-              </p>
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0">
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="p-6 border-b bg-gradient-to-r from-primary/10 to-background">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                  <Icon name="Bot" size={24} className="text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">Интерактивная история</h2>
+                  <p className="text-sm text-muted-foreground">Опиши идею — начнём игру</p>
+                </div>
+              </div>
             </div>
 
-            <Button 
-              onClick={onGenerate} 
-              disabled={isGenerating || !storyPrompt.trim()}
-              className="w-full gap-2"
-              size="lg"
-            >
-              {isGenerating ? (
-                <>
-                  <Icon name="Loader2" size={20} className="animate-spin" />
-                  Создаю историю...
-                </>
-              ) : (
-                <>
-                  <Icon name="Wand2" size={20} />
-                  Создать историю
-                </>
-              )}
-            </Button>
-            
-            {isGenerating && (
-              <div className="space-y-2 p-4 bg-primary/5 border border-primary/20 rounded-lg animate-fade-in">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Icon name="Sparkles" size={16} className="text-primary animate-pulse" />
-                  <span className="font-medium">ИИ создаёт твою историю...</span>
-                </div>
+            <ScrollArea className="flex-1 p-6" ref={scrollRef}>
+              <div className="space-y-4">
+                {messages.length === 0 && (
+                  <div className="text-center py-12 space-y-4">
+                    <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+                      <Icon name="MessageSquare" size={32} className="text-primary" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-semibold">Начни свою историю</h3>
+                      <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                        Опиши героя, сеттинг и ситуацию — ИИ мгновенно продолжит историю
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 justify-center pt-4">
+                      <button
+                        onClick={() => setCurrentInput('Я — детектив в киберпанк-городе. Только что нашёл странный чип...')}
+                        className="px-4 py-2 rounded-lg bg-muted hover:bg-muted/80 text-sm transition-colors"
+                      >
+                        🕵️ Детектив
+                      </button>
+                      <button
+                        onClick={() => setCurrentInput('Я просыпаюсь в средневековом замке. Я — молодой маг...')}
+                        className="px-4 py-2 rounded-lg bg-muted hover:bg-muted/80 text-sm transition-colors"
+                      >
+                        🧙 Фэнтези
+                      </button>
+                      <button
+                        onClick={() => setCurrentInput('Корабль сломался на чужой планете. Нужно выжить...')}
+                        className="px-4 py-2 rounded-lg bg-muted hover:bg-muted/80 text-sm transition-colors"
+                      >
+                        🚀 Космос
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {messages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex gap-3 ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    {msg.type === 'ai' && (
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                        <Icon name="Bot" size={18} className="text-primary" />
+                      </div>
+                    )}
+                    <div
+                      className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                        msg.type === 'user'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted'
+                      }`}
+                    >
+                      <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.content}</p>
+                    </div>
+                    {msg.type === 'user' && (
+                      <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                        <Icon name="User" size={18} className="text-primary-foreground" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {isProcessing && (
+                  <div className="flex gap-3 justify-start">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                      <Icon name="Bot" size={18} className="text-primary" />
+                    </div>
+                    <div className="bg-muted rounded-2xl px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Icon name="Loader2" size={16} className="animate-spin text-primary" />
+                        <span className="text-sm text-muted-foreground">Генерирую...</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-            
-            {generatedStory && (
-              <div className="space-y-4 mt-6 p-4 bg-muted/50 rounded-lg border-2 border-primary/20">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Icon name="CheckCircle2" size={20} className="text-green-500" />
-                    <Label className="text-base font-semibold">История готова!</Label>
-                  </div>
-                  <div className="max-h-[200px] overflow-y-auto p-3 bg-background rounded border">
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed">{generatedStory}</p>
-                  </div>
-                </div>
-                <Button 
-                  onClick={onStartStory} 
-                  className="w-full gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
+            </ScrollArea>
+
+            <div className="p-4 border-t bg-background">
+              <div className="flex gap-2">
+                <Textarea
+                  ref={inputRef}
+                  value={currentInput}
+                  onChange={(e) => setCurrentInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={messages.length === 0 ? "Опиши начало истории..." : "Что делаешь дальше?"}
+                  className="min-h-[60px] max-h-[120px] resize-none"
+                  disabled={isProcessing}
+                />
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={!currentInput.trim() || isProcessing}
                   size="lg"
+                  className="px-6"
                 >
-                  <Icon name="Play" size={20} />
-                  Начать играть
+                  {isProcessing ? (
+                    <Icon name="Loader2" size={20} className="animate-spin" />
+                  ) : (
+                    <Icon name="Send" size={20} />
+                  )}
                 </Button>
               </div>
-            )}
+              <p className="text-xs text-muted-foreground mt-2 text-center">
+                Enter — отправить • Shift+Enter — новая строка
+              </p>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
