@@ -1,5 +1,6 @@
 import { BackgroundVeins } from '@/components/BackgroundVeins';
 import { ImageCarousel } from '@/components/ImageCarousel';
+import { MidnightBackground } from '@/components/MidnightBackground';
 
 interface PageLayoutProps {
   children: React.ReactNode;
@@ -29,6 +30,7 @@ export const PageLayout = ({
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
       <BackgroundVeins veins={veins} />
+      <MidnightBackground />
       
       <div className="relative z-10">
         <ImageCarousel 
