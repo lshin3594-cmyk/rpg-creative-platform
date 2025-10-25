@@ -180,6 +180,11 @@ const Index = () => {
     });
   };
 
+  const handleStartStory = () => {
+    setIsStoryDialogOpen(false);
+    setShowInteractive(true);
+  };
+
   const handleContinueStory = async (playerAction: string) => {
     return await continueStory(playerAction, characters, worlds);
   };
@@ -211,6 +216,7 @@ const Index = () => {
         isGenerating={isGenerating}
         generatedStory={generatedStory}
         onGenerate={handleGenerateStory}
+        onStartStory={handleStartStory}
         characters={characters}
         worlds={worlds}
         plots={plots}

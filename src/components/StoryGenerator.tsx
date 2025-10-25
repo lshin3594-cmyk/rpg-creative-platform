@@ -50,6 +50,7 @@ interface StoryGeneratorProps {
   isGenerating: boolean;
   generatedStory: string;
   onGenerate: () => void;
+  onStartStory?: () => void;
   characters: Character[];
   worlds: World[];
   plots: Plot[];
@@ -87,6 +88,7 @@ export const StoryGenerator = ({
   isGenerating,
   generatedStory,
   onGenerate,
+  onStartStory,
   characters,
   worlds,
   plots,
@@ -483,11 +485,19 @@ export const StoryGenerator = ({
               </div>
             )}
             {generatedStory && (
-              <div className="space-y-2 mt-6">
+              <div className="space-y-4 mt-6">
                 <Label>Сгенерированная история</Label>
                 <div className="p-4 bg-muted rounded-lg">
                   <p className="whitespace-pre-wrap text-sm leading-relaxed">{generatedStory}</p>
                 </div>
+                <Button 
+                  onClick={onStartStory} 
+                  className="w-full gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
+                  size="lg"
+                >
+                  <Icon name="Play" size={20} />
+                  Начать играть
+                </Button>
               </div>
             )}
           </div>
