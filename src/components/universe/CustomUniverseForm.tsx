@@ -101,6 +101,7 @@ export const CustomUniverseForm = ({
       </div>
 
       <Button 
+        type="button"
         className="w-full gap-2" 
         onClick={handleSubmit}
         disabled={isCreating || !formData.name || !formData.description}
