@@ -3,7 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
+import { jsPDF } from 'jspdf';
+import { saveAs } from 'file-saver';
 
 interface Story {
   id: number;
@@ -30,6 +33,91 @@ interface StoriesTabProps {
 export const StoriesTab = ({ stories, isLoading, onCreateNew, onCardClick, onDelete, onToggleFavorite, isFavoritesView }: StoriesTabProps) => {
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  const exportToPDF = (story: Story) => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    const maxWidth = pageWidth - 2 * margin;
+    
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.text(story.title, margin, 20);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(`${story.genre} | ${new Date(story.created_at).toLocaleDateString('ru-RU')}`, margin, 30);
+    
+    if (story.character_name || story.world_name) {
+      let meta = '';
+      if (story.character_name) meta += `Персонаж: ${story.character_name}`;
+      if (story.world_name) meta += ` | Мир: ${story.world_name}`;
+      doc.text(meta, margin, 36);
+    }
+    
+    doc.setFontSize(11);
+    const lines = doc.splitTextToSize(story.content, maxWidth);
+    doc.text(lines, margin, 46);
+    
+    doc.save(`${story.title}.pdf`);
+  };
+
+  const exportToTXT = (story: Story) => {
+    let content = `${story.title}\n`;
+    content += `${'='.repeat(story.title.length)}\n\n`;
+    content += `Жанр: ${story.genre}\n`;
+    content += `Дата: ${new Date(story.created_at).toLocaleDateString('ru-RU')}\n`;
+    if (story.character_name) content += `Персонаж: ${story.character_name}\n`;
+    if (story.world_name) content += `Мир: ${story.world_name}\n`;
+    content += `\n${'—'.repeat(40)}\n\n`;
+    content += story.content;
+    
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    saveAs(blob, `${story.title}.txt`);
+  };
+
+  const exportAllFavorites = (format: 'pdf' | 'txt') => {
+    if (format === 'pdf') {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 20;
+      const maxWidth = pageWidth - 2 * margin;
+      
+      stories.forEach((story, index) => {
+        if (index > 0) doc.addPage();
+        
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.text(story.title, margin, 20);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.text(`${story.genre} | ${new Date(story.created_at).toLocaleDateString('ru-RU')}`, margin, 30);
+        
+        doc.setFontSize(11);
+        const lines = doc.splitTextToSize(story.content, maxWidth);
+        doc.text(lines, margin, 40);
+      });
+      
+      doc.save('Избранные_истории.pdf');
+    } else {
+      let content = 'ИЗБРАННЫЕ ИСТОРИИ\n';
+      content += `${'='.repeat(50)}\n\n`;
+      
+      stories.forEach((story, index) => {
+        if (index > 0) content += `\n\n${'═'.repeat(50)}\n\n`;
+        content += `${story.title}\n`;
+        content += `${'-'.repeat(story.title.length)}\n\n`;
+        content += `Жанр: ${story.genre} | Дата: ${new Date(story.created_at).toLocaleDateString('ru-RU')}\n`;
+        if (story.character_name) content += `Персонаж: ${story.character_name}\n`;
+        if (story.world_name) content += `Мир: ${story.world_name}\n`;
+        content += `\n${story.content}`;
+      });
+      
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      saveAs(blob, 'Избранные_истории.txt');
+    }
+  };
 
   const handleDelete = async (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
@@ -78,12 +166,34 @@ export const StoriesTab = ({ stories, isLoading, onCreateNew, onCardClick, onDel
         <h2 className="text-3xl font-serif font-semibold">
           {isFavoritesView ? 'Избранные истории' : 'Библиотека сюжетов'}
         </h2>
-        {!isFavoritesView && (
-          <Button className="gap-2" onClick={onCreateNew}>
-            <Icon name="Plus" size={20} />
-            Создать новую историю
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {isFavoritesView && stories.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="gap-2" variant="outline">
+                  <Icon name="Download" size={20} />
+                  Экспортировать все
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => exportAllFavorites('pdf')}>
+                  <Icon name="FileText" size={16} className="mr-2" />
+                  Скачать PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => exportAllFavorites('txt')}>
+                  <Icon name="FileText" size={16} className="mr-2" />
+                  Скачать TXT
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          {!isFavoritesView && (
+            <Button className="gap-2" onClick={onCreateNew}>
+              <Icon name="Plus" size={20} />
+              Создать новую историю
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -192,6 +302,26 @@ export const StoriesTab = ({ stories, isLoading, onCreateNew, onCardClick, onDel
                 )}
               </DialogHeader>
               <div className="space-y-4 py-4">
+                <div className="flex gap-2 justify-end">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-2">
+                        <Icon name="Download" size={16} />
+                        Экспортировать
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => exportToPDF(selectedStory)}>
+                        <Icon name="FileText" size={16} className="mr-2" />
+                        Скачать PDF
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => exportToTXT(selectedStory)}>
+                        <Icon name="FileText" size={16} className="mr-2" />
+                        Скачать TXT
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
                 {selectedStory.prompt && (
                   <div className="p-3 bg-muted/50 rounded-lg">
                     <p className="text-sm font-medium mb-1">Промпт:</p>

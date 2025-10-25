@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
 import Icon from '@/components/ui/icon';
 import { useState } from 'react';
 
@@ -46,6 +47,8 @@ interface StoryGeneratorProps {
   setImagesPerEpisode?: (value: number) => void;
   playerInstructions?: string;
   setPlayerInstructions?: (value: string) => void;
+  autoGenerateNPCs?: boolean;
+  setAutoGenerateNPCs?: (value: boolean) => void;
 }
 
 export const StoryGenerator = ({
@@ -67,7 +70,9 @@ export const StoryGenerator = ({
   imagesPerEpisode = 2,
   setImagesPerEpisode,
   playerInstructions = '',
-  setPlayerInstructions
+  setPlayerInstructions,
+  autoGenerateNPCs = true,
+  setAutoGenerateNPCs
 }: StoryGeneratorProps) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   return (
@@ -186,6 +191,32 @@ export const StoryGenerator = ({
                     <p className="text-xs text-muted-foreground">
                       Иллюстрации ключевых моментов. 0 — без картинок, 3-5 — богатая визуализация.
                     </p>
+                  </div>
+
+                  <div className="space-y-3 pt-2 border-t border-border">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="auto-npcs">Автогенерация NPC</Label>
+                        <p className="text-xs text-muted-foreground">
+                          AI создаст второстепенных персонажей на свое усмотрение
+                        </p>
+                      </div>
+                      <Switch
+                        id="auto-npcs"
+                        checked={autoGenerateNPCs}
+                        onCheckedChange={setAutoGenerateNPCs}
+                      />
+                    </div>
+                    {!autoGenerateNPCs && (
+                      <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+                        <p className="text-xs text-amber-800 dark:text-amber-200 flex items-start gap-2">
+                          <Icon name="Info" size={14} className="mt-0.5 flex-shrink-0" />
+                          <span>
+                            В истории будут участвовать только ваши созданные персонажи. Если их нет — создайте в разделе "Персонажи".
+                          </span>
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-2">

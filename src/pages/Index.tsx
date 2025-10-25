@@ -17,6 +17,7 @@ const Index = () => {
   const [episodeLength, setEpisodeLength] = useState(1500);
   const [imagesPerEpisode, setImagesPerEpisode] = useState(2);
   const [playerInstructions, setPlayerInstructions] = useState('');
+  const [autoGenerateNPCs, setAutoGenerateNPCs] = useState(true);
 
   const carouselImages = [
     'https://cdn.poehali.dev/files/11a64f46-796a-4ce6-9051-28d80e0c7bdd.jpg',
@@ -199,6 +200,8 @@ const Index = () => {
         setImagesPerEpisode={setImagesPerEpisode}
         playerInstructions={playerInstructions}
         setPlayerInstructions={setPlayerInstructions}
+        autoGenerateNPCs={autoGenerateNPCs}
+        setAutoGenerateNPCs={setAutoGenerateNPCs}
       />
 
       {showInteractive && generatedStory && (
