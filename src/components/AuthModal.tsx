@@ -24,7 +24,7 @@ export const AuthModal = ({ open, onClose }: AuthModalProps) => {
 
 
   const handleVkLogin = () => {
-    const redirectUri = encodeURIComponent(`${window.location.origin}/auth/vk/callback`);
+    const redirectUri = encodeURIComponent('https://rpg-creative-platform--preview.poehali.dev/auth/vk/callback');
     const appId = '54268217';
     window.location.href = `https://oauth.vk.com/authorize?client_id=${appId}&display=page&redirect_uri=${redirectUri}&response_type=code&v=5.131`;
   };
