@@ -357,6 +357,16 @@ export default function PlayGame() {
           >
             <div className="container mx-auto max-w-4xl">
               <StoryHistory history={history} />
+              
+              {/* DEBUG: Прямой рендер для проверки */}
+              {currentStory && (
+                <div className="bg-green-500/20 border border-green-500 p-4 mb-4">
+                  <h3 className="font-bold">DEBUG: currentStory существует!</h3>
+                  <p>Длина: {currentStory.length}</p>
+                  <pre className="text-xs mt-2 whitespace-pre-wrap">{currentStory}</pre>
+                </div>
+              )}
+              
               <CurrentStory currentStory={currentStory} isStarting={isStarting} />
             </div>
           </div>
