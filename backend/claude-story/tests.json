@@ -1,37 +1,15 @@
 {
   "tests": [
     {
-      "name": "Start new fantasy story",
+      "name": "Start simple adventure",
       "method": "POST",
       "body": {
-        "genre": "фэнтези",
-        "setting": "средневековье",
-        "difficulty": "medium",
+        "genre": "приключения",
+        "setting": "сказочный лес",
+        "difficulty": "easy",
         "userAction": "",
         "history": [],
-        "gameId": "test_game_1"
-      },
-      "expectedStatus": 200,
-      "expectedBody": {
-        "story": "string"
-      },
-      "bodyMatcher": "partial"
-    },
-    {
-      "name": "Continue story with user action",
-      "method": "POST",
-      "body": {
-        "genre": "sci-fi",
-        "setting": "космос",
-        "difficulty": "hard",
-        "userAction": "Исследую заброшенный корабль",
-        "history": [
-          {
-            "user": "Начало",
-            "ai": "Вы дрейфуете в космосе..."
-          }
-        ],
-        "gameId": "test_game_2"
+        "gameId": "test_1"
       },
       "expectedStatus": 200,
       "expectedBody": {

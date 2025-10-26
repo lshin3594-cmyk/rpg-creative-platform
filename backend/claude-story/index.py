@@ -81,26 +81,28 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     # Запрос к Claude API через air.fail
     import urllib.request
     import urllib.error
+    import urllib.parse
     
-    api_url = "https://api.air.fail/public/openai/v1/chat/completions"
+    api_url = "https://api.air.fail/public/text/chatgpt"
     
-    payload = {
-        "model": "claude-3-5-sonnet-20241022",
-        "max_tokens": 1024,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
+    form_data = {
+        "content": f"{system_prompt}\n\n{user_prompt}",
+        "info": json.dumps({
+            "version": "claude-3-5-sonnet-20241022",
+            "temperature": 0.7
+        })
     }
     
+    data = urllib.parse.urlencode(form_data).encode('utf-8')
+    
     headers = {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
         'Authorization': api_key
     }
     
     req = urllib.request.Request(
         api_url,
-        data=json.dumps(payload).encode('utf-8'),
+        data=data,
         headers=headers,
         method='POST'
     )
@@ -108,7 +110,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     try:
         with urllib.request.urlopen(req, timeout=30) as response:
             result = json.loads(response.read().decode('utf-8'))
-            story_text = result['choices'][0]['message']['content']
+            story_text = result.get('response', result.get('content', str(result)))
             
             return {
                 'statusCode': 200,
