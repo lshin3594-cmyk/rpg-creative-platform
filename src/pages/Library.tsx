@@ -148,40 +148,40 @@ const Library = () => {
       <Button
         variant="ghost"
         onClick={() => navigate('/')}
-        className="absolute top-4 left-4 gap-2 text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 z-10"
+        className="absolute top-4 left-4 gap-2 text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 z-10 text-base md:text-sm h-12 md:h-10 px-4"
       >
-        <Icon name="Home" size={18} />
-        На главную
+        <Icon name="Home" size={24} className="md:w-[18px] md:h-[18px]" />
+        <span className="hidden sm:inline">На главную</span>
       </Button>
 
       <Button
         variant="ghost"
         onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
-        className="absolute top-4 right-4 gap-2 text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 z-10"
+        className="absolute top-4 right-4 gap-2 text-purple-300 hover:text-purple-100 hover:bg-purple-500/20 z-10 text-base md:text-sm h-12 md:h-10 px-4"
       >
-        <Icon name={showOnlyFavorites ? "Star" : "Star"} size={18} className={showOnlyFavorites ? "fill-yellow-400 text-yellow-400" : ""} />
-        {showOnlyFavorites ? 'Все игры' : 'Избранное'}
+        <Icon name={showOnlyFavorites ? "Star" : "Star"} size={24} className={`md:w-[18px] md:h-[18px] ${showOnlyFavorites ? "fill-yellow-400 text-yellow-400" : ""}`} />
+        <span className="hidden sm:inline">{showOnlyFavorites ? 'Все игры' : 'Избранное'}</span>
       </Button>
 
       <div className="max-w-6xl mx-auto space-y-8">
-        <div className="text-center space-y-3">
-          <h1 className="text-4xl font-bold tracking-tight text-purple-100 uppercase flex items-center justify-center gap-3">
-            <Icon name="Library" size={36} />
+        <div className="text-center space-y-3 pt-8 md:pt-0">
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-purple-100 uppercase flex items-center justify-center gap-3">
+            <Icon name="Library" size={36} className="md:w-9 md:h-9" />
             Библиотека игр
           </h1>
-          <p className="text-purple-200/70">
+          <p className="text-base md:text-lg text-purple-200/70">
             Все ваши сгенерированные игры
           </p>
         </div>
 
         <div className="space-y-6">
           <div className="relative p-4 rounded-xl bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-purple-900/40 border border-purple-500/40 backdrop-blur-md">
-            <Icon name="Search" size={20} className="absolute left-7 top-1/2 -translate-y-1/2 text-purple-300/70" />
+            <Icon name="Search" size={24} className="absolute left-7 top-1/2 -translate-y-1/2 text-purple-300/70 md:w-5 md:h-5" />
             <Input
               placeholder="Поиск по названию или содержанию..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50"
+              className="pl-12 bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50 h-14 md:h-10 text-base md:text-sm"
             />
           </div>
 
@@ -214,22 +214,22 @@ const Library = () => {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               {displayedStories.map((story) => (
                 <div 
                   key={story.id} 
-                  className="p-6 rounded-xl bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-purple-900/40 border border-purple-500/40 backdrop-blur-md hover:border-purple-400/60 transition-all"
+                  className="p-6 md:p-8 rounded-xl bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-purple-900/40 border border-purple-500/40 backdrop-blur-md hover:border-purple-400/60 transition-all"
                 >
-                  <div className="space-y-4">
+                  <div className="space-y-4 md:space-y-6">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h3 className="text-xl font-bold text-purple-100 flex items-center gap-2">
+                        <h3 className="text-2xl md:text-xl font-bold text-purple-100 flex items-center gap-2">
                           {story.title}
                           {story.is_favorite && (
-                            <Icon name="Star" size={16} className="fill-yellow-400 text-yellow-400" />
+                            <Icon name="Star" size={20} className="fill-yellow-400 text-yellow-400 md:w-4 md:h-4" />
                           )}
                         </h3>
-                        <p className="text-sm text-purple-300/70 mt-1">
+                        <p className="text-base md:text-sm text-purple-300/70 mt-1">
                           {new Date(story.created_at).toLocaleDateString('ru-RU', {
                             day: 'numeric',
                             month: 'long',
@@ -241,51 +241,51 @@ const Library = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => toggleFavorite(story.id)}
-                        className="h-8 w-8 p-0 hover:bg-purple-500/20"
+                        className="h-12 w-12 md:h-8 md:w-8 p-0 hover:bg-purple-500/20"
                       >
                         <Icon
                           name="Star"
-                          size={18}
-                          className={story.is_favorite ? 'fill-yellow-400 text-yellow-400' : 'text-purple-300/70'}
+                          size={24}
+                          className={`md:w-[18px] md:h-[18px] ${story.is_favorite ? 'fill-yellow-400 text-yellow-400' : 'text-purple-300/70'}`}
                         />
                       </Button>
                     </div>
 
-                    <p className="text-sm text-purple-200/80 line-clamp-3">
+                    <p className="text-base md:text-sm text-purple-200/80 line-clamp-3">
                       {story.content}
                     </p>
 
                     <div className="flex flex-wrap gap-2">
-                      <Badge className="bg-purple-500/30 text-purple-100 border-purple-400/30">
+                      <Badge className="bg-purple-500/30 text-purple-100 border-purple-400/30 text-sm md:text-xs py-1 px-3 md:py-0.5 md:px-2">
                         {getLengthBadge(story.length)}
                       </Badge>
-                      <Badge className="bg-pink-500/30 text-pink-100 border-pink-400/30">
+                      <Badge className="bg-pink-500/30 text-pink-100 border-pink-400/30 text-sm md:text-xs py-1 px-3 md:py-0.5 md:px-2">
                         {getStyleBadge(story.style)}
                       </Badge>
-                      <Badge className="bg-purple-600/30 text-purple-100 border-purple-400/30">
+                      <Badge className="bg-purple-600/30 text-purple-100 border-purple-400/30 text-sm md:text-xs py-1 px-3 md:py-0.5 md:px-2">
                         {getRatingBadge(story.rating)}
                       </Badge>
                       {story.tags?.slice(0, 2).map((tag, i) => (
-                        <Badge key={i} className="bg-purple-500/20 text-purple-200 border-purple-400/20">
+                        <Badge key={i} className="bg-purple-500/20 text-purple-200 border-purple-400/20 text-sm md:text-xs py-1 px-3 md:py-0.5 md:px-2">
                           {tag}
                         </Badge>
                       ))}
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 md:gap-3">
                       <Button
                         onClick={() => openStory(story)}
-                        className="flex-1 gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-none"
+                        className="flex-1 gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-none h-12 md:h-10 text-base md:text-sm"
                       >
-                        <Icon name="BookOpen" size={16} />
+                        <Icon name="BookOpen" size={20} className="md:w-4 md:h-4" />
                         Читать
                       </Button>
                       <Button
                         onClick={() => deleteStory(story.id)}
                         variant="ghost"
-                        className="gap-2 text-red-300 hover:text-red-100 hover:bg-red-500/20"
+                        className="gap-2 text-red-300 hover:text-red-100 hover:bg-red-500/20 h-12 md:h-10 px-4 md:px-3"
                       >
-                        <Icon name="Trash2" size={16} />
+                        <Icon name="Trash2" size={20} className="md:w-4 md:h-4" />
                       </Button>
                     </div>
                   </div>
