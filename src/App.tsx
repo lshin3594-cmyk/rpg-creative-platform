@@ -25,7 +25,8 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
-        {/* <StarryBackground /> */}
+        <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 -z-10" />
+        <StarryBackground />
         <Toaster />
         <Sonner />
         <BrowserRouter
