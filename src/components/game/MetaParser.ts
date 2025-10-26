@@ -4,6 +4,7 @@ export const parseMetaFromStory = (story: string, episodeNum: number) => {
 
   const metaText = metaMatch[1];
   
+  const locationMatch = metaText.match(/📍[^:]*:\s*(.+)/);
   const timeMatch = metaText.match(/⏰[^:]*:\s*(.+)/);
   const eventsMatch = metaText.match(/🎬[^:]*:\s*(.+)/);
   const relationsMatch = metaText.match(/💕[^:]*:\s*(.+)/);
@@ -13,6 +14,7 @@ export const parseMetaFromStory = (story: string, episodeNum: number) => {
   const plansMatch = metaText.match(/🎯[^:]*:\s*(.+)/);
   const inventoryMatch = metaText.match(/🎒[^:]*:\s*(.+)/);
   const resourcesMatch = metaText.match(/💰[^:]*:\s*(.+)/);
+  const npcMatch = metaText.match(/👥[^:]*:\s*(.+)/);
 
   // Парсинг инвентаря: "Меч (1), Зелье здоровья (3)"
   const inventory = inventoryMatch 
@@ -40,15 +42,30 @@ export const parseMetaFromStory = (story: string, episodeNum: number) => {
       }).filter(Boolean) as { name: string; value: number; change?: number }[]
     : [];
 
+  // Парсинг NPC: "Имя (отношение): описание | Имя2 (отношение): описание"
+  const npcs = npcMatch
+    ? npcMatch[1].split('|').map(npc => {
+        const match = npc.trim().match(/(.+?)\s*\(([^)]+)\):\s*(.+)/);
+        if (match) {
+          return {
+            name: match[1].trim(),
+            relation: match[2].trim(),
+            description: match[3].trim()
+          };
+        }
+        return null;
+      }).filter(Boolean) as { name: string; relation: string; description: string }[]
+    : [];
+
   const storyWithoutMeta = story.replace(/\*\*\[МЕТА\]\*\*[\s\S]*?---\s*/, '');
 
   return {
     episode: episodeNum,
     title: `Эпизод ${episodeNum}`,
     time: timeMatch ? timeMatch[1].trim() : undefined,
-    location: timeMatch ? timeMatch[1].split(',').pop()?.trim() : undefined,
+    location: locationMatch ? locationMatch[1].trim() : (timeMatch ? timeMatch[1].split(',').pop()?.trim() : undefined),
     events: eventsMatch ? [eventsMatch[1].trim()] : [],
-    npcs: [],
+    npcs,
     emotions: emotionsMatch ? [emotionsMatch[1].trim()] : [],
     clues: cluesMatch ? [cluesMatch[1].trim()] : [],
     questions: questionsMatch ? [questionsMatch[1].trim()] : [],

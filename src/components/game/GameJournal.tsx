@@ -5,8 +5,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface NPC {
   name: string;
-  relationship: number;
-  change?: number;
+  relation: string;
+  description: string;
 }
 
 interface InventoryItem {
@@ -44,14 +44,6 @@ export const GameJournal = ({ entries, isOpen, onClose }: GameJournalProps) => {
   const currentEntry = selectedEpisode !== null 
     ? entries.find(e => e.episode === selectedEpisode) 
     : entries[entries.length - 1];
-
-  const getRelationshipColor = (value: number) => {
-    if (value >= 80) return 'text-green-400';
-    if (value >= 50) return 'text-blue-400';
-    if (value >= 20) return 'text-purple-300';
-    if (value >= 0) return 'text-gray-400';
-    return 'text-red-400';
-  };
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -136,23 +128,23 @@ export const GameJournal = ({ entries, isOpen, onClose }: GameJournalProps) => {
                       <Icon name="Users" size={16} />
                       Персонажи и отношения
                     </h4>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {currentEntry.npcs.map((npc, i) => (
-                        <div key={i} className="flex items-center justify-between bg-purple-900/20 rounded-lg p-2.5">
-                          <span className="text-sm text-purple-100">{npc.name}</span>
-                          <div className="flex items-center gap-2">
-                            <span className={`text-sm font-bold ${getRelationshipColor(npc.relationship)}`}>
-                              {npc.relationship}%
-                            </span>
-                            {npc.change !== undefined && npc.change !== 0 && (
-                              <Badge 
-                                variant="outline" 
-                                className={`text-xs ${npc.change > 0 ? 'border-green-500/50 text-green-400' : 'border-red-500/50 text-red-400'}`}
-                              >
-                                {npc.change > 0 ? '+' : ''}{npc.change}%
-                              </Badge>
-                            )}
+                        <div key={i} className="bg-purple-900/20 rounded-lg p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-semibold text-purple-100">{npc.name}</span>
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs ${
+                                npc.relation === 'друг' ? 'border-green-500/50 text-green-400 bg-green-950/30' :
+                                npc.relation === 'враг' ? 'border-red-500/50 text-red-400 bg-red-950/30' :
+                                'border-purple-500/50 text-purple-300 bg-purple-950/30'
+                              }`}
+                            >
+                              {npc.relation}
+                            </Badge>
                           </div>
+                          <p className="text-xs text-purple-200/70 leading-relaxed">{npc.description}</p>
                         </div>
                       ))}
                     </div>
