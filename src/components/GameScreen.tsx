@@ -84,7 +84,7 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
           />
         </div>
 
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 sticky bottom-0 z-20 bg-background/95 backdrop-blur-sm">
           <StoryInput
             ref={inputRef}
             value={currentInput}
