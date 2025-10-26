@@ -410,7 +410,7 @@ export const useGameLogic = () => {
       abortController.abort();
       clearTimeout(timeoutId);
     };
-  }, [gameSettings, messages.length, isProcessing, autoIllustrations, toast]);
+  }, [gameSettings, messages.length, autoIllustrations, toast]);
 
   return {
     messages,
