@@ -4,7 +4,7 @@ from typing import Dict, Any
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Business: Генерация интерактивных историй через DeepSeek API
+    Business: Генерация интерактивных историй через GPT-4o API
     Args: event с httpMethod, body (genre, setting, difficulty, userAction, history, gameId)
     Returns: HTTP response с новым сюжетом
     '''
@@ -44,7 +44,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     user_action = body_data.get('userAction', '')
     history = body_data.get('history', [])
     
-    # Формируем промпт для DeepSeek
+    # Формируем промпт для GPT-4o
     if not history:
         system_prompt = f"""Ты мастер интерактивных историй в жанре {genre}, действие происходит в {setting}.
 Сложность: {difficulty}.
@@ -78,19 +78,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         user_prompt = f"Действие игрока: {user_action}\n\nОпиши что происходит дальше."
     
-    # Запрос к DeepSeek API через air.fail
+    # Запрос к GPT-4o API через air.fail
     import urllib.request
     import urllib.error
     import urllib.parse
     
-    api_url = "https://api.air.fail/public/text/deepseek"
+    api_url = "https://api.air.fail/public/text/chatgpt"
     
     form_data = {
-        "content": user_prompt,
+        "content": f"{system_prompt}\n\n{user_prompt}",
         "info": json.dumps({
-            "version": "deepseek/deepseek-r1",
-            "temperature": 0.7,
-            "system_prompt": system_prompt
+            "version": "gpt-4o",
+            "temperature": 0.8
         })
     }
     
@@ -130,7 +129,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         return {
             'statusCode': e.code,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': f'DeepSeek API error: {error_body}'})
+            'body': json.dumps({'error': f'GPT API error: {error_body}'})
         }
     except Exception as e:
         return {
