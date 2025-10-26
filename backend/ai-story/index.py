@@ -190,7 +190,7 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
                 response = client.chat.completions.create(
                     model="deepseek-chat",
                     messages=messages,
-                    max_tokens=250,
+                    max_tokens=2000,
                     temperature=0.7,
                     stream=False
                 )

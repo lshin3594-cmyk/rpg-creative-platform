@@ -10,28 +10,16 @@ export function CurrentStory({ currentStory, isStarting }: CurrentStoryProps) {
     return null;
   }
 
-  // Удаляем весь блок СТАТУС ИСТОРИИ (от начала или от 📊 до ===)
   let cleanStory = currentStory;
-  
-  console.log('🔍 Original story length:', currentStory.length);
-  console.log('🔍 Original story:', currentStory);
   
   const statusStart = cleanStory.indexOf('📊 СТАТУС ИСТОРИИ');
   const statusEnd = cleanStory.indexOf('===');
   
-  console.log('🔍 Status start:', statusStart);
-  console.log('🔍 Status end:', statusEnd);
-  
   if (statusStart !== -1 && statusEnd !== -1 && statusEnd > statusStart) {
-    // Удаляем блок от 📊 до === включительно
     cleanStory = cleanStory.substring(0, statusStart) + cleanStory.substring(statusEnd + 3);
-    console.log('🔍 After removing status:', cleanStory);
   }
   
   cleanStory = cleanStory.trim();
-  
-  console.log('🔍 Final cleaned story:', cleanStory);
-  console.log('🔍 Final length:', cleanStory.length);
   
   if (!cleanStory || cleanStory.length === 0) {
     return null;
