@@ -111,7 +111,26 @@ const CreateGame = () => {
       createdAt: new Date().toISOString()
     };
 
+    // Создаем первое автосохранение
+    const newGameState = {
+      settings: gameSettings,
+      history: [],
+      currentText: '',
+      savedAt: new Date().toISOString()
+    };
+
+    // Сохраняем в localStorage
+    const savedGames = JSON.parse(localStorage.getItem('saved-games') || '[]');
+    savedGames.push(newGameState);
+    localStorage.setItem('saved-games', JSON.stringify(savedGames));
+    
     localStorage.setItem('current-game-settings', JSON.stringify(gameSettings));
+    
+    toast({
+      title: 'Игра создана!',
+      description: 'Первое сохранение выполнено',
+    });
+    
     navigate('/story/new');
   };
 
