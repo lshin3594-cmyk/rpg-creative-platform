@@ -139,14 +139,9 @@ export default function PlayGame() {
       
       const story = data.text || 'История началась...';
       
-      // Парсим мета-данные для журнала
-      const metaData = parseMetaFromStory(story, 1);
-      if (metaData) {
-        setJournalEntries([metaData]);
-        setCurrentStory(metaData.cleanStory);
-      } else {
-        setCurrentStory(story);
-      }
+      // Временно отключаем парсинг мета-данных для отладки
+      console.log('📝 Raw story text:', story);
+      setCurrentStory(story);
       
       setLoadingStage('done');
       saveGame([], story);
@@ -205,48 +200,17 @@ export default function PlayGame() {
         const data = await response.json();
         const story = data.text || 'История продолжается...';
         
-        toast({
-          title: '🎨 Генерирую иллюстрацию...',
-          description: 'Создаю изображение для эпизода',
-        });
-        
-        let imageUrl = '';
-        try {
-          const shortPrompt = story.slice(0, 200);
-          const imgResponse = await fetch(IMAGE_GEN_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              prompt: `${gameSettings.genre} scene: ${shortPrompt}` 
-            })
-          });
-          
-          if (imgResponse.ok) {
-            const imgData = await imgResponse.json();
-            imageUrl = imgData.url || '';
-          }
-        } catch (imgError) {
-          console.error('Image generation failed:', imgError);
-        }
+        console.log('📝 Story continuation:', story);
         
         const newHistoryEntry: HistoryEntry = { 
           user: action, 
-          ai: story,
-          image: imageUrl 
+          ai: story
         };
         const updatedHistory = [...history, newHistoryEntry];
         
         setHistory(updatedHistory);
         setCurrentStory(story);
         saveGame(updatedHistory, story);
-        
-        // Парсим мета-данные для журнала
-        const metaData = parseMetaFromStory(story, history.length + 1);
-        if (metaData) {
-          setJournalEntries(prev => [...prev, metaData]);
-          setCurrentStory(metaData.cleanStory);
-        } else {
-          setCurrentStory(story);
         }
       } else {
         const errorText = await response.text();
