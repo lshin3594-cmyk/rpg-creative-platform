@@ -121,27 +121,27 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     
-    # Запрос к GPT-4o API через air.fail
+    # Запрос к Claude API (официальный Anthropic endpoint)
     import urllib.request
     import urllib.error
-    import urllib.parse
     
-    api_url = "https://api.air.fail/public/text/chatgpt"
+    api_url = "https://api.anthropic.com/v1/messages"
     
-    form_data = {
-        "content": f"{system_prompt}\n\n{user_prompt}",
-        "info": json.dumps({
-            "version": "gpt-4o-mini",
-            "temperature": 0.7,
-            "max_tokens": 350
-        })
+    payload = {
+        "model": "claude-3-5-sonnet-20241022",
+        "messages": [
+            {"role": "user", "content": f"{system_prompt}\n\n{user_prompt}"}
+        ],
+        "max_tokens": 500,
+        "temperature": 0.7
     }
     
-    data = urllib.parse.urlencode(form_data).encode('utf-8')
+    data = json.dumps(payload).encode('utf-8')
     
     headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': api_key
+        'Content-Type': 'application/json',
+        'x-api-key': api_key,
+        'anthropic-version': '2023-06-01'
     }
     
     req = urllib.request.Request(
@@ -160,19 +160,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             print(f"air.fail response type: {type(result)}", file=sys.stderr)
             print(f"air.fail response: {json.dumps(result) if not isinstance(result, str) else result[:200]}", file=sys.stderr)
             
-            # air.fail возвращает список сообщений или объект с response
-            if isinstance(result, list):
-                # Если список - берём последнее сообщение
-                if result:
-                    story_text = result[-1].get('content', '') if isinstance(result[-1], dict) else str(result[-1])
-                else:
-                    story_text = "Ошибка: пустой ответ от API"
+            # Anthropic API формат ответа
+            if isinstance(result, dict) and 'content' in result:
+                # Anthropic возвращает content как список объектов
+                story_text = result['content'][0]['text']
             elif isinstance(result, dict):
-                # Если объект - ищем response/content/choices
-                story_text = result.get('response') or result.get('content') or result.get('text', '')
-                # Если ничего не нашли, может быть это OpenAI формат?
-                if not story_text and 'choices' in result:
-                    story_text = result['choices'][0].get('message', {}).get('content', '')
+                story_text = result.get('text') or result.get('response', '')
             else:
                 story_text = str(result)
             
