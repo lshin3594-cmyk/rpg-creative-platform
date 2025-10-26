@@ -48,6 +48,29 @@ export const useGameLogic = () => {
       
       storyInitializedRef.current = false;
     }
+
+    const savedGameJson = localStorage.getItem('current-game-progress');
+    if (savedGameJson) {
+      try {
+        const savedGame = JSON.parse(savedGameJson);
+        if (savedGame.messages && savedGame.messages.length > 0) {
+          setMessages(savedGame.messages.map((m: any) => ({
+            ...m,
+            timestamp: new Date(m.timestamp)
+          })));
+          setCurrentEpisode(savedGame.currentEpisode || 1);
+          setTurnsInEpisode(savedGame.turnsInEpisode || 0);
+          setImagesInEpisode(savedGame.imagesInEpisode || 0);
+          setTotalSymbolsInEpisode(savedGame.totalSymbolsInEpisode || 0);
+          if (savedGame.characters) {
+            setCharacters(savedGame.characters);
+          }
+          storyInitializedRef.current = true;
+        }
+      } catch (e) {
+        console.error('Failed to restore game progress', e);
+      }
+    }
   }, []);
 
 
@@ -59,6 +82,17 @@ export const useGameLogic = () => {
   }, [messages]);
 
   useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem('current-game-progress', JSON.stringify({
+        messages,
+        characters,
+        currentEpisode,
+        turnsInEpisode,
+        imagesInEpisode,
+        totalSymbolsInEpisode
+      }));
+    }
+
     if (messages.length > 0 && messages.length % 5 === 0 && gameSettings) {
       const saveGame = async () => {
         try {
@@ -78,7 +112,7 @@ export const useGameLogic = () => {
       };
       saveGame();
     }
-  }, [messages.length, gameSettings]);
+  }, [messages.length, gameSettings, characters, currentEpisode, turnsInEpisode, imagesInEpisode, totalSymbolsInEpisode]);
 
   const getAgentPrompt = () => {
     turnCountRef.current += 1;
