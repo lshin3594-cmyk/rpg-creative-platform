@@ -235,6 +235,13 @@ export const useGameLogic = () => {
                             imagesInEpisode < 4 && 
                             (turnsInEpisode % Math.max(Math.floor(5 / 4), 1) === 0 || turnsInEpisode === 0);
       
+      console.log('Image generation check:', { 
+        autoIllustrations, 
+        imagesInEpisode, 
+        turnsInEpisode,
+        shouldGenImage 
+      });
+      
       setTotalSymbolsInEpisode(newTotalSymbols);
       setTurnsInEpisode(newTurns);
       
@@ -246,6 +253,7 @@ export const useGameLogic = () => {
       }
 
       if (shouldGenImage) {
+        console.log('Starting image generation for message:', aiMessage.id);
         setGeneratingIllustration(true);
         generateIllustration(data.text).then(illustrationUrl => {
           if (illustrationUrl) {
