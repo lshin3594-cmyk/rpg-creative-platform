@@ -91,14 +91,15 @@ Extract and translate only visual details to English:`;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-gradient-to-br from-purple-950 via-black to-purple-950 border-purple-500/40 text-white max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="bg-gradient-to-br from-purple-950 via-black to-purple-950 border-purple-500/40 text-white max-w-2xl max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-2xl text-purple-100">Создать персонажа</DialogTitle>
           <DialogDescription className="text-purple-300/70">
             Заполните информацию о новом персонаже
           </DialogDescription>
         </DialogHeader>
 
+        <div className="flex-1 overflow-y-auto pr-2 -mr-2 space-y-6">
         <div className="flex items-center justify-between p-4 rounded-lg bg-purple-900/20 border border-purple-500/30">
           <div className="flex items-center gap-3">
             <Icon name={newCharacter.isMainCharacter ? 'Crown' : 'Users'} size={20} className={newCharacter.isMainCharacter ? 'text-yellow-400' : 'text-purple-400'} />
@@ -253,8 +254,9 @@ Extract and translate only visual details to English:`;
             </div>
           )}
         </div>
+        </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-shrink-0 pt-4 border-t border-purple-500/20">
           <Button
             onClick={onClose}
             variant="outline"
