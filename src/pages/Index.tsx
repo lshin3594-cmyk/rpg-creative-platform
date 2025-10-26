@@ -82,7 +82,7 @@ const Index = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 py-12">
       <div className="w-full max-w-6xl space-y-8">
-        <PreviewCarousel />
+        {/* <PreviewCarousel /> */}
         
         <div className="grid gap-4 md:gap-6 max-w-2xl mx-auto">
           {menuItems.map((item, index) => (
