@@ -156,6 +156,13 @@ export default function PlayGame() {
       
       setLoadingStage('done');
       saveGame([], story);
+      
+      setTimeout(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+          console.log('📜 Scrolled to bottom after story');
+        }
+      }, 100);
     } catch (error: any) {
       console.error('💥 Failed to start game:', error);
       console.error('💥 Error stack:', error.stack);
