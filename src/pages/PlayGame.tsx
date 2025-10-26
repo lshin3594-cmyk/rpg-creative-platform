@@ -139,9 +139,11 @@ export default function PlayGame() {
       
       const story = data.text || 'История началась...';
       
-      // Временно отключаем парсинг мета-данных для отладки
       console.log('📝 Raw story text:', story);
+      console.log('📝 Story length:', story.length);
+      console.log('📝 Setting currentStory now...');
       setCurrentStory(story);
+      console.log('✅ currentStory state updated');
       
       setLoadingStage('done');
       saveGame([], story);
