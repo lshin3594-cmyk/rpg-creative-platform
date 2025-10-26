@@ -125,7 +125,7 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
     if cached:
         return cached
     
-    max_retries = 2
+    max_retries = 3
     for attempt in range(max_retries):
         try:
             if USE_CLAUDE:
@@ -176,21 +176,21 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
                 # Fallback на DeepSeek
                 print(f"DeepSeek API attempt {attempt + 1}/{max_retries}")
                 
-                timeout_config = httpx.Timeout(connect=5.0, read=20.0, write=10.0, pool=5.0)
+                timeout_config = httpx.Timeout(connect=10.0, read=45.0, write=10.0, pool=5.0)
                 http_client = httpx.Client(timeout=timeout_config)
                 
                 client = OpenAI(
                     api_key=DEEPSEEK_API_KEY,
                     base_url="https://api.deepseek.com",
                     http_client=http_client,
-                    timeout=20.0,
+                    timeout=45.0,
                     max_retries=0
                 )
                 
                 response = client.chat.completions.create(
                     model="deepseek-chat",
                     messages=messages,
-                    max_tokens=350,  # Уменьшено для скорости
+                    max_tokens=250,
                     temperature=0.7,
                     stream=False
                 )
