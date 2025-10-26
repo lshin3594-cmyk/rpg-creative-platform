@@ -332,52 +332,16 @@ export default function PlayGame() {
             ref={scrollRef}
             className="flex-1 overflow-y-auto p-4 space-y-6"
           >
-            <div className="container mx-auto max-w-4xl" key={currentStory ? 'with-story' : 'no-story'}>
-              {/* МЕГА DEBUG - ВСЕГДА ПЕРВЫМ */}
-              <div className="bg-red-500 text-white p-4 mb-4 font-mono text-xs">
-                <div>🔍 DEBUG INFO:</div>
-                <div>isStarting: {String(isStarting)}</div>
-                <div>loadingStage: {loadingStage}</div>
-                <div>currentStory type: {typeof currentStory}</div>
-                <div>currentStory length: {currentStory?.length || 0}</div>
-                <div>currentStory truthiness: {String(!!currentStory)}</div>
-                <div>history length: {history.length}</div>
-              </div>
-
-              {isStarting && loadingStage !== 'done' && (
-                <div className="bg-card border rounded-lg p-6 mb-6">
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <span className="animate-pulse">⚡</span>
-                    Запуск игры...
-                  </h3>
-                  <LoadingStages
-                    loadingStage={loadingStage}
-                    stageErrors={stageErrors}
-                  />
+            <div className="container mx-auto max-w-4xl">
+              {/* УЛЬТРА ПРОСТОЙ ТЕСТ */}
+              <div className="bg-yellow-400 text-black p-8 mb-4" style={{minHeight: '300px', zIndex: 9999, position: 'relative'}}>
+                <h1 className="text-3xl font-bold mb-4">🚨 ТЕСТ ОТОБРАЖЕНИЯ</h1>
+                <p className="text-xl mb-2">currentStory exists: {String(!!currentStory)}</p>
+                <p className="text-xl mb-2">Type: {typeof currentStory}</p>
+                <p className="text-xl mb-4">Length: {currentStory?.length}</p>
+                <div className="bg-white p-4 overflow-auto" style={{maxHeight: '400px'}}>
+                  <pre className="text-sm">{JSON.stringify(currentStory, null, 2)}</pre>
                 </div>
-              )}
-
-              <StoryHistory
-                history={history}
-                selectedCharacter={selectedCharacter}
-                currentStory={currentStory}
-              />
-
-              {/* DEBUG: ВИДИМОСТЬ ПРОВЕРКА - ВСЕГДА ПОКАЗЫВАТЬ */}
-              <div className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 p-8 rounded-lg border-4 border-white mb-4 min-h-[200px]">
-                <h1 className="text-4xl font-bold text-white mb-4">
-                  {currentStory ? '✨ ИСТОРИЯ ЕСТЬ ✨' : '❌ ИСТОРИИ НЕТ'}
-                </h1>
-                {currentStory ? (
-                  <>
-                    <p className="text-2xl text-white mb-2">Length: {currentStory.length}</p>
-                    <div className="bg-white text-black p-4 rounded max-h-60 overflow-auto">
-                      <pre className="whitespace-pre-wrap">{currentStory}</pre>
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-white text-xl">Ожидание истории...</p>
-                )}
               </div>
             </div>
           </div>
