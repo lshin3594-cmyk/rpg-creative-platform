@@ -113,37 +113,37 @@ export default function GameSaves() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 line-clamp-1">
                     <Icon name="Gamepad2" size={18} className="flex-shrink-0 text-primary" />
-                    <span className="truncate">{save.gameSettings.name}</span>
+                    <span className="truncate">{save.gameSettings?.name || 'Игра'}</span>
                   </CardTitle>
                   <CardDescription className="flex flex-wrap gap-2">
                     <Badge variant="secondary" className="text-xs">
-                      {save.gameSettings.genre}
+                      {save.gameSettings?.genre || 'Фэнтези'}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      {save.gameSettings.rating}
+                      {save.gameSettings?.rating || '18+'}
                     </Badge>
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {save.gameSettings.setting && (
+                    {save.gameSettings?.setting && (
                       <div className="text-xs text-muted-foreground bg-primary/5 p-2 rounded border border-primary/10">
                         <Icon name="Map" size={12} className="inline mr-1" />
                         {save.gameSettings.setting.slice(0, 80)}{save.gameSettings.setting.length > 80 ? '...' : ''}
                       </div>
                     )}
                     
-                    {save.gameSettings.initialCharacters && save.gameSettings.initialCharacters.length > 0 && (
+                    {save.gameSettings?.initialCharacters && Array.isArray(save.gameSettings.initialCharacters) && save.gameSettings.initialCharacters.length > 0 && (
                       <div className="flex flex-wrap gap-1">
-                        {save.gameSettings.initialCharacters.slice(0, 3).map((char, idx) => (
+                        {save.gameSettings.initialCharacters.filter(char => char && char.name).slice(0, 3).map((char, idx) => (
                           <Badge key={idx} variant="outline" className="text-xs">
                             <Icon name="User" size={10} className="mr-1" />
                             {char.name}
                           </Badge>
                         ))}
-                        {save.gameSettings.initialCharacters.length > 3 && (
+                        {save.gameSettings.initialCharacters.filter(char => char && char.name).length > 3 && (
                           <Badge variant="outline" className="text-xs">
-                            +{save.gameSettings.initialCharacters.length - 3}
+                            +{save.gameSettings.initialCharacters.filter(char => char && char.name).length - 3}
                           </Badge>
                         )}
                       </div>

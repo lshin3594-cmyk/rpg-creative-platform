@@ -137,30 +137,30 @@ const Index = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 line-clamp-1 text-base">
                       <Icon name="Gamepad2" size={16} className="flex-shrink-0 text-primary" />
-                      <span className="truncate">{save.gameSettings.name}</span>
+                      <span className="truncate">{save.gameSettings?.name || 'Игра'}</span>
                     </CardTitle>
                     <CardDescription className="flex flex-wrap gap-2">
                       <Badge variant="secondary" className="text-xs">
-                        {save.gameSettings.genre}
+                        {save.gameSettings?.genre || 'Фэнтези'}
                       </Badge>
                       <Badge variant="outline" className="text-xs">
-                        {save.gameSettings.rating}
+                        {save.gameSettings?.rating || '18+'}
                       </Badge>
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {save.gameSettings.initialCharacters && save.gameSettings.initialCharacters.length > 0 && (
+                      {save.gameSettings?.initialCharacters && Array.isArray(save.gameSettings.initialCharacters) && save.gameSettings.initialCharacters.length > 0 && (
                         <div className="flex flex-wrap gap-1">
-                          {save.gameSettings.initialCharacters.slice(0, 2).map((char, idx) => (
+                          {save.gameSettings.initialCharacters.filter(char => char && char.name).slice(0, 2).map((char, idx) => (
                             <Badge key={idx} variant="outline" className="text-xs">
                               <Icon name="User" size={10} className="mr-1" />
                               {char.name}
                             </Badge>
                           ))}
-                          {save.gameSettings.initialCharacters.length > 2 && (
+                          {save.gameSettings.initialCharacters.filter(char => char && char.name).length > 2 && (
                             <Badge variant="outline" className="text-xs">
-                              +{save.gameSettings.initialCharacters.length - 2}
+                              +{save.gameSettings.initialCharacters.filter(char => char && char.name).length - 2}
                             </Badge>
                           )}
                         </div>
