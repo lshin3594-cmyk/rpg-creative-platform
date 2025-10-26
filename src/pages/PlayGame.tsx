@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { GameJournal } from '@/components/game/GameJournal';
+import { GameHeader } from '@/components/game/GameHeader';
+import { LoadingStages } from '@/components/game/LoadingStages';
+import { StoryHistory } from '@/components/game/StoryHistory';
+import { CurrentStory } from '@/components/game/CurrentStory';
+import { ActionInput } from '@/components/game/ActionInput';
+import { parseMetaFromStory } from '@/components/game/MetaParser';
 
 const STORY_AI_URL = 'https://functions.poehali.dev/9ea67dc2-c306-4906-bf0f-da435600b92c';
 const IMAGE_GEN_URL = 'https://functions.poehali.dev/16a136ce-ff21-4430-80df-ad1caa87a3a7';
@@ -59,37 +60,6 @@ export default function PlayGame() {
     }
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  const parseMetaFromStory = (story: string, episodeNum: number) => {
-    const metaMatch = story.match(/\*\*\[МЕТА\]\*\*([\s\S]*?)---/);
-    if (!metaMatch) return null;
-
-    const metaText = metaMatch[1];
-    
-    const timeMatch = metaText.match(/⏰[^:]*:\s*(.+)/);
-    const eventsMatch = metaText.match(/🎬[^:]*:\s*(.+)/);
-    const relationsMatch = metaText.match(/💕[^:]*:\s*(.+)/);
-    const emotionsMatch = metaText.match(/🧠[^:]*:\s*(.+)/);
-    const cluesMatch = metaText.match(/🔍[^:]*:\s*(.+)/);
-    const questionsMatch = metaText.match(/❓[^:]*:\s*(.+)/);
-    const plansMatch = metaText.match(/🎯[^:]*:\s*(.+)/);
-
-    const storyWithoutMeta = story.replace(/\*\*\[МЕТА\]\*\*[\s\S]*?---\s*/, '');
-
-    return {
-      episode: episodeNum,
-      title: `Эпизод ${episodeNum}`,
-      time: timeMatch ? timeMatch[1].trim() : undefined,
-      location: timeMatch ? timeMatch[1].split(',').pop()?.trim() : undefined,
-      events: eventsMatch ? [eventsMatch[1].trim()] : [],
-      npcs: [],
-      emotions: emotionsMatch ? [emotionsMatch[1].trim()] : [],
-      clues: cluesMatch ? [cluesMatch[1].trim()] : [],
-      questions: questionsMatch ? [questionsMatch[1].trim()] : [],
-      plans: plansMatch ? [plansMatch[1].trim()] : [],
-      cleanStory: storyWithoutMeta
-    };
-  };
 
   useEffect(() => {
     if (!gameSettings) {
@@ -238,330 +208,129 @@ export default function PlayGame() {
         }
         
         const updatedHistory = [...newHistory];
-        updatedHistory[updatedHistory.length - 1] = {
-          ...updatedHistory[updatedHistory.length - 1],
-          image: imageUrl
-        };
-        
-        const parsedMeta = parseMetaFromStory(story, updatedHistory.length);
-        if (parsedMeta) {
-          setJournalEntries(prev => [...prev, parsedMeta]);
-          setCurrentStory(parsedMeta.cleanStory);
-        } else {
-          setCurrentStory(story);
-        }
+        updatedHistory[updatedHistory.length - 1].image = imageUrl;
         
         setHistory(updatedHistory);
-        saveGame(updatedHistory, parsedMeta?.cleanStory || story);
+        setCurrentStory(story);
+        saveGame(updatedHistory, story);
         
-        toast({
-          title: '💾 Сохранено',
-          description: `Эпизод ${newHistory.length} автоматически сохранён`,
-        });
+        const metaData = parseMetaFromStory(story, journalEntries.length + 1);
+        if (metaData) {
+          setJournalEntries(prev => [...prev, metaData]);
+          setCurrentStory(metaData.cleanStory);
+        }
       } else {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        const errorText = await response.text();
+        console.error('Story API error:', response.status, errorText);
         toast({
-          title: 'Ошибка генерации',
-          description: errorData.error || 'Не удалось продолжить историю',
+          title: 'Ошибка',
+          description: `Не удалось получить ответ (${response.status})`,
           variant: 'destructive'
         });
-        setCurrentStory('Не удалось продолжить историю. Попробуйте ещё раз.');
+        setHistory(newHistory);
+        setCurrentStory('Ошибка при генерации истории.');
       }
     } catch (error) {
-      console.error('Failed to continue story:', error);
+      console.error('Failed to send action:', error);
       toast({
-        title: 'Ошибка сети',
-        description: 'Проверьте подключение к интернету',
+        title: 'Ошибка',
+        description: 'Не удалось отправить действие',
         variant: 'destructive'
       });
-      setCurrentStory('Ошибка. Попробуйте ещё раз.');
+      setHistory(newHistory);
+      setCurrentStory('Произошла ошибка. Попробуйте ещё раз.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const saveGame = (historyData: HistoryEntry[], currentText: string) => {
-    if (!gameId) return;
-
-    const gameState = {
+  const saveGame = (historyData: HistoryEntry[], story: string) => {
+    const saves = JSON.parse(localStorage.getItem('game-saves') || '[]');
+    const existingIndex = saves.findIndex((s: any) => s.id === gameId);
+    
+    const saveData = {
       id: gameId,
-      settings: gameSettings,
+      gameSettings,
       history: historyData,
-      currentStory: currentText,
-      episodeCount: historyData.length,
-      savedAt: new Date().toISOString(),
-      lastAction: historyData.length > 0 ? historyData[historyData.length - 1].user : 'Начало игры'
+      currentStory: story,
+      savedAt: Date.now()
     };
-
-    const savedGames = JSON.parse(localStorage.getItem('saved-games') || '[]');
-    const existingIndex = savedGames.findIndex((g: any) => g.id === gameId);
     
     if (existingIndex >= 0) {
-      savedGames[existingIndex] = gameState;
+      saves[existingIndex] = saveData;
     } else {
-      savedGames.push(gameState);
+      saves.push(saveData);
     }
     
-    localStorage.setItem('saved-games', JSON.stringify(savedGames));
+    localStorage.setItem('game-saves', JSON.stringify(saves));
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendAction();
-    }
+  const handleBack = () => {
+    saveGame(history, currentStory);
+    navigate('/');
   };
-
-  const handlePoke = async () => {
-    toast({
-      title: '⚡ Пнул ИИ',
-      description: 'ИИ генерирует продолжение...',
-    });
-    
-    setIsLoading(true);
-    try {
-      const response = await fetch(STORY_AI_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          game_settings: gameSettings,
-          setting: gameSettings.setting || 'средневековье',
-          user_action: '[продолжи историю дальше]',
-          history: history
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setCurrentStory(data.story || currentStory);
-      }
-    } catch (error) {
-      console.error('Poke failed:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getStageIcon = (stage: LoadingStage) => {
-    if (loadingStage === stage) return <Icon name="Loader2" className="animate-spin text-purple-400" size={18} />;
-    if (stageErrors[stage as 'world' | 'story']) return <Icon name="CircleX" className="text-red-400" size={18} />;
-    
-    const stages: LoadingStage[] = ['world', 'story', 'done'];
-    const currentIdx = stages.indexOf(loadingStage);
-    const stageIdx = stages.indexOf(stage);
-    
-    if (stageIdx < currentIdx || loadingStage === 'done') {
-      return <Icon name="CircleCheck" className="text-green-400" size={18} />;
-    }
-    return <Icon name="Circle" className="text-purple-700" size={18} />;
-  };
-
-  const getStageText = (stage: LoadingStage) => {
-    const texts = {
-      world: 'Создаю мир и атмосферу',
-      story: 'Генерирую начальную историю',
-      done: 'Готово!'
-    };
-    return texts[stage] || '';
-  };
-
-  if (!gameSettings) return null;
-
-  if (isStarting) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-md w-full space-y-6 bg-purple-900/20 backdrop-blur-sm border border-purple-500/30 rounded-lg p-8">
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl font-bold text-purple-100">{gameSettings.name}</h2>
-            <p className="text-purple-300/70 text-sm">Запускаю игру...</p>
-          </div>
-          
-          <div className="space-y-4">
-            {(['world', 'story'] as const).map(stage => (
-              <div key={stage} className="flex items-center gap-3">
-                {getStageIcon(stage)}
-                <div className="flex-1">
-                  <p className={`text-sm ${loadingStage === stage ? 'text-purple-200' : 'text-purple-400/60'}`}>
-                    {getStageText(stage)}
-                  </p>
-                  {stageErrors[stage] && (
-                    <p className="text-xs text-red-400 mt-1">{stageErrors[stage]}</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          {(stageErrors.world || stageErrors.story) && (
-            <Button 
-              onClick={() => navigate('/create-game')} 
-              variant="outline" 
-              className="w-full"
-            >
-              <Icon name="ArrowLeft" size={16} />
-              Вернуться назад
-            </Button>
-          )}
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="h-screen flex flex-col">
-      <div className="bg-purple-900/30 backdrop-blur-sm border-b border-purple-500/30 p-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/')}
-              className="gap-2 text-purple-300 hover:text-purple-100"
-            >
-              <Icon name="Home" size={16} />
-              Главная
-            </Button>
-            <div>
-              <h1 className="text-xl font-bold text-purple-100">{gameSettings.name}</h1>
-              <p className="text-xs text-purple-300/60">Эпизод {history.length + 1}</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            {selectedCharacter && (
-              <div className="flex items-center gap-2 bg-purple-900/40 px-3 py-1.5 rounded-full border border-purple-500/30">
-                <Avatar className="h-7 w-7">
-                  <AvatarImage src={selectedCharacter.avatar} />
-                  <AvatarFallback>{selectedCharacter.name[0]}</AvatarFallback>
-                </Avatar>
-                <span className="text-sm text-purple-200">{selectedCharacter.name}</span>
-              </div>
-            )}
-            <Badge variant="outline" className="text-purple-300 border-purple-500/30">
-              {gameSettings.genre}
-            </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setJournalOpen(true)}
-              className="gap-2 border-purple-500/30 text-purple-300"
-            >
-              <Icon name="BookOpen" size={16} />
-              Журнал
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {history.map((entry, idx) => (
-            <div key={idx} className="space-y-3">
-              <div className="bg-purple-900/20 backdrop-blur-sm border border-purple-500/30 rounded-lg overflow-hidden">
-                {entry.image && (
-                  <img 
-                    src={entry.image} 
-                    alt={`Episode ${idx + 1}`}
-                    className="w-full h-64 object-cover"
-                  />
-                )}
-                <div className="p-4">
-                  <p className="text-purple-100 whitespace-pre-wrap">{entry.ai}</p>
-                </div>
-              </div>
-              <div className="bg-pink-900/20 backdrop-blur-sm border border-pink-500/30 rounded-lg p-4 ml-8">
-                <p className="text-sm text-pink-200 mb-1 font-semibold">Ваше действие:</p>
-                <p className="text-pink-100 whitespace-pre-wrap">{entry.user}</p>
-              </div>
-            </div>
-          ))}
-          
-          {currentStory && (
-            <div className="bg-purple-900/20 backdrop-blur-sm border border-purple-500/30 rounded-lg p-4">
-              <p className="text-purple-100 whitespace-pre-wrap">{currentStory}</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="bg-purple-900/30 backdrop-blur-sm border-t border-purple-500/30 p-4">
-        <div className="max-w-4xl mx-auto space-y-3">
-          {showMetaInput && (
-            <div className="bg-orange-900/20 border border-orange-500/30 rounded-lg p-3">
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-semibold text-orange-300 flex items-center gap-2">
-                  <Icon name="Code" size={16} />
-                  Обращение к ИИ (мета-команды)
-                </label>
-                <button 
-                  onClick={() => setShowMetaInput(false)}
-                  className="text-orange-400 hover:text-orange-200"
-                >
-                  <Icon name="X" size={16} />
-                </button>
-              </div>
-              <Textarea
-                value={metaCommand}
-                onChange={(e) => setMetaCommand(e.target.value)}
-                placeholder="Например: Добавь в игру систему крафта / Сделай NPC более агрессивными..."
-                disabled={isLoading}
-                className="min-h-[80px] bg-orange-950/50 border-orange-500/30 text-orange-100 placeholder:text-orange-400/50"
-              />
-            </div>
-          )}
-          
-          <Textarea
-            value={userAction}
-            onChange={(e) => setUserAction(e.target.value)}
-            onKeyDown={handleKeyPress}
-            placeholder="Опишите ваше действие..."
-            disabled={isLoading}
-            className="min-h-[100px] bg-purple-950/50 border-purple-500/30 text-purple-100 placeholder:text-purple-400/50"
-          />
-          <div className="flex gap-3">
-            <Button
-              onClick={handleSendAction}
-              disabled={isLoading || !userAction.trim()}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-            >
-              {isLoading ? (
-                <>
-                  <Icon name="Loader2" className="animate-spin" size={18} />
-                  ИИ думает...
-                </>
-              ) : (
-                <>
-                  <Icon name="Send" size={18} />
-                  Отправить
-                </>
-              )}
-            </Button>
-            <Button
-              onClick={handlePoke}
-              disabled={isLoading}
-              variant="outline"
-              className="border-purple-500/30 text-purple-300"
-            >
-              <Icon name="Zap" size={18} />
-              Пнуть ИИ
-            </Button>
-            <Button
-              onClick={() => setShowMetaInput(!showMetaInput)}
-              variant="outline"
-              className="border-orange-500/30 text-orange-300"
-            >
-              <Icon name="Code" size={18} />
-              {showMetaInput ? 'Скрыть' : 'Мета'}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <GameJournal 
-        entries={journalEntries}
-        isOpen={journalOpen}
-        onClose={() => setJournalOpen(false)}
+    <div className="h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
+      <GameHeader
+        onBack={handleBack}
+        onJournalToggle={() => setJournalOpen(!journalOpen)}
+        onMetaToggle={() => setShowMetaInput(!showMetaInput)}
+        isJournalOpen={journalOpen}
+        showMetaInput={showMetaInput}
       />
+
+      <div className="flex-1 overflow-hidden flex">
+        <div className="flex-1 flex flex-col">
+          <div
+            ref={scrollRef}
+            className="flex-1 overflow-y-auto p-4 space-y-6"
+          >
+            <div className="container mx-auto max-w-4xl">
+              {isStarting && loadingStage !== 'done' && (
+                <div className="bg-card border rounded-lg p-6 mb-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <span className="animate-pulse">⚡</span>
+                    Запуск игры...
+                  </h3>
+                  <LoadingStages
+                    loadingStage={loadingStage}
+                    stageErrors={stageErrors}
+                  />
+                </div>
+              )}
+
+              <StoryHistory
+                history={history}
+                selectedCharacter={selectedCharacter}
+              />
+
+              {currentStory && (
+                <CurrentStory
+                  currentStory={currentStory}
+                  isStarting={isStarting}
+                />
+              )}
+            </div>
+          </div>
+
+          <ActionInput
+            userAction={userAction}
+            metaCommand={metaCommand}
+            showMetaInput={showMetaInput}
+            isLoading={isLoading}
+            onUserActionChange={setUserAction}
+            onMetaCommandChange={setMetaCommand}
+            onSend={handleSendAction}
+          />
+        </div>
+
+        {journalOpen && (
+          <div className="w-96 border-l bg-card/50 backdrop-blur-sm overflow-y-auto">
+            <GameJournal entries={journalEntries} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
