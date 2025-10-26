@@ -14,6 +14,8 @@ interface HistoryEntry {
   ai: string;
 }
 
+type LoadingStage = 'idle' | 'world' | 'story' | 'done';
+
 export default function PlayGame() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -28,8 +30,8 @@ export default function PlayGame() {
   const [isStarting, setIsStarting] = useState(true);
   const [gameId, setGameId] = useState<string>('');
   const [selectedCharacter, setSelectedCharacter] = useState<any>(null);
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  const [loadingText, setLoadingText] = useState('Подключаюсь к нейросети...');
+  const [loadingStage, setLoadingStage] = useState<LoadingStage>('idle');
+  const [stageErrors, setStageErrors] = useState<{world?: string, story?: string}>({});
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,6 +45,7 @@ export default function PlayGame() {
       setHistory(existingSave.history || []);
       setCurrentStory(existingSave.currentStory || '');
       setIsStarting(false);
+      setLoadingStage('done');
     } else {
       const id = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       setGameId(id);
@@ -69,21 +72,13 @@ export default function PlayGame() {
   const startGame = async () => {
     setIsLoading(true);
     setIsStarting(true);
-    setLoadingProgress(0);
-    setLoadingText('Подключаюсь к GPT-4o...');
-    
-    const progressInterval = setInterval(() => {
-      setLoadingProgress(prev => {
-        if (prev >= 90) return 90;
-        return prev + Math.random() * 15;
-      });
-    }, 500);
-    
-    setTimeout(() => setLoadingText('Генерирую начало истории...'), 2000);
-    setTimeout(() => setLoadingText('Создаю атмосферу мира...'), 5000);
-    setTimeout(() => setLoadingText('Почти готово...'), 10000);
+    setStageErrors({});
     
     try {
+      setLoadingStage('world');
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      setLoadingStage('story');
       const response = await fetch(STORY_AI_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -96,36 +91,36 @@ export default function PlayGame() {
         })
       });
 
-      clearInterval(progressInterval);
-      setLoadingProgress(100);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setCurrentStory(data.story || 'История началась...');
-        saveGame([], data.story || '');
-      } else {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        toast({
-          title: 'Ошибка генерации',
-          description: errorData.error || 'Не удалось начать игру',
-          variant: 'destructive'
-        });
-        setCurrentStory('Не удалось начать игру. Попробуйте снова.');
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Story API error:', response.status, errorText);
+        setStageErrors(prev => ({ ...prev, story: `HTTP ${response.status}: ${errorText.slice(0, 100)}` }));
+        throw new Error(`Story API failed (${response.status})`);
       }
-    } catch (error) {
-      clearInterval(progressInterval);
+      
+      const data = await response.json();
+      setLoadingStage('done');
+      setCurrentStory(data.story || 'История началась...');
+      saveGame([], data.story || '');
+    } catch (error: any) {
       console.error('Failed to start game:', error);
+      const errorMsg = error.message || 'Неизвестная ошибка';
+      
+      if (loadingStage === 'story') {
+        setStageErrors(prev => ({ ...prev, story: errorMsg }));
+      } else if (loadingStage === 'world') {
+        setStageErrors(prev => ({ ...prev, world: errorMsg }));
+      }
+      
       toast({
-        title: 'Ошибка сети',
-        description: 'Проверьте подключение к интернету',
+        title: 'Ошибка запуска игры',
+        description: errorMsg,
         variant: 'destructive'
       });
-      setCurrentStory('Ошибка загрузки. Попробуйте снова.');
+      setCurrentStory('Не удалось начать игру. Проверьте логи выше.');
     } finally {
-      clearInterval(progressInterval);
       setIsLoading(false);
       setIsStarting(false);
-      setLoadingProgress(0);
     }
   };
 
@@ -135,18 +130,6 @@ export default function PlayGame() {
     const action = userAction.trim();
     setUserAction('');
     setIsLoading(true);
-    setLoadingProgress(0);
-    setLoadingText('Отправляю действие в GPT-4o...');
-    
-    const progressInterval = setInterval(() => {
-      setLoadingProgress(prev => {
-        if (prev >= 90) return 90;
-        return prev + Math.random() * 15;
-      });
-    }, 500);
-    
-    setTimeout(() => setLoadingText('ИИ обдумывает последствия...'), 2000);
-    setTimeout(() => setLoadingText('Генерирую продолжение...'), 5000);
 
     const newHistory: HistoryEntry[] = [
       ...history,
@@ -165,9 +148,6 @@ export default function PlayGame() {
           history: newHistory
         })
       });
-
-      clearInterval(progressInterval);
-      setLoadingProgress(100);
       
       if (response.ok) {
         const data = await response.json();
@@ -189,7 +169,6 @@ export default function PlayGame() {
         setCurrentStory('Не удалось продолжить историю. Попробуйте ещё раз.');
       }
     } catch (error) {
-      clearInterval(progressInterval);
       console.error('Failed to continue story:', error);
       toast({
         title: 'Ошибка сети',
@@ -198,9 +177,7 @@ export default function PlayGame() {
       });
       setCurrentStory('Ошибка. Попробуйте ещё раз.');
     } finally {
-      clearInterval(progressInterval);
       setIsLoading(false);
-      setLoadingProgress(0);
     }
   };
 
@@ -259,200 +236,176 @@ export default function PlayGame() {
       if (response.ok) {
         const data = await response.json();
         setCurrentStory(data.story || currentStory);
-      } else {
-        toast({
-          title: 'Ошибка',
-          description: 'Не удалось пнуть ИИ',
-          variant: 'destructive'
-        });
       }
     } catch (error) {
-      console.error('Failed to poke AI:', error);
-      toast({
-        title: 'Ошибка',
-        description: 'Проверьте подключение',
-        variant: 'destructive'
-      });
+      console.error('Poke failed:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!gameSettings) {
+  const getStageIcon = (stage: LoadingStage) => {
+    if (loadingStage === stage) return <Icon name="Loader2" className="animate-spin text-purple-400" size={18} />;
+    if (stageErrors[stage as 'world' | 'story']) return <Icon name="CircleX" className="text-red-400" size={18} />;
+    
+    const stages: LoadingStage[] = ['world', 'story', 'done'];
+    const currentIdx = stages.indexOf(loadingStage);
+    const stageIdx = stages.indexOf(stage);
+    
+    if (stageIdx < currentIdx || loadingStage === 'done') {
+      return <Icon name="CircleCheck" className="text-green-400" size={18} />;
+    }
+    return <Icon name="Circle" className="text-purple-700" size={18} />;
+  };
+
+  const getStageText = (stage: LoadingStage) => {
+    const texts = {
+      world: 'Создаю мир и атмосферу',
+      story: 'Генерирую начальную историю',
+      done: 'Готово!'
+    };
+    return texts[stage] || '';
+  };
+
+  if (!gameSettings) return null;
+
+  if (isStarting) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Icon name="Loader2" className="animate-spin mx-auto mb-4" size={48} />
-          <p className="text-purple-300">Загрузка игры...</p>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="max-w-md w-full space-y-6 bg-purple-900/20 backdrop-blur-sm border border-purple-500/30 rounded-lg p-8">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-bold text-purple-100">{gameSettings.name}</h2>
+            <p className="text-purple-300/70 text-sm">Запускаю игру...</p>
+          </div>
+          
+          <div className="space-y-4">
+            {(['world', 'story'] as const).map(stage => (
+              <div key={stage} className="flex items-center gap-3">
+                {getStageIcon(stage)}
+                <div className="flex-1">
+                  <p className={`text-sm ${loadingStage === stage ? 'text-purple-200' : 'text-purple-400/60'}`}>
+                    {getStageText(stage)}
+                  </p>
+                  {stageErrors[stage] && (
+                    <p className="text-xs text-red-400 mt-1">{stageErrors[stage]}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {(stageErrors.world || stageErrors.story) && (
+            <Button 
+              onClick={() => navigate('/create-game')} 
+              variant="outline" 
+              className="w-full"
+            >
+              <Icon name="ArrowLeft" size={16} />
+              Вернуться назад
+            </Button>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex">
-      <div className="w-80 bg-black/40 border-r border-purple-500/20 p-6 flex flex-col gap-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/create-game')}
-          className="gap-2 justify-start text-purple-300 hover:text-purple-100"
-        >
-          <Icon name="ArrowLeft" size={16} />
-          Саммари партии
-        </Button>
-
-        {selectedCharacter && (
-          <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <Avatar className="w-14 h-14 border-2 border-yellow-500/50">
-                <AvatarImage src={selectedCharacter.avatar} className="object-cover" />
-                <AvatarFallback className="bg-purple-900/50 text-purple-100">
-                  {selectedCharacter.name.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <h3 className="font-bold text-white text-lg">{selectedCharacter.name}</h3>
-                <Badge variant="outline" className="border-yellow-500/50 text-yellow-300 text-xs">
-                  {selectedCharacter.role}
-                </Badge>
+    <div className="h-screen flex flex-col">
+      <div className="bg-purple-900/30 backdrop-blur-sm border-b border-purple-500/30 p-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="gap-2 text-purple-300 hover:text-purple-100"
+            >
+              <Icon name="Home" size={16} />
+              Главная
+            </Button>
+            <div>
+              <h1 className="text-xl font-bold text-purple-100">{gameSettings.name}</h1>
+              <p className="text-xs text-purple-300/60">Эпизод {history.length + 1}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            {selectedCharacter && (
+              <div className="flex items-center gap-2 bg-purple-900/40 px-3 py-1.5 rounded-full border border-purple-500/30">
+                <Avatar className="h-7 w-7">
+                  <AvatarImage src={selectedCharacter.avatar} />
+                  <AvatarFallback>{selectedCharacter.name[0]}</AvatarFallback>
+                </Avatar>
+                <span className="text-sm text-purple-200">{selectedCharacter.name}</span>
               </div>
-            </div>
-            {selectedCharacter.personality && (
-              <p className="text-sm text-purple-300/70 leading-relaxed">
-                {selectedCharacter.personality}
-              </p>
             )}
-          </div>
-        )}
-
-        <div className="flex-1 flex flex-col gap-3">
-          <Button
-            variant="outline"
-            onClick={() => navigate('/journal')}
-            className="w-full justify-start gap-2 border-purple-500/30 text-purple-200 hover:bg-purple-500/10"
-          >
-            <Icon name="BookOpen" size={18} />
-            Журнал
-          </Button>
-
-          <Button
-            variant="outline"
-            onClick={handlePoke}
-            disabled={isLoading}
-            className="w-full justify-start gap-2 border-yellow-500/30 text-yellow-200 hover:bg-yellow-500/10"
-          >
-            <Icon name="Zap" size={18} />
-            Пнуть ИИ
-          </Button>
-        </div>
-
-        <div className="space-y-3 pt-4 border-t border-purple-500/20">
-          <h4 className="text-purple-300 text-sm font-medium">Агенты-наблюдатели</h4>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-purple-300/70">ИИ следит за сюжетом и временем</span>
-            <div className="w-12 h-6 bg-yellow-500/20 rounded-full relative">
-              <div className="absolute right-1 top-1 w-4 h-4 bg-yellow-500 rounded-full"></div>
-            </div>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-purple-300/70">Автоиллюстрации</span>
-            <div className="w-12 h-6 bg-yellow-500/20 rounded-full relative">
-              <div className="absolute right-1 top-1 w-4 h-4 bg-yellow-500 rounded-full"></div>
-            </div>
+            <Badge variant="outline" className="text-purple-300 border-purple-500/30">
+              {gameSettings.genre}
+            </Badge>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col">
-        <div className="bg-black/40 border-b border-purple-500/20 px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Icon name="Zap" size={20} className="text-yellow-500" />
-            <h1 className="text-xl font-bold text-white">Эпизод: {history.length + 1}</h1>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/')}
-            className="text-purple-300"
-          >
-            <Icon name="X" size={20} />
-          </Button>
-        </div>
-
-        <div 
-          ref={scrollRef}
-          className="flex-1 overflow-y-auto p-8 space-y-6"
-        >
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4">
+        <div className="max-w-4xl mx-auto space-y-6">
           {history.map((entry, idx) => (
-            <div key={idx} className="space-y-4">
-              <div className="bg-purple-900/20 border border-purple-500/20 rounded-lg p-5">
-                <div className="text-sm text-purple-300/70 mb-2">Ты:</div>
-                <div className="text-white leading-relaxed">{entry.user}</div>
+            <div key={idx} className="space-y-3">
+              <div className="bg-purple-900/20 backdrop-blur-sm border border-purple-500/30 rounded-lg p-4">
+                <p className="text-purple-100 whitespace-pre-wrap">{entry.ai}</p>
               </div>
-              <div className="bg-amber-900/20 border border-amber-700/30 rounded-lg p-5">
-                <div className="text-sm text-amber-300/70 mb-2">
-                  {gameSettings.role === 'hero' ? 'ИИ Мастер:' : 'ИИ:'}
-                </div>
-                <div className="text-amber-100 leading-relaxed whitespace-pre-wrap">{entry.ai}</div>
+              <div className="bg-pink-900/20 backdrop-blur-sm border border-pink-500/30 rounded-lg p-4 ml-8">
+                <p className="text-sm text-pink-200 mb-1 font-semibold">Ваше действие:</p>
+                <p className="text-pink-100 whitespace-pre-wrap">{entry.user}</p>
               </div>
             </div>
           ))}
-
+          
           {currentStory && (
-            <div className="bg-amber-900/20 border border-amber-700/30 rounded-lg p-5">
-              <div className="text-sm text-amber-300/70 mb-2">
-                {isStarting ? 'Начало истории:' : (gameSettings.role === 'hero' ? 'ИИ Мастер:' : 'ИИ:')}
-              </div>
-              <div className="text-amber-100 leading-relaxed whitespace-pre-wrap">{currentStory}</div>
-            </div>
-          )}
-
-          {isLoading && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-purple-300">
-                <Icon name="Loader2" className="animate-spin" size={16} />
-                <span className="text-sm">{loadingText}</span>
-              </div>
-              <div className="w-full bg-purple-900/20 rounded-full h-2 overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-yellow-500 to-amber-500 transition-all duration-500 ease-out"
-                  style={{ width: `${loadingProgress}%` }}
-                />
-              </div>
-              <div className="text-xs text-purple-400/70 text-center">
-                {Math.round(loadingProgress)}% • ~{Math.round((100 - loadingProgress) / 5)}с
-              </div>
+            <div className="bg-purple-900/20 backdrop-blur-sm border border-purple-500/30 rounded-lg p-4">
+              <p className="text-purple-100 whitespace-pre-wrap">{currentStory}</p>
             </div>
           )}
         </div>
+      </div>
 
-        <div className="bg-black/40 border-t border-purple-500/20 p-6">
+      <div className="bg-purple-900/30 backdrop-blur-sm border-t border-purple-500/30 p-4">
+        <div className="max-w-4xl mx-auto space-y-3">
           <Textarea
-            placeholder="Напишите что вы будете делать... (Enter - отправить, Shift+Enter - новая строка)"
             value={userAction}
             onChange={(e) => setUserAction(e.target.value)}
             onKeyDown={handleKeyPress}
+            placeholder="Опишите ваше действие..."
             disabled={isLoading}
-            className="min-h-[100px] mb-3 bg-black/30 border-purple-500/30 text-white resize-none"
+            className="min-h-[100px] bg-purple-950/50 border-purple-500/30 text-purple-100 placeholder:text-purple-400/50"
           />
-          <Button 
-            onClick={handleSendAction}
-            disabled={isLoading || !userAction.trim()}
-            className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white gap-2 h-12 text-lg font-semibold"
-          >
-            {isLoading ? (
-              <>
-                <Icon name="Loader2" className="animate-spin" size={20} />
-                Генерация...
-              </>
-            ) : (
-              <>
-                <Icon name="Send" size={20} />
-                Отправить
-              </>
-            )}
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={handleSendAction}
+              disabled={isLoading || !userAction.trim()}
+              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+            >
+              {isLoading ? (
+                <>
+                  <Icon name="Loader2" className="animate-spin" size={18} />
+                  ИИ думает...
+                </>
+              ) : (
+                <>
+                  <Icon name="Send" size={18} />
+                  Отправить
+                </>
+              )}
+            </Button>
+            <Button
+              onClick={handlePoke}
+              disabled={isLoading}
+              variant="outline"
+              className="border-purple-500/30 text-purple-300"
+            >
+              <Icon name="Zap" size={18} />
+              Пнуть ИИ
+            </Button>
+          </div>
         </div>
       </div>
     </div>
