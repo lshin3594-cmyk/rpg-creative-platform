@@ -108,6 +108,27 @@ export const UserProfile = () => {
       const data = await response.json();
       console.log('Generated URL:', data.url);
       
+      // Предзагрузка изображения перед установкой в state
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.referrerPolicy = 'no-referrer';
+      
+      await new Promise((resolve, reject) => {
+        img.onload = () => {
+          console.log('Image loaded successfully');
+          resolve(true);
+        };
+        img.onerror = (err) => {
+          console.error('Image preload error:', err);
+          // Всё равно пробуем показать
+          resolve(true);
+        };
+        img.src = data.url;
+        
+        // Таймаут на случай долгой загрузки
+        setTimeout(() => resolve(true), 10000);
+      });
+      
       setNewCharacter({ ...newCharacter, avatar: data.url });
       
       toast({ title: 'Изображение готово! ✨' });
@@ -400,11 +421,16 @@ export const UserProfile = () => {
                       src={newCharacter.avatar}
                       alt="Avatar preview"
                       className="w-full h-full object-cover"
-                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
                       onError={(e) => {
-                        console.error('Image load error:', e);
+                        console.error('Image load error for URL:', newCharacter.avatar);
                         const target = e.target as HTMLImageElement;
-                        target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZSBFcnJvcjwvdGV4dD48L3N2Zz4=';
+                        // Пробуем загрузить ещё раз через timeout
+                        setTimeout(() => {
+                          if (target.src !== newCharacter.avatar) {
+                            target.src = newCharacter.avatar;
+                          }
+                        }, 2000);
                       }}
                     />
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
