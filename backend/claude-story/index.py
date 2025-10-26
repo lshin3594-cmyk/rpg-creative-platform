@@ -46,42 +46,24 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     user_action = body_data.get('userAction', '')
     history = body_data.get('history', [])
     
-    # Формируем промпт для GPT-4o
+    # Формируем промпт для GPT-4o (компактная версия для скорости)
     if not history:
-        system_prompt = f"""Ты мастер интерактивных историй в жанре {genre}, действие происходит в {setting}.
-Сложность: {difficulty}.
-
-Правила:
-- Создавай яркие, атмосферные описания
-- Давай игроку выбор и свободу действий
-- Используй неожиданные повороты сюжета
-- Описывай окружение, персонажей, эмоции
-- Отвечай на русском языке
-- Твой ответ — это продолжение истории (200-300 слов)
-- В конце предложи 2-3 варианта действий игрока"""
+        system_prompt = f"""Жанр: {genre}, сеттинг: {setting}, сложность: {difficulty}.
+Создай яркое начало истории (150-200 слов). Опиши сцену, дай выбор действий. Русский язык."""
         
-        user_prompt = "Начни новую захватывающую историю. Опиши начальную сцену и ситуацию."
+        user_prompt = "Начни историю."
     else:
-        context_history = "\n".join([
-            f"Игрок: {h.get('user', '')}\nИстория: {h.get('ai', '')}" 
-            for h in history[-3:] if isinstance(h, dict)
-        ])
+        # Берём только последний ход для контекста
+        last_turn = history[-1] if isinstance(history[-1], dict) else {}
+        context = f"Было: {last_turn.get('ai', '')[:200]}"
         
-        system_prompt = f"""Ты мастер интерактивных историй в жанре {genre}, действие происходит в {setting}.
-Сложность: {difficulty}.
+        system_prompt = f"""Жанр: {genre}, сеттинг: {setting}.
+Контекст: {context}
+Действие игрока: {user_action}
 
-Предыдущие события:
-{context_history}
-
-Правила:
-- Учитывай предыдущие события
-- Реагируй на действия игрока логично
-- Создавай последствия для выборов игрока
-- Описывай реакции персонажей и мира
-- Отвечай на русском языке
-- Твой ответ — это продолжение истории (200-300 слов)"""
+Опиши результат (150-200 слов). Учитывай логику мира. Русский язык."""
         
-        user_prompt = f"Действие игрока: {user_action}\n\nОпиши что происходит дальше."
+        user_prompt = "Продолжи историю."
     
     # Запрос к GPT-4o API через air.fail
     import urllib.request
@@ -94,7 +76,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         "content": f"{system_prompt}\n\n{user_prompt}",
         "info": json.dumps({
             "version": "gpt-4o",
-            "temperature": 0.8
+            "temperature": 0.8,
+            "max_tokens": 400
         })
     }
     
@@ -113,7 +96,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     )
     
     try:
-        with urllib.request.urlopen(req, timeout=60) as response:
+        with urllib.request.urlopen(req, timeout=25) as response:
             result = json.loads(response.read().decode('utf-8'))
             
             # air.fail возвращает список сообщений или объект с response
