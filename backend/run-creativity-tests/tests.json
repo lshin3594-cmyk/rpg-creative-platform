@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Базовый тест",
+    "request": {
+      "httpMethod": "GET"
+    },
+    "expected": {
+      "statusCode": 200,
+      "bodyContains": ["summary", "results"]
+    }
+  }
+]

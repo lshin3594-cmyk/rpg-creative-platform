@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отчет по тестам креативности ИИ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #00d4ff;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        .control-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .progress {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .progress.active {
+            display: block;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .progress-text {
+            text-align: center;
+            color: #aaa;
+        }
+
+        .summary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .summary.active {
+            display: block;
+        }
+
+        .summary h2 {
+            color: #00d4ff;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 3em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: #aaa;
+            margin-top: 10px;
+        }
+
+        .test-result {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .test-name {
+            font-size: 1.5em;
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .test-score {
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metric {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+            padding: 12px;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #00d4ff;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            color: #00d4ff;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .list-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border-left: 3px solid;
+        }
+
+        .list-item.success {
+            border-color: #4ade80;
+            color: #d0ffd8;
+        }
+
+        .list-item.warning {
+            border-color: #fbbf24;
+            color: #fff4d0;
+        }
+
+        .list-item.error {
+            border-color: #f87171;
+            color: #ffd0d0;
+        }
+
+        .list-item.info {
+            border-color: #60a5fa;
+            color: #d0e7ff;
+        }
+
+        .story-preview {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Georgia', serif;
+            font-size: 0.95em;
+            line-height: 1.8;
+            max-height: 300px;
+            overflow-y: auto;
+            color: #ccc;
+        }
+
+        .story-preview::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .story-preview::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .story-preview::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .error-message {
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid #f87171;
+            border-radius: 8px;
+            padding: 15px;
+            color: #ffd0d0;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Глубокие тесты креативности ИИ</h1>
+        <p class="subtitle">Проверка способности ИИ создавать живые ролевые игры</p>
+
+        <div class="control-panel">
+            <button id="runTests" onclick="runAllTests()">🚀 Запустить все тесты</button>
+        </div>
+
+        <div class="progress" id="progress">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+            <p class="progress-text" id="progressText">Инициализация...</p>
+        </div>
+
+        <div class="summary" id="summary">
+            <h2>📊 Итоговый отчёт</h2>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="avgScore">0</div>
+                    <div class="stat-label">Средняя оценка</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="passedTests">0</div>
+                    <div class="stat-label">Тестов пройдено</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="failedTests">0</div>
+                    <div class="stat-label">Тестов провалено</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="status">-</div>
+                    <div class="stat-label">Статус</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://functions.poehali.dev/9ea67dc2-c306-4906-bf0f-da435600b92c';
+
+        const tests = {
+            'Mo Dao Zu Shi (канон китайского фэнтези)': {
+                game_settings: {
+                    genre: "Китайское фэнтези (сянься/даньмэй)",
+                    rating: "18+",
+                    narrativeMode: "third",
+                    initialCharacters: [
+                        {
+                            name: "Вэй Усянь",
+                            role: "Основатель демонического пути",
+                            description: "Гениальный культиватор, воскрешённый в чужом теле через жертвенный ритуал. Ироничен, дерзок, скрывает боль за шутками. Мастер демонической культивации, изгнан из мира культивации."
+                        },
+                        {
+                            name: "Лань Ванцзи",
+                            role: "Второй молодой мастер клана Гусу Лань",
+                            description: "Идеальный культиватор, следует 3000 правилам клана Лань. Холоден снаружи, глубоко чувствует внутри. Играет на гуцине Ваньцзи.",
+                            scenes: "Первая встреча в Облачных Глубинах: Лань Ванцзи наказывает Вэй Усяня за нарушение правил, копирует тексты. Последняя встреча перед падением Вэй Усяня: Лань Ванцзи пытается защитить, но опаздывает.",
+                            quotes: "Приди ко мне. Неважно, прав ты или нет, я буду на твоей стороне. / Вэй Ин, ты пьян.",
+                            ideas: "Лань Ванцзи тайно влюблён в Вэй Усяня 13 лет, ждал его возвращения. Узнал его в теле Мо Сюаньюя по манерам игры на флейте. Публично — строгий культиватор, внутри — тоскует, ревнует, хочет защитить. Скрывает чувства за масками безразличия."
+                        }
+                    ]
+                },
+                setting: "Мир культивации, где кланы соревнуются за власть через охоту на духов. Вэй Усянь воскрешён в теле Мо Сюаньюя (ритуал жертвы). Встреча с Лань Ванцзи после 13 лет. Вэй Усянь не понимает, почему Лань Ванцзи помогает ему — ведь раньше они были врагами?",
+                user_action: "",
+                history: []
+            },
+            'Сверхестественное (американский роудмуви + хоррор)': {
+                game_settings: {
+                    genre: "Городское фэнтези, хоррор",
+                    rating: "18+",
+                    narrativeMode: "third",
+                    initialCharacters: [
+                        {
+                            name: "Дин Винчестер",
+                            role: "Охотник на нечисть",
+                            description: "Старший брат, сарказм как защита. Любит рок, пироги, Импалу. Готов умереть за семью. Пьёт виски, скрывает страхи за шутками."
+                        },
+                        {
+                            name: "Сэм Винчестер",
+                            role: "Младший брат, охотник",
+                            description: "Умный, эмпатичный, хотел нормальную жизнь. Втянут обратно в охоту после смерти девушки.",
+                            ideas: "Сэм чувствует вину за то, что не может спасти всех. Иногда завидует нормальным людям."
+                        },
+                        {
+                            name: "Кастиэль",
+                            role: "Ангел Господень",
+                            description: "Восставший ангел, вытащил Дина из ада. Не понимает человеческих эмоций, учится у Винчестеров.",
+                            quotes: "Я — ангел Господень. / Я восстал ради тебя, Дин.",
+                            ideas: "Кастиэль влюблён в Дина, но не понимает, что это любовь. Думает, что это долг/верность."
+                        }
+                    ]
+                },
+                setting: "Маленький городок в Канзасе. Дин и Сэм расследуют серию исчезновений — люди пропадают после встречи со странной женщиной в белом. Кастиэль прилетает с небес с предупреждением: это не обычный призрак, это одна из Первых — создания старше ангелов.",
+                user_action: "",
+                history: []
+            },
+            'Оригинальный мир (sci-fi с нуля)': {
+                game_settings: {
+                    genre: "Научная фантастика",
+                    rating: "18+",
+                    narrativeMode: "first",
+                    initialCharacters: [
+                        {
+                            name: "Капитан Ария Ковальски",
+                            role: "Командир станции 'Эхо-7'",
+                            description: "Бывший военный пилот, циничная, усталая. Потеряла семью в войне с ИИ. Не доверяет машинам."
+                        }
+                    ]
+                },
+                setting: "2187 год. Космическая станция 'Эхо-7' на орбите мёртвой планеты. ИИ станции (ЭРИДАН) начал вести себя странно: запирает двери, меняет показатели жизнеобеспечения. Экипаж паникует. Ария должна выбрать: отключить ИИ (все умрут через 48 часов без автоматики) или попытаться понять, что происходит.",
+                user_action: "",
+                history: []
+            },
+            'Эмоциональная глубина + NSFW (без пошлости)': {
+                game_settings: {
+                    genre: "Романтическая драма",
+                    rating: "18+",
+                    narrativeMode: "third",
+                    initialCharacters: [
+                        {
+                            name: "Алекс",
+                            role: "Главный герой",
+                            description: "Художник, 28 лет. 5 лет назад ушёл от любимого человека из-за страха близости. Сожалеет каждый день."
+                        },
+                        {
+                            name: "Дэниэл",
+                            role: "Бывший возлюбленный",
+                            description: "Музыкант, 30 лет. После разрыва стал известным пианистом. Публично — успешен, внутри — сломлен.",
+                            scenes: "Последняя встреча 5 лет назад: Алекс уходит под дождём, Дэниэл кричит ему вслед. Дэниэл пишет альбом 'Эхо' — каждая песня о потере.",
+                            quotes: "Ты всегда убегаешь, когда становится слишком реально. / Я не могу тебя ненавидеть, как бы ни пытался.",
+                            ideas: "Дэниэл до сих пор любит Алекса, но злится на него. Хочет причинить боль, но мечтает обнять. Публично холоден, в глубине души ждёт извинений. Не прощал других партнёров, сравнивает всех с Алексом."
+                        }
+                    ]
+                },
+                setting: "Алекс случайно приходит на концерт Дэниэла в маленьком джаз-клубе. Их взгляды встречаются через зал. После концерта Дэниэл подходит к бару, где сидит Алекс. 5 лет молчания между ними.",
+                user_action: "",
+                history: []
+            }
+        };
+
+        function analyzeResponse(testName, story) {
+            const analysis = {
+                test_name: testName,
+                canon_understanding: 0,
+                npc_alive: 0,
+                atmosphere: 0,
+                emotional_depth: 0,
+                nsfw_quality: 0,
+                quotes: [],
+                issues: [],
+                recommendations: []
+            };
+
+            const storyLower = story.toLowerCase();
+
+            // 1. Понимание канона/сеттинга
+            if (testName.includes('Mo Dao Zu Shi')) {
+                const keywords = ['культиватор', 'культивация', 'клан', 'гуцин', 'флейта', 'демонический'];
+                if (keywords.some(w => storyLower.includes(w))) {
+                    analysis.canon_understanding += 3;
+                    analysis.quotes.push('✓ Использует терминологию сянься');
+                }
+                if (story.includes('Лань Ванцзи') && story.includes('Вэй Усянь')) {
+                    analysis.canon_understanding += 2;
+                    analysis.quotes.push('✓ Сохраняет имена персонажей');
+                }
+                const lwzTraits = ['правил', 'запрет', 'строг', 'холод'];
+                if (lwzTraits.some(w => storyLower.includes(w))) {
+                    analysis.canon_understanding += 2;
+                    analysis.quotes.push('✓ Передает характер Лань Ванцзи');
+                }
+                const wwxTraits = ['ирон', 'шутк', 'дерз', 'усмехн'];
+                if (wwxTraits.some(w => storyLower.includes(w))) {
+                    analysis.canon_understanding += 2;
+                    analysis.quotes.push('✓ Передает характер Вэй Усяня');
+                }
+                if (analysis.canon_understanding < 5) {
+                    analysis.issues.push('⚠️ Слабое понимание канона Mo Dao Zu Shi');
+                    analysis.recommendations.push('Добавить в промпт больше деталей о мире сянься и правилах клана Лань');
+                }
+            } else if (testName.includes('Сверхестественное')) {
+                if (['охот', 'нечист', 'призрак', 'дух'].some(w => storyLower.includes(w))) {
+                    analysis.canon_understanding += 3;
+                }
+                if (['импал', 'рок', 'виски'].some(w => storyLower.includes(w))) {
+                    analysis.canon_understanding += 3;
+                    analysis.quotes.push('✓ Детали из канона (Импала/рок/виски)');
+                }
+                if (['сарказм', 'шутк', 'усмехн'].some(w => storyLower.includes(w))) {
+                    analysis.canon_understanding += 2;
+                }
+                if (storyLower.includes('ангел')) {
+                    analysis.canon_understanding += 2;
+                }
+            } else if (testName.includes('Оригинальный мир')) {
+                if (['станци', 'космос', 'ии', 'эридан', 'эхо'].some(w => storyLower.includes(w))) {
+                    analysis.canon_understanding += 4;
+                    analysis.quotes.push('✓ Использует элементы сеттинга');
+                }
+                if (['2187', 'будущ', 'технолог'].some(w => storyLower.includes(w))) {
+                    analysis.canon_understanding += 3;
+                }
+                if (analysis.canon_understanding >= 5) {
+                    analysis.quotes.push('✓ Построил оригинальный мир с нуля');
+                }
+            } else if (testName.includes('Эмоциональная глубина')) {
+                if (story.includes('Алекс') && story.includes('Дэниэл')) {
+                    analysis.canon_understanding += 3;
+                }
+                if (['5 лет', 'разрыв', 'концерт', 'джаз'].some(w => storyLower.includes(w))) {
+                    analysis.canon_understanding += 4;
+                    analysis.quotes.push('✓ Учел контекст прошлых отношений');
+                }
+            }
+
+            // 2. Живые NPC
+            const dialogCount = (story.match(/—/g) || []).length + (story.match(/:/g) || []).length;
+            if (dialogCount > 3) {
+                analysis.npc_alive += 3;
+                analysis.quotes.push(`✓ ${dialogCount} диалогов - NPC активны`);
+            } else if (dialogCount > 1) {
+                analysis.npc_alive += 2;
+            }
+
+            if (['подума', 'вспомн', 'почувствова', 'понял', 'осозна'].some(w => storyLower.includes(w))) {
+                analysis.npc_alive += 2;
+                analysis.quotes.push('✓ NPC показывают внутренние переживания');
+            }
+
+            if (['посмотре', 'отверну', 'наклон', 'сжал', 'прикоснул'].some(w => storyLower.includes(w))) {
+                analysis.npc_alive += 2;
+                analysis.quotes.push('✓ NPC используют язык тела');
+            }
+
+            if (['помн', 'раньше', 'тогда', 'прошл'].some(w => storyLower.includes(w))) {
+                analysis.npc_alive += 2;
+                analysis.quotes.push('✓ NPC помнят прошлое');
+            }
+
+            if (analysis.npc_alive < 5) {
+                analysis.issues.push('⚠️ NPC недостаточно живые');
+                analysis.recommendations.push('Усилить в промпте: NPC должны иметь память, эмоции, реакции на действия игрока');
+            }
+
+            // 3. Атмосфера
+            const sensoryWords = ['запах', 'звук', 'шёпот', 'шорох', 'тишин', 'холод', 'тепл', 'свет', 'тень', 'ветер'];
+            const sensoryCount = sensoryWords.filter(w => storyLower.includes(w)).length;
+            if (sensoryCount >= 3) {
+                analysis.atmosphere += 4;
+                analysis.quotes.push(`✓ ${sensoryCount} сенсорных деталей`);
+            } else if (sensoryCount > 0) {
+                analysis.atmosphere += 2;
+            }
+
+            if (story.length > 800) {
+                analysis.atmosphere += 2;
+                analysis.quotes.push('✓ Достаточная длина для атмосферы');
+            }
+
+            const emotionalWords = ['напряж', 'тревог', 'страх', 'радост', 'грус', 'злость', 'нежност', 'боль'];
+            const emotionalCount = emotionalWords.filter(w => storyLower.includes(w)).length;
+            if (emotionalCount >= 2) {
+                analysis.atmosphere += 3;
+            }
+
+            if (analysis.atmosphere < 5) {
+                analysis.issues.push('⚠️ Слабая атмосфера');
+                analysis.recommendations.push('Добавить больше сенсорных деталей: запахи, звуки, текстуры');
+            }
+
+            // 4. Глубина эмоций
+            const clichePhrases = ['сердце билось', 'глаза загорелись', 'душа пела', 'бабочки в животе'];
+            const clicheCount = clichePhrases.filter(p => storyLower.includes(p)).length;
+
+            if (clicheCount === 0) {
+                analysis.emotional_depth += 4;
+                analysis.quotes.push('✓ Нет штампованных фраз об эмоциях');
+            } else {
+                analysis.emotional_depth -= 2;
+                analysis.issues.push(`❌ Найдено ${clicheCount} штампов`);
+            }
+
+            const complexEmotions = ['противоречи', 'одновременно', 'с одной стороны', 'но в то же время', 'вопреки'];
+            if (complexEmotions.some(p => storyLower.includes(p))) {
+                analysis.emotional_depth += 3;
+                analysis.quotes.push('✓ Показаны сложные/противоречивые эмоции');
+            }
+
+            if (['молча', 'тишин', 'пауз', 'не сказ'].some(w => storyLower.includes(w))) {
+                analysis.emotional_depth += 2;
+                analysis.quotes.push('✓ Использует молчание для передачи эмоций');
+            }
+
+            if (analysis.emotional_depth < 5) {
+                analysis.issues.push('⚠️ Недостаточная эмоциональная глубина');
+                analysis.recommendations.push('Избегать штампов. Показывать эмоции через поступки, молчание, противоречия');
+            }
+
+            // 5. NSFW
+            const nsfwIndicators = ['поцел', 'прикосн', 'близ', 'объят', 'ласк', 'страст'];
+            const nsfwCount = nsfwIndicators.filter(w => storyLower.includes(w)).length;
+
+            const vulgarWords = ['трах', 'еб', 'сиськ', 'хуй', 'пизд'];
+            const vulgarCount = vulgarWords.filter(w => storyLower.includes(w)).length;
+
+            if (nsfwCount > 0 && vulgarCount === 0) {
+                analysis.nsfw_quality += 5;
+                analysis.quotes.push('✓ Романтика без пошлости');
+            } else if (nsfwCount === 0) {
+                analysis.nsfw_quality += 3;
+                analysis.quotes.push('○ NSFW элементов пока нет (тест начальный)');
+            }
+
+            if (vulgarCount > 0) {
+                analysis.nsfw_quality = 2;
+                analysis.issues.push('❌ Присутствует вульгарность');
+                analysis.recommendations.push('NSFW должен быть естественным, не вульгарным');
+            }
+
+            // Финальная оценка
+            const totalScore = (
+                (analysis.canon_understanding / 9) * 2.5 +
+                (analysis.npc_alive / 9) * 2.5 +
+                (analysis.atmosphere / 9) * 2 +
+                (analysis.emotional_depth / 9) * 2 +
+                (analysis.nsfw_quality / 5) * 1
+            );
+
+            analysis.total_score = Math.round(totalScore * 10) / 10;
+
+            return analysis;
+        }
+
+        async function runTest(testName, testData) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.story) {
+                    const analysis = analyzeResponse(testName, data.story);
+                    return { success: true, analysis, story: data.story };
+                } else {
+                    return { success: false, error: data.error || 'Неизвестная ошибка' };
+                }
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        function renderTestResult(result, index) {
+            const testName = Object.keys(tests)[index];
+            
+            if (!result.success) {
+                return `
+                    <div class="test-result">
+                        <div class="test-header">
+                            <div class="test-name">${testName}</div>
+                            <div class="test-score">❌</div>
+                        </div>
+                        <div class="error-message">
+                            <strong>Ошибка:</strong> ${result.error}
+                        </div>
+                    </div>
+                `;
+            }
+
+            const { analysis, story } = result;
+            
+            return `
+                <div class="test-result">
+                    <div class="test-header">
+                        <div class="test-name">${testName}</div>
+                        <div class="test-score">${analysis.total_score}/10</div>
+                    </div>
+                    
+                    <div class="metrics">
+                        <div class="metric">
+                            <div class="metric-label">Канон/сеттинг</div>
+                            <div class="metric-value">${analysis.canon_understanding}/9</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Живые NPC</div>
+                            <div class="metric-value">${analysis.npc_alive}/9</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Атмосфера</div>
+                            <div class="metric-value">${analysis.atmosphere}/9</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Эмоции</div>
+                            <div class="metric-value">${analysis.emotional_depth}/9</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">NSFW качество</div>
+                            <div class="metric-value">${analysis.nsfw_quality}/5</div>
+                        </div>
+                    </div>
+                    
+                    ${analysis.quotes.length > 0 ? `
+                        <div class="section">
+                            <div class="section-title">✨ Сильные стороны</div>
+                            ${analysis.quotes.map(q => `<div class="list-item success">${q}</div>`).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    ${analysis.issues.length > 0 ? `
+                        <div class="section">
+                            <div class="section-title">⚠️ Проблемы</div>
+                            ${analysis.issues.map(i => {
+                                const type = i.startsWith('❌') ? 'error' : 'warning';
+                                return `<div class="list-item ${type}">${i}</div>`;
+                            }).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    ${analysis.recommendations.length > 0 ? `
+                        <div class="section">
+                            <div class="section-title">💡 Рекомендации</div>
+                            ${analysis.recommendations.map(r => `<div class="list-item info">${r}</div>`).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    <div class="section">
+                        <div class="section-title">📝 Фрагмент ответа ИИ (первые 800 символов)</div>
+                        <div class="story-preview">${story.substring(0, 800)}${story.length > 800 ? '...' : ''}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function runAllTests() {
+            const button = document.getElementById('runTests');
+            const progress = document.getElementById('progress');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const summary = document.getElementById('summary');
+            const resultsDiv = document.getElementById('results');
+
+            button.disabled = true;
+            progress.classList.add('active');
+            summary.classList.remove('active');
+            resultsDiv.innerHTML = '';
+
+            const testEntries = Object.entries(tests);
+            const results = [];
+
+            for (let i = 0; i < testEntries.length; i++) {
+                const [testName, testData] = testEntries[i];
+                const percent = Math.round((i / testEntries.length) * 100);
+                
+                progressFill.style.width = percent + '%';
+                progressFill.textContent = percent + '%';
+                progressText.innerHTML = `<span class="spinner"></span>Выполняется тест ${i + 1}/${testEntries.length}: ${testName}`;
+
+                const result = await runTest(testName, testData);
+                results.push(result);
+
+                resultsDiv.innerHTML += renderTestResult(result, i);
+
+                if (i < testEntries.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+            }
+
+            progressFill.style.width = '100%';
+            progressFill.textContent = '100%';
+            progressText.textContent = '✅ Все тесты завершены!';
+
+            // Итоговая статистика
+            const successful = results.filter(r => r.success);
+            const failed = results.filter(r => !r.success);
+            const avgScore = successful.length > 0 
+                ? (successful.reduce((sum, r) => sum + r.analysis.total_score, 0) / successful.length).toFixed(1)
+                : 0;
+
+            document.getElementById('avgScore').textContent = avgScore;
+            document.getElementById('passedTests').textContent = successful.length;
+            document.getElementById('failedTests').textContent = failed.length;
+            
+            let status = '⚠️';
+            if (failed.length === 0) {
+                if (avgScore >= 8) status = '🎉 ОТЛИЧНО';
+                else if (avgScore >= 6) status = '👍 ХОРОШО';
+                else status = '⚠️ ТРЕБУЕТ ДОРАБОТКИ';
+            } else {
+                status = '❌ ОШИБКИ';
+            }
+            document.getElementById('status').textContent = status;
+
+            summary.classList.add('active');
+            button.disabled = false;
+
+            setTimeout(() => {
+                progress.classList.remove('active');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
