@@ -57,7 +57,7 @@ export const CreateCharacterModal = ({
       const ageText = age ? `, ${age} years old` : '';
       const settingText = gameSettings.setting ? `in ${gameSettings.setting} setting` : 'fantasy style';
       
-      const prompt = `Portrait of ${genderText} character named ${name}${ageText}, ${appearance}, ${settingText}, detailed character art, high quality`;
+      const prompt = `Half-body portrait of ${genderText} character named ${name}${ageText}, ${appearance}, ${settingText}, professional character art, highly detailed, 8k quality, cinematic lighting, sharp focus, artstation quality`;
       
       const response = await fetch('https://functions.poehali.dev/16a136ce-ff21-4430-80df-ad1caa87a3a7', {
         method: 'POST',
