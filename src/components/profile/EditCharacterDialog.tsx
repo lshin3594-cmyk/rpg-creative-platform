@@ -56,39 +56,25 @@ export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: E
       return;
     }
 
-    try {
-      const response = await fetch('https://functions.poehali.dev/ecb5797e-37e6-4602-aef2-5fe6bfca7f96', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: parseInt(character.id),
-          name: name.trim(),
-          role: role,
-          personality: personality.trim(),
-        }),
-      });
+    const savedCharacters = localStorage.getItem('user-characters');
+    if (!savedCharacters) return;
 
-      if (!response.ok) {
-        throw new Error('Failed to update character');
-      }
+    const characters = JSON.parse(savedCharacters);
+    const updatedCharacters = characters.map((c: Character) =>
+      c.id === character.id
+        ? { ...c, name: name.trim(), role: role, personality: personality.trim() }
+        : c
+    );
 
-      toast({
-        title: 'Персонаж обновлён',
-        description: `${name} успешно сохранён`,
-      });
+    localStorage.setItem('user-characters', JSON.stringify(updatedCharacters));
 
-      onSave();
-      onOpenChange(false);
-    } catch (error) {
-      console.error('Failed to update character:', error);
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось обновить персонажа',
-        variant: 'destructive',
-      });
-    }
+    toast({
+      title: 'Персонаж обновлён',
+      description: `${name} успешно сохранён`,
+    });
+
+    onSave();
+    onOpenChange(false);
   };
 
   return (
