@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
+import { useToast } from '@/hooks/use-toast';
 
 const STORY_AI_URL = 'https://functions.poehali.dev/9ea67dc2-c306-4906-bf0f-da435600b92c';
 
@@ -14,6 +15,7 @@ interface HistoryEntry {
 export default function PlayGame() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const gameSettings = location.state?.gameSettings;
 
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -21,6 +23,7 @@ export default function PlayGame() {
   const [userAction, setUserAction] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [isStarting, setIsStarting] = useState(true);
+  const [gameId, setGameId] = useState<string>('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,6 +31,8 @@ export default function PlayGame() {
       navigate('/create-game');
       return;
     }
+    const id = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    setGameId(id);
     startGame();
   }, []);
 
@@ -54,6 +59,7 @@ export default function PlayGame() {
       if (response.ok) {
         const data = await response.json();
         setCurrentStory(data.story);
+        saveGame([], data.story);
       }
     } catch (error) {
       console.error('Failed to start game:', error);
@@ -91,6 +97,12 @@ export default function PlayGame() {
         const data = await response.json();
         setHistory(newHistory);
         setCurrentStory(data.story);
+        saveGame(newHistory, data.story);
+        
+        toast({
+          title: '💾 Сохранено',
+          description: `Эпизод ${newHistory.length} автоматически сохранён`,
+        });
       }
     } catch (error) {
       console.error('Failed to continue story:', error);
@@ -98,6 +110,31 @@ export default function PlayGame() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const saveGame = (historyData: HistoryEntry[], currentText: string) => {
+    if (!gameId) return;
+
+    const gameState = {
+      id: gameId,
+      settings: gameSettings,
+      history: historyData,
+      currentStory: currentText,
+      episodeCount: historyData.length,
+      savedAt: new Date().toISOString(),
+      lastAction: historyData.length > 0 ? historyData[historyData.length - 1].user : 'Начало игры'
+    };
+
+    const savedGames = JSON.parse(localStorage.getItem('saved-games') || '[]');
+    const existingIndex = savedGames.findIndex((g: any) => g.id === gameId);
+    
+    if (existingIndex >= 0) {
+      savedGames[existingIndex] = gameState;
+    } else {
+      savedGames.push(gameState);
+    }
+    
+    localStorage.setItem('saved-games', JSON.stringify(savedGames));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -124,8 +161,14 @@ export default function PlayGame() {
             <Icon name="ArrowLeft" size={16} />
             Назад
           </Button>
-          <div className="text-sm text-muted-foreground">
-            {gameSettings.genre} • {gameSettings.rating}
+          <div className="flex items-center gap-3">
+            <div className="text-sm text-muted-foreground">
+              {gameSettings.genre} • {gameSettings.rating}
+            </div>
+            <div className="text-xs text-primary/60 flex items-center gap-1">
+              <Icon name="BookMarked" size={14} />
+              Эпизод {history.length + 1}
+            </div>
           </div>
         </div>
 
