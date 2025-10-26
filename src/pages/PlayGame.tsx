@@ -330,7 +330,7 @@ export default function PlayGame() {
             ref={scrollRef}
             className="flex-1 overflow-y-auto p-4 space-y-6"
           >
-            <div className="container mx-auto max-w-4xl">
+            <div className="container mx-auto max-w-4xl" key={currentStory ? 'with-story' : 'no-story'}>
               {isStarting && loadingStage !== 'done' && (
                 <div className="bg-card border rounded-lg p-6 mb-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -349,20 +349,21 @@ export default function PlayGame() {
                 selectedCharacter={selectedCharacter}
               />
 
-              {/* DEBUG: ВИДИМОСТЬ ПРОВЕРКА */}
-              {currentStory ? (
-                <div className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 p-8 rounded-lg border-4 border-white mb-4">
-                  <h1 className="text-4xl font-bold text-white mb-4">✨ ИСТОРИЯ ЕСТЬ ✨</h1>
-                  <p className="text-2xl text-white mb-2">Length: {currentStory.length}</p>
-                  <div className="bg-white text-black p-4 rounded max-h-60 overflow-auto">
-                    <pre className="whitespace-pre-wrap">{currentStory}</pre>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-red-500 p-8 rounded-lg border-4 border-white mb-4">
-                  <h1 className="text-4xl font-bold text-white">❌ ИСТОРИИ НЕТ</h1>
-                </div>
-              )}
+              {/* DEBUG: ВИДИМОСТЬ ПРОВЕРКА - ВСЕГДА ПОКАЗЫВАТЬ */}
+              <div className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 p-8 rounded-lg border-4 border-white mb-4 min-h-[200px]">
+                <h1 className="text-4xl font-bold text-white mb-4">
+                  {currentStory ? '✨ ИСТОРИЯ ЕСТЬ ✨' : '❌ ИСТОРИИ НЕТ'}
+                </h1>
+                {currentStory ? (
+                  <>
+                    <p className="text-2xl text-white mb-2">Length: {currentStory.length}</p>
+                    <div className="bg-white text-black p-4 rounded max-h-60 overflow-auto">
+                      <pre className="whitespace-pre-wrap">{currentStory}</pre>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-white text-xl">Ожидание истории...</p>
+                )}
             </div>
           </div>
 
