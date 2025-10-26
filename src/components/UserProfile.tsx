@@ -389,12 +389,23 @@ export const UserProfile = () => {
             {/* Правая колонка - превью */}
             <div className="space-y-4">
               <div className="aspect-[3/4] bg-black/30 rounded-lg overflow-hidden border-2 border-dashed border-purple-500/40 flex items-center justify-center relative group">
-                {newCharacter.avatar ? (
+                {isGenerating ? (
+                  <div className="text-center text-purple-300">
+                    <Icon name="Loader2" size={48} className="mx-auto mb-2 animate-spin" />
+                    <p className="text-sm">Генерация портрета...</p>
+                  </div>
+                ) : newCharacter.avatar ? (
                   <>
                     <img
                       src={newCharacter.avatar}
                       alt="Avatar preview"
                       className="w-full h-full object-cover"
+                      crossOrigin="anonymous"
+                      onError={(e) => {
+                        console.error('Image load error:', e);
+                        const target = e.target as HTMLImageElement;
+                        target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZSBFcnJvcjwvdGV4dD48L3N2Zz4=';
+                      }}
                     />
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                       <Button
