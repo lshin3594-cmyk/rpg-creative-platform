@@ -333,6 +333,17 @@ export default function PlayGame() {
                 selectedCharacter={selectedCharacter}
               />
 
+              {(() => {
+                console.log('🔍 Render check:', { 
+                  hasCurrentStory: !!currentStory, 
+                  currentStoryLength: currentStory?.length,
+                  isStarting,
+                  isLoading,
+                  loadingStage
+                });
+                return null;
+              })()}
+              
               {currentStory && (
                 <CurrentStory
                   currentStory={currentStory}
