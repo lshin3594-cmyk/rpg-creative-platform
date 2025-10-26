@@ -184,7 +184,14 @@ export default function PlayGame() {
   };
 
   if (!gameSettings) {
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Icon name="Loader2" className="animate-spin mx-auto mb-4" size={48} />
+          <p className="text-purple-300">Загрузка игры...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
