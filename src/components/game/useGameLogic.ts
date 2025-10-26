@@ -227,11 +227,15 @@ export const useGameLogic = () => {
       
       const aiTextLength = data.text.length;
       const newTotalSymbols = totalSymbolsInEpisode + aiTextLength;
-      setTotalSymbolsInEpisode(newTotalSymbols);
-      
       const newTurns = Math.floor(newTotalSymbols / 600);
       const episodeChanged = newTurns >= 5;
       
+      // Проверяем ПЕРЕД обновлением состояния
+      const shouldGenImage = autoIllustrations && 
+                            imagesInEpisode < 4 && 
+                            (turnsInEpisode % Math.max(Math.floor(5 / 4), 1) === 0 || turnsInEpisode === 0);
+      
+      setTotalSymbolsInEpisode(newTotalSymbols);
       setTurnsInEpisode(newTurns);
       
       if (episodeChanged) {
@@ -241,7 +245,7 @@ export const useGameLogic = () => {
         setTotalSymbolsInEpisode(0);
       }
 
-      if (shouldGenerateIllustration()) {
+      if (shouldGenImage) {
         setGeneratingIllustration(true);
         generateIllustration(data.text).then(illustrationUrl => {
           if (illustrationUrl) {
