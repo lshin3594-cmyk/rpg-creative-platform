@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 
 const STORY_AI_URL = 'https://functions.poehali.dev/9ea67dc2-c306-4906-bf0f-da435600b92c';
 
@@ -24,6 +26,7 @@ export default function PlayGame() {
   const [isLoading, setIsLoading] = useState(false);
   const [isStarting, setIsStarting] = useState(true);
   const [gameId, setGameId] = useState<string>('');
+  const [selectedCharacter, setSelectedCharacter] = useState<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -33,6 +36,13 @@ export default function PlayGame() {
     }
     const id = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     setGameId(id);
+    
+    const savedCharacters = localStorage.getItem('user-characters');
+    if (savedCharacters) {
+      const chars = JSON.parse(savedCharacters);
+      setSelectedCharacter(chars[0] || null);
+    }
+    
     startGame();
   }, []);
 
@@ -144,115 +154,189 @@ export default function PlayGame() {
     }
   };
 
+  const handlePoke = async () => {
+    toast({
+      title: '⚡ Пнул ИИ',
+      description: 'ИИ генерирует продолжение...',
+    });
+    
+    setIsLoading(true);
+    try {
+      const response = await fetch(STORY_AI_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          game_settings: gameSettings,
+          user_action: '[продолжи историю дальше]',
+          history: history
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentStory(data.story);
+      }
+    } catch (error) {
+      console.error('Failed to poke AI:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!gameSettings) {
     return null;
   }
 
   return (
-    <div className="min-h-screen pt-20 pb-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-6 flex items-center justify-between">
+    <div className="min-h-screen flex">
+      <div className="w-80 bg-black/40 border-r border-purple-500/20 p-6 flex flex-col gap-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/create-game')}
+          className="gap-2 justify-start text-purple-300 hover:text-purple-100"
+        >
+          <Icon name="ArrowLeft" size={16} />
+          Саммари партии
+        </Button>
+
+        {selectedCharacter && (
+          <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <Avatar className="w-14 h-14 border-2 border-yellow-500/50">
+                <AvatarImage src={selectedCharacter.avatar} className="object-cover" />
+                <AvatarFallback className="bg-purple-900/50 text-purple-100">
+                  {selectedCharacter.name.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <h3 className="font-bold text-white text-lg">{selectedCharacter.name}</h3>
+                <Badge variant="outline" className="border-yellow-500/50 text-yellow-300 text-xs">
+                  {selectedCharacter.role}
+                </Badge>
+              </div>
+            </div>
+            {selectedCharacter.personality && (
+              <p className="text-sm text-purple-300/70 leading-relaxed">
+                {selectedCharacter.personality}
+              </p>
+            )}
+          </div>
+        )}
+
+        <div className="flex-1 flex flex-col gap-3">
           <Button
             variant="outline"
-            size="sm"
-            onClick={() => navigate('/create-game')}
-            className="gap-2"
+            onClick={() => navigate('/journal')}
+            className="w-full justify-start gap-2 border-purple-500/30 text-purple-200 hover:bg-purple-500/10"
           >
-            <Icon name="ArrowLeft" size={16} />
-            Назад
+            <Icon name="BookOpen" size={18} />
+            Журнал
           </Button>
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/journal')}
-              className="gap-2 text-purple-300 hover:text-purple-100"
-            >
-              <Icon name="BookOpen" size={16} />
-              Журнал
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                const episodesList = history.map((entry, idx) => `Эпизод ${idx + 1}: ${entry.user.slice(0, 50)}...`);
-                toast({
-                  title: '📖 Эпизоды игры',
-                  description: episodesList.join('\n') || 'Пока нет сохранённых эпизодов'
-                });
-              }}
-              className="gap-2 text-purple-300 hover:text-purple-100"
-            >
-              <Icon name="List" size={16} />
-              Эпизоды ({history.length})
-            </Button>
-            <div className="text-sm text-muted-foreground">
-              {gameSettings.genre} • {gameSettings.rating}
-            </div>
-            <div className="text-xs text-primary/60 flex items-center gap-1">
-              <Icon name="BookMarked" size={14} />
-              Эпизод {history.length + 1}
+
+          <Button
+            variant="outline"
+            onClick={handlePoke}
+            disabled={isLoading}
+            className="w-full justify-start gap-2 border-yellow-500/30 text-yellow-200 hover:bg-yellow-500/10"
+          >
+            <Icon name="Zap" size={18} />
+            Пнуть ИИ
+          </Button>
+        </div>
+
+        <div className="space-y-3 pt-4 border-t border-purple-500/20">
+          <h4 className="text-purple-300 text-sm font-medium">Агенты-наблюдатели</h4>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-purple-300/70">ИИ следит за сюжетом и временем</span>
+            <div className="w-12 h-6 bg-yellow-500/20 rounded-full relative">
+              <div className="absolute right-1 top-1 w-4 h-4 bg-yellow-500 rounded-full"></div>
             </div>
           </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-purple-300/70">Автоиллюстрации</span>
+            <div className="w-12 h-6 bg-yellow-500/20 rounded-full relative">
+              <div className="absolute right-1 top-1 w-4 h-4 bg-yellow-500 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col">
+        <div className="bg-black/40 border-b border-purple-500/20 px-8 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Icon name="Zap" size={20} className="text-yellow-500" />
+            <h1 className="text-xl font-bold text-white">Эпизод: {history.length + 1}</h1>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/')}
+            className="text-purple-300"
+          >
+            <Icon name="X" size={20} />
+          </Button>
         </div>
 
         <div 
           ref={scrollRef}
-          className="bg-card/50 backdrop-blur-sm border border-primary/20 rounded-lg p-6 mb-4 min-h-[500px] max-h-[600px] overflow-y-auto space-y-6"
+          className="flex-1 overflow-y-auto p-8 space-y-6"
         >
           {history.map((entry, idx) => (
             <div key={idx} className="space-y-4">
-              <div className="bg-primary/10 rounded-lg p-4 ml-12">
-                <div className="text-sm text-primary/60 mb-1">Ты:</div>
-                <div className="text-foreground">{entry.user}</div>
+              <div className="bg-purple-900/20 border border-purple-500/20 rounded-lg p-5">
+                <div className="text-sm text-purple-300/70 mb-2">Ты:</div>
+                <div className="text-white leading-relaxed">{entry.user}</div>
               </div>
-              <div className="bg-secondary/30 rounded-lg p-4 mr-12">
-                <div className="text-sm text-primary/60 mb-1">{gameSettings.role === 'hero' ? 'ИИ Мастер:' : 'ИИ:'}</div>
-                <div className="text-foreground whitespace-pre-wrap">{entry.ai}</div>
+              <div className="bg-amber-900/20 border border-amber-700/30 rounded-lg p-5">
+                <div className="text-sm text-amber-300/70 mb-2">
+                  {gameSettings.role === 'hero' ? 'ИИ Мастер:' : 'ИИ:'}
+                </div>
+                <div className="text-amber-100 leading-relaxed whitespace-pre-wrap">{entry.ai}</div>
               </div>
             </div>
           ))}
 
           {currentStory && (
-            <div className="bg-secondary/30 rounded-lg p-4 mr-12">
-              <div className="text-sm text-primary/60 mb-1">
+            <div className="bg-amber-900/20 border border-amber-700/30 rounded-lg p-5">
+              <div className="text-sm text-amber-300/70 mb-2">
                 {isStarting ? 'Начало истории:' : (gameSettings.role === 'hero' ? 'ИИ Мастер:' : 'ИИ:')}
               </div>
-              <div className="text-foreground whitespace-pre-wrap">{currentStory}</div>
+              <div className="text-amber-100 leading-relaxed whitespace-pre-wrap">{currentStory}</div>
             </div>
           )}
 
           {isLoading && (
-            <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="flex items-center gap-2 text-purple-300">
               <Icon name="Loader2" className="animate-spin" size={16} />
               {gameSettings.role === 'hero' ? 'Мастер думает...' : 'ИИ генерирует историю...'}
             </div>
           )}
         </div>
 
-        <div className="bg-card/50 backdrop-blur-sm border border-primary/20 rounded-lg p-4">
+        <div className="bg-black/40 border-t border-purple-500/20 p-6">
           <Textarea
-            placeholder="Опиши своё действие... (Enter - отправить, Shift+Enter - новая строка)"
+            placeholder="Напишите что вы будете делать... (Enter - отправить, Shift+Enter - новая строка)"
             value={userAction}
             onChange={(e) => setUserAction(e.target.value)}
             onKeyDown={handleKeyPress}
             disabled={isLoading}
-            className="min-h-[100px] mb-3"
+            className="min-h-[100px] mb-3 bg-black/30 border-purple-500/30 text-white resize-none"
           />
           <Button 
             onClick={handleSendAction}
             disabled={isLoading || !userAction.trim()}
-            className="w-full gap-2"
+            className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700 text-white gap-2 h-12 text-lg font-semibold"
           >
             {isLoading ? (
               <>
-                <Icon name="Loader2" className="animate-spin" size={16} />
+                <Icon name="Loader2" className="animate-spin" size={20} />
                 Генерация...
               </>
             ) : (
               <>
-                <Icon name="Send" size={16} />
-                Действовать
+                <Icon name="Send" size={20} />
+                Отправить
               </>
             )}
           </Button>

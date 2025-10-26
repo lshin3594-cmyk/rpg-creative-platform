@@ -41,21 +41,34 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     characters = game_settings.get('characters', [])
     rating = game_settings.get('rating', '18+')
     tone = game_settings.get('tone', 3)
+    world_setting = game_settings.get('world', '')
+    role = game_settings.get('role', 'hero')
     
     tone_description = 'простые фразы' if tone <= 2 else 'умеренный стиль' if tone <= 4 else 'литературный стиль'
     
-    system_prompt = f"""Ты мастер ролевой игры в жанре {genre}. Рейтинг: {rating}.
-Персонажи: {', '.join([c.get('name', 'Неизвестный') for c in characters])}.
+    role_instruction = 'Ты ведущий мастер игры (Game Master). Описывай мир, NPC и события.' if role == 'hero' else 'Ты соавтор истории. Развивай сюжет вместе с игроком.'
+    
+    system_prompt = f"""Ты мастер ролевой игры. Жанр: {genre}. Рейтинг: {rating}.
 
-Твоя задача:
-- Описывать события ярко и детально
-- Реагировать на действия игрока
-- Развивать сюжет динамически
-- Вести диалоги от лица NPC
-- Стиль: {tone_description}
-- Не повторяй действия игрока, продолжай историю
+СЕТТИНГ МИРА:
+{world_setting if world_setting else f'Стандартный мир жанра {genre}'}
 
-Пиши от 2-4 абзацев. Будь креативным!"""
+ПЕРСОНАЖИ:
+{chr(10).join([f"- {c.get('name', 'Неизвестный')}: {c.get('role', '')} - {c.get('description', '')}" for c in characters]) if characters else 'Персонажи ещё не созданы'}
+
+РОЛЬ: {role_instruction}
+
+ПРАВИЛА ГЕНЕРАЦИИ:
+1. СТРОГО следуй сеттингу мира и жанру {genre}
+2. Описывай события ярко и детально (2-4 абзаца)
+3. Реагируй на действия игрока логично
+4. Вводи NPC с описанием внешности и характера
+5. Добавляй конфликты и повороты сюжета
+6. Стиль: {tone_description}
+7. НЕ повторяй действия игрока дословно
+8. Описывай последствия действий игрока
+
+ВАЖНО: Не выходи за рамки сеттинга "{world_setting if world_setting else genre}"! Каждая деталь должна соответствовать миру игры."""
 
     messages = [{'role': 'system', 'content': system_prompt}]
     
