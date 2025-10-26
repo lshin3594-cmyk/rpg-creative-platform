@@ -333,22 +333,25 @@ export default function PlayGame() {
                 selectedCharacter={selectedCharacter}
               />
 
-              {(() => {
-                console.log('🔍 Render check:', { 
-                  hasCurrentStory: !!currentStory, 
-                  currentStoryLength: currentStory?.length,
-                  isStarting,
-                  isLoading,
-                  loadingStage
-                });
-                return null;
-              })()}
-              
-              {currentStory && (
-                <CurrentStory
-                  currentStory={currentStory}
-                  isStarting={isStarting}
-                />
+              {/* DEBUG: Always show story if it exists */}
+              {currentStory ? (
+                <div className="mb-4">
+                  <div className="p-4 bg-yellow-500/20 border border-yellow-500 rounded mb-2">
+                    <p className="text-yellow-500 font-bold">DEBUG INFO:</p>
+                    <p className="text-white">Story length: {currentStory.length}</p>
+                    <p className="text-white">isStarting: {String(isStarting)}</p>
+                    <p className="text-white">isLoading: {String(isLoading)}</p>
+                  </div>
+                  <CurrentStory
+                    currentStory={currentStory}
+                    isStarting={isStarting}
+                  />
+                </div>
+              ) : (
+                <div className="p-4 bg-red-500/20 border border-red-500 rounded">
+                  <p className="text-red-500 font-bold">NO STORY DATA!</p>
+                  <p className="text-white">currentStory is: {String(currentStory)}</p>
+                </div>
               )}
             </div>
           </div>
