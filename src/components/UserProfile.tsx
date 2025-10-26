@@ -72,6 +72,13 @@ export const UserProfile = () => {
     toast({ title: 'Персонаж создан и сохранён! 🎭' });
   };
 
+  const handleDeleteCharacter = (id: string) => {
+    const updatedCharacters = characters.filter(c => c.id !== id);
+    setCharacters(updatedCharacters);
+    localStorage.setItem('user-characters', JSON.stringify(updatedCharacters));
+    toast({ title: 'Персонаж удалён', description: 'Персонаж успешно удалён из списка' });
+  };
+
   const generateAvatar = async () => {
     if (!newCharacter.name || !newCharacter.personality) {
       toast({ title: 'Заполните имя и описание для генерации', variant: 'destructive' });
@@ -233,7 +240,6 @@ export const UserProfile = () => {
               <Card 
                 key={character.id}
                 className="border-2 border-purple-500/30 hover:border-purple-400/60 transition-all duration-500 hover:scale-105 cursor-pointer backdrop-blur-sm bg-gradient-to-br from-purple-950/40 via-black/60 to-pink-950/40 relative group overflow-hidden hover:shadow-[0_0_30px_rgba(168,85,247,0.4),0_0_60px_rgba(236,72,153,0.2)]"
-                onClick={() => navigate('/create-game')}
               >
                 {/* Звёзды на фоне */}
                 <div className="absolute inset-0 pointer-events-none">
@@ -261,13 +267,39 @@ export const UserProfile = () => {
                     <Badge variant="secondary" className="text-xs bg-purple-600/30 text-purple-200 border-purple-500/40">{character.role}</Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="relative z-10">
+                <CardContent className="relative z-10 space-y-3">
                   {character.personality && (
                     <div>
                       <p className="text-sm text-purple-300/70 mb-1">Характер:</p>
                       <p className="text-sm text-purple-100 line-clamp-2">{character.personality}</p>
                     </div>
                   )}
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 gap-1 border-purple-500/40 hover:bg-purple-500/20"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate('/create-game');
+                      }}
+                    >
+                      <Icon name="Play" size={14} />
+                      Играть
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="gap-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteCharacter(character.id);
+                      }}
+                    >
+                      <Icon name="Trash2" size={14} />
+                      Удалить
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}

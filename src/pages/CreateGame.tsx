@@ -103,7 +103,7 @@ const CreateGame = () => {
       genre: genres.join(', '),
       rating,
       tone: eloquenceLevel,
-      characters: selectedChars.map(c => ({
+      initialCharacters: selectedChars.map(c => ({
         name: c.name,
         role: c.role,
         description: c.personality || c.backstory || ''

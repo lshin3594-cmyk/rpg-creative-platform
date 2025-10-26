@@ -14,6 +14,7 @@ import Library from "./pages/Library";
 import StoryView from "./pages/StoryView";
 import Profile from "./pages/Profile";
 import MySaves from "./pages/MySaves";
+import GameSaves from "./pages/GameSaves";
 import VkCallback from "./pages/VkCallback";
 import NotFound from "./pages/NotFound";
 import { GameScreen } from "./components/GameScreen";
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/create-game" element={<CreateGame />} />
             <Route path="/play-game" element={<PlayGame />} />
+            <Route path="/game-saves" element={<GameSaves />} />
             <Route path="/story/new" element={<GameScreen />} />
             <Route path="/create-fanfic" element={<CreateFanfic />} />
             <Route path="/library" element={<Library />} />
