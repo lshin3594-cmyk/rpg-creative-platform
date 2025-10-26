@@ -342,11 +342,19 @@ export default function PlayGame() {
                 selectedCharacter={selectedCharacter}
               />
 
-              {currentStory && (
-                <CurrentStory
-                  currentStory={currentStory}
-                  isStarting={isStarting}
-                />
+              {/* DEBUG: ВИДИМОСТЬ ПРОВЕРКА */}
+              {currentStory ? (
+                <div className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 p-8 rounded-lg border-4 border-white mb-4">
+                  <h1 className="text-4xl font-bold text-white mb-4">✨ ИСТОРИЯ ЕСТЬ ✨</h1>
+                  <p className="text-2xl text-white mb-2">Length: {currentStory.length}</p>
+                  <div className="bg-white text-black p-4 rounded max-h-60 overflow-auto">
+                    <pre className="whitespace-pre-wrap">{currentStory}</pre>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-red-500 p-8 rounded-lg border-4 border-white mb-4">
+                  <h1 className="text-4xl font-bold text-white">❌ ИСТОРИИ НЕТ</h1>
+                </div>
               )}
             </div>
           </div>
