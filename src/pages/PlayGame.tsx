@@ -349,16 +349,8 @@ export default function PlayGame() {
             className="flex-1 overflow-y-auto p-4 space-y-6"
           >
             <div className="container mx-auto max-w-4xl">
-              {/* УЛЬТРА ПРОСТОЙ ТЕСТ */}
-              <div className="bg-yellow-400 text-black p-8 mb-4" style={{minHeight: '300px', zIndex: 9999, position: 'relative'}}>
-                <h1 className="text-3xl font-bold mb-4">🚨 ТЕСТ ОТОБРАЖЕНИЯ</h1>
-                <p className="text-xl mb-2">currentStory exists: {String(!!currentStory)}</p>
-                <p className="text-xl mb-2">Type: {typeof currentStory}</p>
-                <p className="text-xl mb-4">Length: {currentStory?.length}</p>
-                <div className="bg-white p-4 overflow-auto" style={{maxHeight: '400px'}}>
-                  <pre className="text-sm">{JSON.stringify(currentStory, null, 2)}</pre>
-                </div>
-              </div>
+              <StoryHistory history={history} />
+              <CurrentStory story={currentStory} />
             </div>
           </div>
 
