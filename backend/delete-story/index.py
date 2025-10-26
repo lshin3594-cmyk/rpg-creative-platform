@@ -1,7 +1,36 @@
 import json
 import os
-from typing import Dict, Any
+from typing import Dict, Any, Optional, Tuple
 import psycopg2
+import jwt
+
+def verify_jwt(token: str) -> Optional[Dict[str, Any]]:
+    jwt_secret = os.environ.get('JWT_SECRET')
+    if not jwt_secret:
+        return None
+    try:
+        payload = jwt.decode(token, jwt_secret, algorithms=['HS256'])
+        return payload
+    except:
+        return None
+
+def require_auth(event: Dict[str, Any]) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
+    headers = event.get('headers', {})
+    auth_header = headers.get('X-Auth-Token', headers.get('x-auth-token', ''))
+    if not auth_header:
+        return None, {
+            'statusCode': 401,
+            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+            'body': json.dumps({'error': 'Требуется авторизация'})
+        }
+    user = verify_jwt(auth_header)
+    if not user:
+        return None, {
+            'statusCode': 401,
+            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+            'body': json.dumps({'error': 'Недействительный токен'})
+        }
+    return user, None
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
@@ -17,7 +46,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Allow-Headers': 'Content-Type, X-Auth-Token',
                 'Access-Control-Max-Age': '86400'
             },
             'body': ''
@@ -32,6 +61,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             },
             'body': json.dumps({'error': 'Method not allowed'})
         }
+    
+    user, error = require_auth(event)
+    if error:
+        return error
     
     params = event.get('queryStringParameters') or {}
     story_id = params.get('id')
