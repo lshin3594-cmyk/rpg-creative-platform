@@ -10,7 +10,7 @@ import { StarryBackground } from "./components/game/StarryBackground";
 import Index from "./pages/Index";
 import CreateGame from "./pages/CreateGame";
 import CreateFanfic from "./pages/CreateFanfic";
-import Library from "./pages/Library";
+
 import StoryView from "./pages/StoryView";
 import Profile from "./pages/Profile";
 import MySaves from "./pages/MySaves";
@@ -43,7 +43,7 @@ const App = () => (
             <Route path="/game-saves" element={<GameSaves />} />
             <Route path="/story/new" element={<GameScreen />} />
             <Route path="/create-fanfic" element={<CreateFanfic />} />
-            <Route path="/library" element={<Library />} />
+
             <Route path="/story/:id" element={<StoryView />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/my-saves" element={<MySaves />} />

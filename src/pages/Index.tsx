@@ -41,10 +41,10 @@ const Index = () => {
       onClick: () => navigate('/create-game'),
     },
     {
-      title: 'ВЫБРАТЬ ИГРУ',
+      title: 'МОИ ИГРЫ',
       description: 'Продолжите свои предыдущие игры',
       icon: 'BookMarked',
-      onClick: () => navigate('/library'),
+      onClick: () => navigate('/game-saves'),
     },
     {
       title: 'СОЗДАТЬ ПЕРСОНАЖА',
