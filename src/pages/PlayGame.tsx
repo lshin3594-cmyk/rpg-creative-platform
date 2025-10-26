@@ -19,6 +19,7 @@ export default function PlayGame() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const gameSettings = location.state?.gameSettings;
+  const existingSave = location.state?.existingSave;
 
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [currentStory, setCurrentStory] = useState<string>('');
@@ -34,16 +35,27 @@ export default function PlayGame() {
       navigate('/create-game');
       return;
     }
-    const id = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    setGameId(id);
+    
+    if (existingSave) {
+      setGameId(existingSave.id);
+      setHistory(existingSave.history || []);
+      setCurrentStory(existingSave.currentStory || '');
+      setIsStarting(false);
+    } else {
+      const id = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      setGameId(id);
+      startGame();
+    }
     
     const savedCharacters = localStorage.getItem('user-characters');
     if (savedCharacters) {
-      const chars = JSON.parse(savedCharacters);
-      setSelectedCharacter(chars[0] || null);
+      try {
+        const chars = JSON.parse(savedCharacters);
+        setSelectedCharacter(chars[0] || null);
+      } catch (e) {
+        console.error('Failed to parse characters:', e);
+      }
     }
-    
-    startGame();
   }, []);
 
   useEffect(() => {
@@ -70,11 +82,24 @@ export default function PlayGame() {
 
       if (response.ok) {
         const data = await response.json();
-        setCurrentStory(data.story);
-        saveGame([], data.story);
+        setCurrentStory(data.story || 'История началась...');
+        saveGame([], data.story || '');
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        toast({
+          title: 'Ошибка генерации',
+          description: errorData.error || 'Не удалось начать игру',
+          variant: 'destructive'
+        });
+        setCurrentStory('Не удалось начать игру. Попробуйте снова.');
       }
     } catch (error) {
       console.error('Failed to start game:', error);
+      toast({
+        title: 'Ошибка сети',
+        description: 'Проверьте подключение к интернету',
+        variant: 'destructive'
+      });
       setCurrentStory('Ошибка загрузки. Попробуйте снова.');
     } finally {
       setIsLoading(false);
@@ -110,16 +135,29 @@ export default function PlayGame() {
       if (response.ok) {
         const data = await response.json();
         setHistory(newHistory);
-        setCurrentStory(data.story);
-        saveGame(newHistory, data.story);
+        setCurrentStory(data.story || 'История продолжается...');
+        saveGame(newHistory, data.story || '');
         
         toast({
           title: '💾 Сохранено',
           description: `Эпизод ${newHistory.length} автоматически сохранён`,
         });
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        toast({
+          title: 'Ошибка генерации',
+          description: errorData.error || 'Не удалось продолжить историю',
+          variant: 'destructive'
+        });
+        setCurrentStory('Не удалось продолжить историю. Попробуйте ещё раз.');
       }
     } catch (error) {
       console.error('Failed to continue story:', error);
+      toast({
+        title: 'Ошибка сети',
+        description: 'Проверьте подключение к интернету',
+        variant: 'destructive'
+      });
       setCurrentStory('Ошибка. Попробуйте ещё раз.');
     } finally {
       setIsLoading(false);
@@ -180,10 +218,21 @@ export default function PlayGame() {
 
       if (response.ok) {
         const data = await response.json();
-        setCurrentStory(data.story);
+        setCurrentStory(data.story || currentStory);
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: 'Не удалось пнуть ИИ',
+          variant: 'destructive'
+        });
       }
     } catch (error) {
       console.error('Failed to poke AI:', error);
+      toast({
+        title: 'Ошибка',
+        description: 'Проверьте подключение',
+        variant: 'destructive'
+      });
     } finally {
       setIsLoading(false);
     }

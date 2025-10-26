@@ -26,7 +26,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         return {
             'statusCode': 405,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': 'Method not allowed'})
+            'body': json.dumps({'error': 'Method not allowed'}),
+            'isBase64Encoded': False
         }
     
     api_key = os.environ.get('CLAUDE_API_KEY')
@@ -34,7 +35,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         return {
             'statusCode': 500,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': 'CLAUDE_API_KEY not configured'})
+            'body': json.dumps({'error': 'CLAUDE_API_KEY not configured'}),
+            'isBase64Encoded': False
         }
     
     body_data = json.loads(event.get('body', '{}'))
@@ -60,7 +62,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         user_prompt = "Начни новую захватывающую историю. Опиши начальную сцену и ситуацию."
     else:
-        context_history = "\n".join([f"Игрок: {h['user']}\nИстория: {h['ai']}" for h in history[-3:]])
+        context_history = "\n".join([
+            f"Игрок: {h.get('user', '')}\nИстория: {h.get('ai', '')}" 
+            for h in history[-3:] if isinstance(h, dict)
+        ])
         
         system_prompt = f"""Ты мастер интерактивных историй в жанре {genre}, действие происходит в {setting}.
 Сложность: {difficulty}.
@@ -122,18 +127,21 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'story': story_text})
+                'body': json.dumps({'story': story_text}),
+                'isBase64Encoded': False
             }
     except urllib.error.HTTPError as e:
         error_body = e.read().decode('utf-8')
         return {
             'statusCode': e.code,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': f'GPT API error: {error_body}'})
+            'body': json.dumps({'error': f'GPT API error: {error_body}'}),
+            'isBase64Encoded': False
         }
     except Exception as e:
         return {
             'statusCode': 500,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': f'Unexpected error: {str(e)}'})
+            'body': json.dumps({'error': f'Unexpected error: {str(e)}'}),
+            'isBase64Encoded': False
         }
