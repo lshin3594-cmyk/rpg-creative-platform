@@ -98,6 +98,9 @@ export default function PlayGame() {
   }, [history, currentStory]);
 
   const startGame = async () => {
+    console.log('🎮 Starting game with settings:', gameSettings);
+    console.log('🔗 AI_STORY_URL:', AI_STORY_URL);
+    
     setIsLoading(true);
     setIsStarting(true);
     setStageErrors({});
@@ -107,29 +110,39 @@ export default function PlayGame() {
       await new Promise(resolve => setTimeout(resolve, 800));
       
       setLoadingStage('story');
+      console.log('📡 Fetching story from AI...');
+      
+      const requestBody = {
+        action: 'Начни игру',
+        settings: gameSettings,
+        history: []
+      };
+      console.log('📤 Request body:', JSON.stringify(requestBody, null, 2));
+      
       const response = await fetch(AI_STORY_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'Начни игру',
-          settings: gameSettings,
-          history: []
-        })
+        body: JSON.stringify(requestBody)
       });
+      
+      console.log('📥 Response status:', response.status, response.statusText);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Story API error:', response.status, errorText);
+        console.error('❌ Story API error:', response.status, errorText);
         setStageErrors(prev => ({ ...prev, story: `HTTP ${response.status}: ${errorText.slice(0, 100)}` }));
         throw new Error(`Story API failed (${response.status})`);
       }
       
       const data = await response.json();
+      console.log('✅ Story received:', data);
+      
       setLoadingStage('done');
       setCurrentStory(data.text || 'История началась...');
       saveGame([], data.text || '');
     } catch (error: any) {
-      console.error('Failed to start game:', error);
+      console.error('💥 Failed to start game:', error);
+      console.error('💥 Error stack:', error.stack);
       const errorMsg = error.message || 'Неизвестная ошибка';
       
       if (loadingStage === 'story') {
