@@ -12,7 +12,17 @@ export function CurrentStory({ currentStory, isStarting }: CurrentStoryProps) {
 
   const cleanStory = currentStory
     .split('\n')
-    .filter(line => !line.includes('**[МЕТА]**') && line.trim() !== '---')
+    .filter(line => {
+      const trimmed = line.trim();
+      return trimmed !== '📊 СТАТУС ИСТОРИИ' && 
+             trimmed !== '===' &&
+             !trimmed.startsWith('📍') &&
+             !trimmed.startsWith('⏰') &&
+             !trimmed.startsWith('🎬') &&
+             !trimmed.startsWith('👥') &&
+             !trimmed.startsWith('💕') &&
+             !trimmed.startsWith('🎒');
+    })
     .join('\n')
     .trim();
   
