@@ -121,27 +121,27 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     
-    # Запрос к Claude API (официальный Anthropic endpoint)
+    # Запрос к GPT-4o через air.fail
     import urllib.request
     import urllib.error
+    import urllib.parse
     
-    api_url = "https://api.anthropic.com/v1/messages"
+    api_url = "https://api.air.fail/public/text/chatgpt"
     
-    payload = {
-        "model": "claude-3-5-sonnet-20241022",
-        "messages": [
-            {"role": "user", "content": f"{system_prompt}\n\n{user_prompt}"}
-        ],
-        "max_tokens": 500,
-        "temperature": 0.7
+    form_data = {
+        "content": f"{system_prompt}\n\n{user_prompt}",
+        "info": json.dumps({
+            "version": "gpt-4o",
+            "temperature": 0.7,
+            "max_tokens": 500
+        })
     }
     
-    data = json.dumps(payload).encode('utf-8')
+    data = urllib.parse.urlencode(form_data).encode('utf-8')
     
     headers = {
-        'Content-Type': 'application/json',
-        'x-api-key': api_key,
-        'anthropic-version': '2023-06-01'
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': api_key
     }
     
     req = urllib.request.Request(
@@ -160,12 +160,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             print(f"air.fail response type: {type(result)}", file=sys.stderr)
             print(f"air.fail response: {json.dumps(result) if not isinstance(result, str) else result[:200]}", file=sys.stderr)
             
-            # Anthropic API формат ответа
-            if isinstance(result, dict) and 'content' in result:
-                # Anthropic возвращает content как список объектов
-                story_text = result['content'][0]['text']
+            # air.fail возвращает список сообщений
+            if isinstance(result, list) and result:
+                story_text = result[-1].get('content', '') if isinstance(result[-1], dict) else str(result[-1])
             elif isinstance(result, dict):
-                story_text = result.get('text') or result.get('response', '')
+                story_text = result.get('content') or result.get('response') or result.get('text', '')
             else:
                 story_text = str(result)
             
