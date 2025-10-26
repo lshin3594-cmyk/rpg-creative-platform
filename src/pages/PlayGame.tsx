@@ -347,6 +347,7 @@ export default function PlayGame() {
               <StoryHistory
                 history={history}
                 selectedCharacter={selectedCharacter}
+                currentStory={currentStory}
               />
 
               {/* DEBUG: ВИДИМОСТЬ ПРОВЕРКА - ВСЕГДА ПОКАЗЫВАТЬ */}
