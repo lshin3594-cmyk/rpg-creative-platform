@@ -350,7 +350,7 @@ export default function PlayGame() {
           >
             <div className="container mx-auto max-w-4xl">
               <StoryHistory history={history} />
-              <CurrentStory story={currentStory} />
+              <CurrentStory currentStory={currentStory} isStarting={isStarting} />
             </div>
           </div>
 
