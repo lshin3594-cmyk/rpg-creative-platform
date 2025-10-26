@@ -39,7 +39,17 @@ export default function GameSaves() {
 
   const loadSaves = () => {
     const savedGames = JSON.parse(localStorage.getItem('game-saves') || '[]');
-    const normalizedSaves = savedGames.map((save: any) => ({
+    
+    const validSaves = savedGames.filter((save: any) => {
+      return save.currentStory && save.currentStory.length > 0;
+    });
+    
+    if (validSaves.length !== savedGames.length) {
+      console.log(`🧹 Cleaned ${savedGames.length - validSaves.length} invalid saves`);
+      localStorage.setItem('game-saves', JSON.stringify(validSaves));
+    }
+    
+    const normalizedSaves = validSaves.map((save: any) => ({
       ...save,
       gameSettings: save.gameSettings || save.settings || {},
       episodeCount: save.episodeCount || save.history?.length || 0,

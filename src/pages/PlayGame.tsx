@@ -66,13 +66,7 @@ export default function PlayGame() {
   const storyReceivedRef = useRef(false);
 
   // DEBUG: Log currentStory changes
-  useEffect(() => {
-    console.log('🔄 currentStory CHANGED:', {
-      length: currentStory?.length,
-      hasValue: !!currentStory,
-      preview: currentStory?.slice(0, 100)
-    });
-  }, [currentStory]);
+
 
   const initializedRef = useRef(false);
 
@@ -85,11 +79,11 @@ export default function PlayGame() {
       return;
     }
     
-    if (existingSave) {
-      console.log('📂 Loading existing save:', existingSave);
+    if (existingSave && existingSave.currentStory && existingSave.currentStory.length > 0) {
+      console.log('📂 Loading existing save with story:', existingSave.currentStory.slice(0, 50));
       setGameId(existingSave.id);
       setHistory(existingSave.history || []);
-      setCurrentStory(existingSave.currentStory || '');
+      setCurrentStory(existingSave.currentStory);
       setIsStarting(false);
       setLoadingStage('done');
     } else if (gameSettings) {
@@ -116,16 +110,8 @@ export default function PlayGame() {
   }, [history, currentStory]);
 
   useEffect(() => {
-    console.log('🔍 RENDER CHECK - currentStory:', {
-      exists: !!currentStory,
-      length: currentStory?.length,
-      isStarting,
-      preview: currentStory?.slice(0, 50)
-    });
-    
     if (storyReceivedRef.current && currentStory && currentStory.length > 0 && isStarting) {
-      console.log('🎯 Story confirmed in state, closing loading screen');
-      console.log('🎯 currentStory:', currentStory.slice(0, 100));
+      console.log('✅ Story loaded, closing loading screen');
       setIsLoading(false);
       setIsStarting(false);
       storyReceivedRef.current = false;
@@ -363,16 +349,6 @@ export default function PlayGame() {
           >
             <div className="container mx-auto max-w-4xl">
               <StoryHistory history={history} />
-              
-              {/* DEBUG: Прямой рендер для проверки */}
-              {currentStory && (
-                <div className="bg-green-500/20 border border-green-500 p-4 mb-4">
-                  <h3 className="font-bold">DEBUG: currentStory существует!</h3>
-                  <p>Длина: {currentStory.length}</p>
-                  <pre className="text-xs mt-2 whitespace-pre-wrap">{currentStory}</pre>
-                </div>
-              )}
-              
               <CurrentStory currentStory={currentStory} isStarting={isStarting} />
             </div>
           </div>
