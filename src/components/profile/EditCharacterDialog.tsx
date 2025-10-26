@@ -34,6 +34,9 @@ export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: E
   const [name, setName] = useState('');
   const [role, setRole] = useState('');
   const [personality, setPersonality] = useState('');
+  const [scenes, setScenes] = useState('');
+  const [quotes, setQuotes] = useState('');
+  const [ideas, setIdeas] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -41,6 +44,9 @@ export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: E
       setName(character.name);
       setRole(character.role);
       setPersonality(character.personality || '');
+      setScenes((character as any).scenes || '');
+      setQuotes((character as any).quotes || '');
+      setIdeas((character as any).ideas || '');
     }
   }, [character]);
 
@@ -62,7 +68,7 @@ export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: E
     const characters = JSON.parse(savedCharacters);
     const updatedCharacters = characters.map((c: Character) =>
       c.id === character.id
-        ? { ...c, name: name.trim(), role: role, personality: personality.trim() }
+        ? { ...c, name: name.trim(), role: role, personality: personality.trim(), scenes: scenes.trim(), quotes: quotes.trim(), ideas: ideas.trim() }
         : c
     );
 
@@ -116,15 +122,55 @@ export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: E
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="edit-char-personality" className="text-purple-200">Характер</Label>
+            <Label htmlFor="edit-char-personality" className="text-purple-200">Описание</Label>
             <Textarea
               id="edit-char-personality"
               value={personality}
               onChange={(e) => setPersonality(e.target.value)}
-              placeholder="Опишите характер персонажа..."
-              rows={4}
+              placeholder="Опишите персонажа: внешность, характер..."
+              rows={3}
               className="bg-black/20 border-purple-500/30 text-purple-100"
             />
+          </div>
+
+          <div className="p-4 rounded-lg bg-purple-900/20 border border-purple-500/30 space-y-3">
+            <div className="text-sm text-purple-200 font-semibold">Живой NPC — идеи для ИИ</div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="edit-char-scenes" className="text-purple-200 text-sm">Сцены</Label>
+              <Textarea
+                id="edit-char-scenes"
+                value={scenes}
+                onChange={(e) => setScenes(e.target.value)}
+                placeholder="Например: 'Встреча в таверне — защищает игрока'"
+                rows={2}
+                className="bg-black/20 border-purple-500/30 text-purple-100 text-sm"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-char-quotes" className="text-purple-200 text-sm">Фразы и цитаты</Label>
+              <Textarea
+                id="edit-char-quotes"
+                value={quotes}
+                onChange={(e) => setQuotes(e.target.value)}
+                placeholder="Например: 'Клянусь, я отомщу!'"
+                rows={2}
+                className="bg-black/20 border-purple-500/30 text-purple-100 text-sm"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-char-ideas" className="text-purple-200 text-sm">Идеи для развития</Label>
+              <Textarea
+                id="edit-char-ideas"
+                value={ideas}
+                onChange={(e) => setIdeas(e.target.value)}
+                placeholder="Например: 'Влюбляется в героя'"
+                rows={2}
+                className="bg-black/20 border-purple-500/30 text-purple-100 text-sm"
+              />
+            </div>
           </div>
         </div>
 

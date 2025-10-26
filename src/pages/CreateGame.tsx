@@ -105,7 +105,10 @@ const CreateGame = () => {
       initialCharacters: selectedChars.map(c => ({
         name: c.name,
         role: c.role,
-        description: c.personality || c.backstory || ''
+        description: c.personality || c.backstory || '',
+        scenes: c.scenes || '',
+        quotes: c.quotes || '',
+        ideas: c.ideas || ''
       })),
       createdAt: new Date().toISOString()
     };
