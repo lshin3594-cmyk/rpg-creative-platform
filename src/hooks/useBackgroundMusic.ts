@@ -11,20 +11,22 @@ export const useBackgroundMusic = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    audioRef.current = new Audio(MUSIC_TRACKS[currentTrack]);
-    audioRef.current.loop = true;
-    audioRef.current.volume = 0.3;
+    const audio = new Audio(MUSIC_TRACKS[currentTrack]);
+    audio.loop = true;
+    audio.volume = 0.3;
+    audioRef.current = audio;
 
     const savedState = localStorage.getItem('background-music-enabled');
     if (savedState === 'true') {
-      play();
+      audio.play().catch(() => {
+        // Автовоспроизведение заблокировано браузером - это норм
+      });
+      setIsPlaying(true);
     }
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
+      audio.pause();
+      audioRef.current = null;
     };
   }, [currentTrack]);
 
@@ -35,6 +37,7 @@ export const useBackgroundMusic = () => {
         setIsPlaying(true);
         localStorage.setItem('background-music-enabled', 'true');
       } catch (error) {
+        console.error('Music play failed:', error);
       }
     }
   };
