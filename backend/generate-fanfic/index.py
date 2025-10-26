@@ -151,22 +151,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             char_info += f", способности: {char['abilities']}"
         chars_desc.append(char_info)
     
-    system_prompt = f"""Ты — профессиональный писатель фанфикшена. 
-Вселенная: {universe['name']} - {universe.get('description', '')}
-Жанр: {universe.get('genre', 'фэнтези')}
-Источник: {universe.get('canon_source', 'оригинальная вселенная')}
-
-Персонажи:
-{chr(10).join(f'- {c}' for c in chars_desc)}
-
-Требования:
-- Длина текста: {length_words.get(length, '1500-2500')} слов
-- Стиль: {style_desc.get(style, 'художественное повествование')}
-- Рейтинг: {rating_desc.get(rating, 'для подростков')}
-- Соблюдай характеры и особенности персонажей
-- Пиши на русском языке
-- Создай увлекательную историю с конфликтом и развитием
-"""
+    system_prompt = f"""Вселенная: {universe['name']}, жанр: {universe.get('genre', 'фэнтези')}.
+Персонажи: {', '.join(chars_desc[:3])}
+Напиши фанфик ({length_words.get(length, '1500-2500')} слов), стиль: {style_desc.get(style, 'повествование')}, рейтинг: {rating_desc.get(rating, 'подростки')}. Русский язык."""
     
     user_prompt = custom_prompt if custom_prompt else f"Напиши фанфик по вселенной {universe['name']} с этими персонажами. Создай оригинальную историю, которая раскроет их характеры."
     
@@ -182,10 +169,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 {'role': 'system', 'content': system_prompt},
                 {'role': 'user', 'content': user_prompt}
             ],
-            'temperature': 0.8,
-            'max_tokens': 4000
+            'temperature': 0.7,
+            'max_tokens': 2000
         },
-        timeout=60
+        timeout=40
     )
     
     if response.status_code != 200:
