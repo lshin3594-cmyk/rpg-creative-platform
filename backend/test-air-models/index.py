@@ -47,10 +47,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         with urllib.request.urlopen(req, timeout=10) as response:
             models = json.loads(response.read().decode('utf-8'))
             
+            # Ищем DeepSeek
+            deepseek_models = [m for m in models if 'deepseek' in m.get('slug', '').lower() or 'deepseek' in m.get('title', '').lower()]
+            
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps(models, ensure_ascii=False)
+                'body': json.dumps(deepseek_models, ensure_ascii=False)
             }
     except Exception as e:
         return {

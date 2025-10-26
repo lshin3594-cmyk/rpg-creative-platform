@@ -4,7 +4,7 @@ from typing import Dict, Any
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Business: Генерация интерактивных историй через Claude API от Anthropic
+    Business: Генерация интерактивных историй через DeepSeek API
     Args: event с httpMethod, body (genre, setting, difficulty, userAction, history, gameId)
     Returns: HTTP response с новым сюжетом
     '''
@@ -44,7 +44,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     user_action = body_data.get('userAction', '')
     history = body_data.get('history', [])
     
-    # Формируем промпт для Claude
+    # Формируем промпт для DeepSeek
     if not history:
         system_prompt = f"""Ты мастер интерактивных историй в жанре {genre}, действие происходит в {setting}.
 Сложность: {difficulty}.
@@ -78,18 +78,19 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         user_prompt = f"Действие игрока: {user_action}\n\nОпиши что происходит дальше."
     
-    # Запрос к Claude API через air.fail
+    # Запрос к DeepSeek API через air.fail
     import urllib.request
     import urllib.error
     import urllib.parse
     
-    api_url = "https://api.air.fail/public/text/chatgpt"
+    api_url = "https://api.air.fail/public/text/deepseek"
     
     form_data = {
-        "content": f"{system_prompt}\n\n{user_prompt}",
+        "content": user_prompt,
         "info": json.dumps({
-            "version": "claude-3-5-sonnet-20241022",
-            "temperature": 0.7
+            "version": "deepseek/deepseek-r1",
+            "temperature": 0.7,
+            "system_prompt": system_prompt
         })
     }
     
@@ -108,9 +109,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     )
     
     try:
-        with urllib.request.urlopen(req, timeout=30) as response:
+        with urllib.request.urlopen(req, timeout=60) as response:
             result = json.loads(response.read().decode('utf-8'))
-            story_text = result.get('response', result.get('content', str(result)))
+            
+            # air.fail возвращает список сообщений или объект с response
+            if isinstance(result, list):
+                # Если список - берём последнее сообщение
+                story_text = result[-1].get('content', str(result)) if result else "Ошибка генерации"
+            else:
+                # Если объект - ищем response/content
+                story_text = result.get('response', result.get('content', str(result)))
             
             return {
                 'statusCode': 200,
@@ -122,7 +130,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         return {
             'statusCode': e.code,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': f'Claude API error: {error_body}'})
+            'body': json.dumps({'error': f'DeepSeek API error: {error_body}'})
         }
     except Exception as e:
         return {
