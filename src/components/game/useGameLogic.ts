@@ -306,22 +306,26 @@ export const useGameLogic = () => {
   useEffect(() => {
     if (!gameSettings || messages.length === 0) return;
 
-    const gameSave = {
-      id: gameSettings.name + '-' + Date.now(),
-      gameSettings,
-      history: messages.map(m => ({ type: m.type, content: m.content })),
-      currentStory: messages[messages.length - 1]?.content || '',
-      episodeCount: currentEpisode,
-      savedAt: new Date().toISOString(),
-      lastAction: messages.filter(m => m.type === 'user').slice(-1)[0]?.content || 'Начало игры'
-    };
+    try {
+      const gameSave = {
+        id: gameSettings.name + '-' + Date.now(),
+        gameSettings,
+        history: messages.map(m => ({ type: m.type, content: m.content })),
+        currentStory: messages[messages.length - 1]?.content || '',
+        episodeCount: currentEpisode,
+        savedAt: new Date().toISOString(),
+        lastAction: messages.filter(m => m.type === 'user').slice(-1)[0]?.content || 'Начало игры'
+      };
 
-    const existingSaves = JSON.parse(localStorage.getItem('game-saves') || '[]');
-    const updatedSaves = existingSaves.filter((s: any) => 
-      s.gameSettings?.name !== gameSettings.name
-    );
-    updatedSaves.unshift(gameSave);
-    localStorage.setItem('game-saves', JSON.stringify(updatedSaves.slice(0, 50))); // Храним макс 50 игр
+      const existingSaves = JSON.parse(localStorage.getItem('game-saves') || '[]');
+      const updatedSaves = existingSaves.filter((s: any) => 
+        s.gameSettings?.name !== gameSettings.name
+      );
+      updatedSaves.unshift(gameSave);
+      localStorage.setItem('game-saves', JSON.stringify(updatedSaves.slice(0, 50)));
+    } catch (error) {
+      console.error('Ошибка автосохранения:', error);
+    }
   }, [messages, currentEpisode, gameSettings]);
 
   const handleDiceRoll = () => {
