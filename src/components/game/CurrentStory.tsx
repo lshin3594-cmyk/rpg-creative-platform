@@ -10,7 +10,11 @@ export function CurrentStory({ currentStory, isStarting }: CurrentStoryProps) {
     return null;
   }
 
-  const cleanStory = currentStory.replace(/\*\*\[МЕТА\]\*\*[\s\S]*?---\s*/, '').trim();
+  const cleanStory = currentStory
+    .split('\n')
+    .filter(line => !line.includes('**[МЕТА]**') && line.trim() !== '---')
+    .join('\n')
+    .trim();
   
   if (!cleanStory || cleanStory.length === 0) {
     return null;

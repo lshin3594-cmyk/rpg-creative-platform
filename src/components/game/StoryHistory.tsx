@@ -41,7 +41,7 @@ export function StoryHistory({ history, selectedCharacter, currentStory }: Story
           </Avatar>
           <div className="flex-1 bg-card rounded-lg p-4 border">
             <p className="text-sm font-semibold text-foreground/80 mb-2">Рассказчик</p>
-            <p className="text-sm whitespace-pre-wrap leading-relaxed">
+            <p className="text-sm whitespace-pre-wrap leading-relaxed text-foreground">
               {currentStory}
             </p>
           </div>
