@@ -17,7 +17,7 @@ export function CurrentStory({ currentStory, isStarting }: CurrentStoryProps) {
         <p className="text-sm font-semibold text-foreground/80 mb-2">
           {isStarting ? 'Начало приключения' : 'Рассказчик'}
         </p>
-        <p className="text-sm whitespace-pre-wrap leading-relaxed">
+        <p className="text-sm whitespace-pre-wrap leading-relaxed text-foreground">
           {currentStory}
         </p>
       </div>
