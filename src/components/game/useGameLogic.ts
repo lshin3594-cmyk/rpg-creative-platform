@@ -320,34 +320,24 @@ export const useGameLogic = () => {
   };
 
   useEffect(() => {
-    if (!gameSettings) {
-      return;
-    }
-
-    if (messages.length > 0) {
-      return;
-    }
-
-    if (storyInitializedRef.current) {
-      return;
-    }
-
-    if (isProcessing) {
-      return;
-    }
-    storyInitializedRef.current = true;
-    setIsProcessing(true);
-    setProcessingTime(0);
+    if (storyInitializedRef.current) return;
+    if (!gameSettings) return;
+    if (messages.length > 0) return;
+    if (isProcessing) return;
     
-    // Запускаем таймер
-    timerIntervalRef.current = window.setInterval(() => {
-      setProcessingTime(prev => prev + 1);
-    }, 1000);
+    storyInitializedRef.current = true;
     
     const abortController = new AbortController();
     const timeoutId = setTimeout(() => abortController.abort(), 90000);
     
     const startStory = async () => {
+      setIsProcessing(true);
+      setProcessingTime(0);
+      
+      const timerInterval = window.setInterval(() => {
+        setProcessingTime(prev => prev + 1);
+      }, 1000);
+      
       try {
         const startAction = gameSettings.setting 
           ? `Начни историю в сеттинге: ${gameSettings.setting}`
@@ -398,6 +388,7 @@ export const useGameLogic = () => {
         }
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
+          storyInitializedRef.current = false;
           return;
         }
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -406,11 +397,9 @@ export const useGameLogic = () => {
           description: `Не удалось начать историю: ${errorMessage}`,
           variant: 'destructive'
         });
+        storyInitializedRef.current = false;
       } finally {
-        if (timerIntervalRef.current) {
-          clearInterval(timerIntervalRef.current);
-          timerIntervalRef.current = null;
-        }
+        clearInterval(timerInterval);
         setIsProcessing(false);
       }
     };
@@ -419,10 +408,7 @@ export const useGameLogic = () => {
     
     return () => {
       abortController.abort();
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-        timerIntervalRef.current = null;
-      }
+      clearTimeout(timeoutId);
     };
   }, [gameSettings, messages.length, isProcessing, autoIllustrations, toast]);
 
