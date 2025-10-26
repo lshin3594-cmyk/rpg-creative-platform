@@ -8,6 +8,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { Navigation } from "./components/Navigation";
 import { StarryBackground } from "./components/game/StarryBackground";
 import Index from "./pages/Index";
+import IndexTest from "./pages/IndexTest";
 import CreateGame from "./pages/CreateGame";
 import CreateFanfic from "./pages/CreateFanfic";
 
@@ -37,7 +38,8 @@ const App = () => (
         >
           <Navigation />
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<IndexTest />} />
+            <Route path="/index-old" element={<Index />} />
             <Route path="/create-game" element={<CreateGame />} />
             <Route path="/play-game" element={<GameScreen />} />
             <Route path="/game-saves" element={<GameSaves />} />
