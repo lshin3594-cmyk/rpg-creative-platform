@@ -89,15 +89,25 @@ export const UserProfile = () => {
     try {
       const prompt = `Portrait of ${newCharacter.name}, ${newCharacter.personality}, cosmic space theme, detailed character art, high quality, sci-fi style`;
       
+      console.log('Generating avatar with prompt:', prompt);
+      
       const response = await fetch('https://functions.poehali.dev/16a136ce-ff21-4430-80df-ad1caa87a3a7', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })
       });
 
-      if (!response.ok) throw new Error('Generation failed');
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Generation failed:', errorText);
+        throw new Error('Generation failed');
+      }
       
       const data = await response.json();
+      console.log('Generated URL:', data.url);
+      
       setNewCharacter({ ...newCharacter, avatar: data.url });
       
       toast({ title: 'Изображение готово! ✨' });
