@@ -152,8 +152,12 @@ export default function PlayGame() {
       console.log('📝 Story type:', typeof story);
       console.log('📝 Story length:', story.length);
       console.log('📝 Setting currentStory now...');
-      setCurrentStory(story);
+      
+      // КРИТИЧНО: Используем функцию-колбэк чтобы гарантировать обновление
+      setCurrentStory(() => story);
+      
       console.log('✅ currentStory state updated');
+      console.log('✅ Story preview:', story.slice(0, 100));
       
       setLoadingStage('done');
       saveGame([], story);
@@ -229,7 +233,7 @@ export default function PlayGame() {
         const updatedHistory = [...history, newHistoryEntry];
         
         setHistory(updatedHistory);
-        setCurrentStory(story);
+        setCurrentStory(() => story);
         saveGame(updatedHistory, story);
       } else {
         const errorText = await response.text();
