@@ -364,6 +364,7 @@ export default function PlayGame() {
                 ) : (
                   <p className="text-white text-xl">Ожидание истории...</p>
                 )}
+              </div>
             </div>
           </div>
 
