@@ -67,6 +67,7 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
         <GameHeader
           gameSettings={gameSettings}
           currentEpisode={currentEpisode}
+          messages={messages}
           onBack={() => navigate('/')}
         />
 

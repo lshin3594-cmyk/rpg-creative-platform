@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
+import { DELETE_STORY_URL } from '@/components/game/types';
 
 interface Story {
   id: number;
@@ -82,6 +83,30 @@ const Library = () => {
       title: "Успешно",
       description: "Статус избранного обновлён"
     });
+  };
+
+  const deleteStory = async (storyId: number) => {
+    if (!confirm('Точно удалить эту игру? Это действие нельзя отменить.')) return;
+    
+    try {
+      const response = await fetch(`${DELETE_STORY_URL}?story_id=${storyId}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        setStories(prev => prev.filter(s => s.id !== storyId));
+        toast({
+          title: "Удалено",
+          description: "Игра удалена из библиотеки"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить игру",
+        variant: "destructive"
+      });
+    }
   };
 
   const getLengthBadge = (length: string) => {
@@ -247,13 +272,22 @@ const Library = () => {
                       ))}
                     </div>
 
-                    <Button
-                      onClick={() => openStory(story)}
-                      className="w-full gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-none"
-                    >
-                      <Icon name="BookOpen" size={16} />
-                      Читать полностью
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => openStory(story)}
+                        className="flex-1 gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-none"
+                      >
+                        <Icon name="BookOpen" size={16} />
+                        Читать
+                      </Button>
+                      <Button
+                        onClick={() => deleteStory(story.id)}
+                        variant="ghost"
+                        className="gap-2 text-red-300 hover:text-red-100 hover:bg-red-500/20"
+                      >
+                        <Icon name="Trash2" size={16} />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}

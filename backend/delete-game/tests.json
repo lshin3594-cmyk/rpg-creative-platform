@@ -1,0 +1,24 @@
+{
+  "tests": [
+    {
+      "name": "Delete story by ID",
+      "method": "DELETE",
+      "path": "/?story_id=123",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": "boolean"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Missing story_id",
+      "method": "DELETE",
+      "path": "/",
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

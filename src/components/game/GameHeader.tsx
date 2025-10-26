@@ -1,22 +1,54 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
-import { GameSettings } from './types';
+import { GameSettings, SAVE_STORY_URL } from './types';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface GameHeaderProps {
   gameSettings: GameSettings;
   currentEpisode: number;
+  messages?: Array<{ type: string; content: string }>;
   onBack: () => void;
 }
 
-export const GameHeader = ({ gameSettings, currentEpisode, onBack }: GameHeaderProps) => {
+export const GameHeader = ({ gameSettings, currentEpisode, messages = [], onBack }: GameHeaderProps) => {
   const [showSettings, setShowSettings] = useState(false);
+  const { toast } = useToast();
+
+  const handleSaveToLibrary = async () => {
+    try {
+      const storyContent = messages.map(m => `[${m.type === 'user' ? 'Игрок' : 'ИИ'}]: ${m.content}`).join('\n\n');
+      const response = await fetch(SAVE_STORY_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: gameSettings.name,
+          content: storyContent,
+          genre: gameSettings.genre || 'Фэнтези',
+          story_context: storyContent
+        })
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Сохранено!",
+          description: "Игра добавлена в библиотеку"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось сохранить игру",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <>
@@ -53,6 +85,15 @@ export const GameHeader = ({ gameSettings, currentEpisode, onBack }: GameHeaderP
           </div>
 
           <div className="flex items-center gap-3">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleSaveToLibrary}
+              className="border border-green-500/50 hover:border-green-500 hover:bg-green-500/10 transition-all"
+            >
+              <Icon name="Save" size={16} className="mr-2" />
+              Сохранить
+            </Button>
             <div className="text-right mr-4">
               <div className="text-xs text-muted-foreground">{gameSettings.role === 'author' ? 'Автор' : 'Герой'}</div>
             </div>
