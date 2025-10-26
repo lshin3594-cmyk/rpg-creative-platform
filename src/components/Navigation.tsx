@@ -33,12 +33,6 @@ export const Navigation = () => {
                 user ? (
                   <>
                     <Button asChild variant="ghost" size="sm">
-                      <Link to="/game-saves" className="flex items-center gap-2">
-                        <Icon name="Save" size={18} />
-                        <span className="hidden md:inline">Мои игры</span>
-                      </Link>
-                    </Button>
-                    <Button asChild variant="ghost" size="sm">
                       <Link to="/profile" className="flex items-center gap-2">
                         <Icon name="User" size={18} />
                         <span className="hidden md:inline">Профиль</span>

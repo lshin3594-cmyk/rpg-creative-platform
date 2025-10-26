@@ -41,6 +41,12 @@ const Index = () => {
       onClick: () => navigate('/create-game'),
     },
     {
+      title: 'ВЫБРАТЬ ИГРУ',
+      description: 'Продолжите свои предыдущие игры',
+      icon: 'BookMarked',
+      onClick: () => navigate('/library'),
+    },
+    {
       title: 'СОЗДАТЬ ПЕРСОНАЖА',
       description: 'Настройте идеального героя',
       icon: 'UserPlus',
