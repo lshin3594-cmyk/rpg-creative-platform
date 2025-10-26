@@ -255,6 +255,7 @@ export const useGameLogic = () => {
       if (shouldGenImage) {
         console.log('Starting image generation for message:', aiMessage.id);
         setGeneratingIllustration(true);
+        setImagesInEpisode(prev => prev + 1);
         generateIllustration(data.text).then(illustrationUrl => {
           if (illustrationUrl) {
             setMessages(prev => prev.map(m => 
