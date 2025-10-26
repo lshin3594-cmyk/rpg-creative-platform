@@ -21,39 +21,43 @@ import { GameScreen } from "./components/GameScreen";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <StarryBackground />
-        <Toaster />
-        <Sonner />
-        <BrowserRouter
-          future={{
-            v7_startTransition: true,
-            v7_relativeSplatPath: true
-          }}
-        >
-          <Navigation />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/create-game" element={<CreateGame />} />
-            <Route path="/play-game" element={<GameScreen />} />
-            <Route path="/game-saves" element={<GameSaves />} />
-            <Route path="/story/new" element={<GameScreen />} />
-            <Route path="/create-fanfic" element={<CreateFanfic />} />
+const App = () => {
+  console.log('🚀 App component rendering...');
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900" />
+          <Toaster />
+          <Sonner />
+          <BrowserRouter
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true
+            }}
+          >
+            <Navigation />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/create-game" element={<CreateGame />} />
+              <Route path="/play-game" element={<GameScreen />} />
+              <Route path="/game-saves" element={<GameSaves />} />
+              <Route path="/story/new" element={<GameScreen />} />
+              <Route path="/create-fanfic" element={<CreateFanfic />} />
 
-            <Route path="/story/:id" element={<StoryView />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/my-saves" element={<MySaves />} />
-            <Route path="/auth/vk/callback" element={<VkCallback />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+              <Route path="/story/:id" element={<StoryView />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/my-saves" element={<MySaves />} />
+              <Route path="/auth/vk/callback" element={<VkCallback />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
