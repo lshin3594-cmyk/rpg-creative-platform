@@ -3,13 +3,13 @@ import { createRoot } from 'react-dom/client'
 import App from './App'
 import './index.css'
 
-// Защита от битого localStorage
+// Полная очистка localStorage для диагностики
+console.log('🧹 ПОЛНАЯ ОЧИСТКА localStorage');
 try {
-  const testKey = '__test__';
-  localStorage.setItem(testKey, testKey);
-  localStorage.removeItem(testKey);
+  localStorage.clear();
+  console.log('✅ localStorage очищен полностью');
 } catch (e) {
-  console.error('localStorage недоступен', e);
+  console.error('❌ Ошибка очистки:', e);
 }
 
 console.log('🎬 Starting React app...');
