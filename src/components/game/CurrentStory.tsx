@@ -10,21 +10,18 @@ export function CurrentStory({ currentStory, isStarting }: CurrentStoryProps) {
     return null;
   }
 
-  const cleanStory = currentStory
-    .split('\n')
-    .filter(line => {
-      const trimmed = line.trim();
-      return trimmed !== '📊 СТАТУС ИСТОРИИ' && 
-             trimmed !== '===' &&
-             !trimmed.startsWith('📍') &&
-             !trimmed.startsWith('⏰') &&
-             !trimmed.startsWith('🎬') &&
-             !trimmed.startsWith('👥') &&
-             !trimmed.startsWith('💕') &&
-             !trimmed.startsWith('🎒');
-    })
-    .join('\n')
-    .trim();
+  // Удаляем весь блок СТАТУС ИСТОРИИ (от начала или от 📊 до ===)
+  let cleanStory = currentStory;
+  
+  const statusStart = cleanStory.indexOf('📊 СТАТУС ИСТОРИИ');
+  const statusEnd = cleanStory.indexOf('===');
+  
+  if (statusStart !== -1 && statusEnd !== -1 && statusEnd > statusStart) {
+    // Удаляем блок от 📊 до === включительно
+    cleanStory = cleanStory.substring(0, statusStart) + cleanStory.substring(statusEnd + 3);
+  }
+  
+  cleanStory = cleanStory.trim();
   
   if (!cleanStory || cleanStory.length === 0) {
     return null;
