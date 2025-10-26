@@ -50,7 +50,7 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
 
   return (
     <div className="h-screen w-screen flex overflow-hidden bg-transparent relative">
-      <div className="relative z-10 flex w-full">
+      <div className="relative z-10 flex w-full h-full">
         <CharactersPanel
           characters={characters}
           agentsEnabled={agentsEnabled}
@@ -63,7 +63,7 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
           onKickAI={handleKickAI}
         />
 
-        <div className="flex-1 flex flex-col h-full">
+        <div className="flex-1 flex flex-col h-full overflow-hidden">
           <GameHeader
             gameSettings={gameSettings}
             currentEpisode={currentEpisode}
@@ -71,7 +71,7 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
             onBack={() => navigate('/')}
           />
 
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 overflow-hidden">
             <StoryMessages
               ref={scrollRef}
               messages={messages}
