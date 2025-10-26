@@ -9,6 +9,12 @@ interface NPC {
   change?: number;
 }
 
+interface InventoryItem {
+  name: string;
+  quantity?: number;
+  description?: string;
+}
+
 interface JournalEntry {
   episode: number;
   title: string;
@@ -20,6 +26,8 @@ interface JournalEntry {
   clues?: string[];
   questions?: string[];
   plans?: string[];
+  inventory?: InventoryItem[];
+  resources?: { name: string; value: number; change?: number }[];
 }
 
 interface GameJournalProps {
@@ -216,6 +224,65 @@ export const GameJournal = ({ entries, isOpen, onClose }: GameJournalProps) => {
                         </li>
                       ))}
                     </ul>
+                  </div>
+                )}
+
+                {currentEntry.inventory && currentEntry.inventory.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-semibold text-purple-200 flex items-center gap-2">
+                      <Icon name="Backpack" size={16} />
+                      Инвентарь
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {currentEntry.inventory.map((item, i) => (
+                        <div key={i} className="bg-purple-900/20 rounded-lg p-2.5 text-sm">
+                          <div className="flex items-center justify-between">
+                            <span className="text-purple-100 font-medium">{item.name}</span>
+                            {item.quantity !== undefined && (
+                              <Badge variant="outline" className="text-xs border-purple-500/50 text-purple-300">
+                                {item.quantity}
+                              </Badge>
+                            )}
+                          </div>
+                          {item.description && (
+                            <p className="text-xs text-purple-300/60 mt-1">{item.description}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {currentEntry.resources && currentEntry.resources.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-semibold text-purple-200 flex items-center gap-2">
+                      <Icon name="Coins" size={16} />
+                      Ресурсы
+                    </h4>
+                    <div className="space-y-2">
+                      {currentEntry.resources.map((resource, i) => (
+                        <div key={i} className="flex items-center justify-between bg-purple-900/20 rounded-lg p-2.5">
+                          <span className="text-sm text-purple-100">{resource.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-yellow-400">
+                              {resource.value}
+                            </span>
+                            {resource.change !== undefined && resource.change !== 0 && (
+                              <Badge 
+                                variant="outline" 
+                                className={`text-xs ${
+                                  resource.change > 0 
+                                    ? 'border-green-500/50 text-green-400' 
+                                    : 'border-red-500/50 text-red-400'
+                                }`}
+                              >
+                                {resource.change > 0 ? '+' : ''}{resource.change}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

@@ -137,9 +137,19 @@ export default function PlayGame() {
       const data = await response.json();
       console.log('✅ Story received:', data);
       
+      const story = data.text || 'История началась...';
+      
+      // Парсим мета-данные для журнала
+      const metaData = parseMetaFromStory(story, 1);
+      if (metaData) {
+        setJournalEntries([metaData]);
+        setCurrentStory(metaData.cleanStory);
+      } else {
+        setCurrentStory(story);
+      }
+      
       setLoadingStage('done');
-      setCurrentStory(data.text || 'История началась...');
-      saveGame([], data.text || '');
+      saveGame([], story);
     } catch (error: any) {
       console.error('💥 Failed to start game:', error);
       console.error('💥 Error stack:', error.stack);
@@ -230,10 +240,13 @@ export default function PlayGame() {
         setCurrentStory(story);
         saveGame(updatedHistory, story);
         
-        const metaData = parseMetaFromStory(story, journalEntries.length + 1);
+        // Парсим мета-данные для журнала
+        const metaData = parseMetaFromStory(story, history.length + 1);
         if (metaData) {
           setJournalEntries(prev => [...prev, metaData]);
           setCurrentStory(metaData.cleanStory);
+        } else {
+          setCurrentStory(story);
         }
       } else {
         const errorText = await response.text();
