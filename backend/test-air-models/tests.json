@@ -1,0 +1,10 @@
+{
+  "tests": [
+    {
+      "name": "Get available models",
+      "method": "GET",
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    }
+  ]
+}
