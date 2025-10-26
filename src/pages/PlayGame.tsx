@@ -342,16 +342,12 @@ export default function PlayGame() {
                 selectedCharacter={selectedCharacter}
               />
 
-              {/* DEBUG: ALWAYS SHOW THIS BLOCK */}
-              <div className="mb-4 p-8 bg-blue-500 border-4 border-white rounded-lg">
-                <h1 className="text-4xl font-bold text-white mb-4">🔥 DEBUG BLOCK 🔥</h1>
-                <p className="text-2xl text-white">currentStory length: {currentStory?.length || 0}</p>
-                <p className="text-2xl text-white">currentStory exists: {String(!!currentStory)}</p>
-                <p className="text-2xl text-white">isStarting: {String(isStarting)}</p>
-                <div className="mt-4 p-4 bg-white text-black max-h-40 overflow-auto">
-                  <pre>{currentStory || '(пусто)'}</pre>
-                </div>
-              </div>
+              {currentStory && (
+                <CurrentStory
+                  currentStory={currentStory}
+                  isStarting={isStarting}
+                />
+              )}
             </div>
           </div>
 

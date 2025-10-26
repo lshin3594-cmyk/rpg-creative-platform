@@ -1,0 +1,4 @@
+{
+  "executionTimeout": "90s",
+  "memory": "512"
+}

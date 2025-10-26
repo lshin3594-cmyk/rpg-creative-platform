@@ -39,17 +39,35 @@ class APIClient {
       finalHeaders['X-Auth-Token'] = token;
     }
 
-    const response = await fetch(url, {
-      method,
-      headers: finalHeaders,
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    // Увеличиваем таймаут для AI-функций до 90 секунд
+    const isAIFunction = functionName === 'ai-story';
+    const timeout = isAIFunction ? 90000 : 30000;
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: finalHeaders,
+        body: body ? JSON.stringify(body) : undefined,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+      }
+
+      return response.json();
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        throw new Error(`Request timeout (${timeout / 1000}s exceeded)`);
+      }
+      throw error;
     }
-
-    return response.json();
   }
 
   get<T = any>(functionName: keyof typeof func2url, headers?: Record<string, string>) {
