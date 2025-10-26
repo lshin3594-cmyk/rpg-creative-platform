@@ -38,16 +38,22 @@ export default function GameSaves() {
   }, []);
 
   const loadSaves = () => {
-    const savedGames = JSON.parse(localStorage.getItem('saved-games') || '[]');
-    setSaves(savedGames.sort((a: GameSave, b: GameSave) => 
+    const savedGames = JSON.parse(localStorage.getItem('game-saves') || '[]');
+    const normalizedSaves = savedGames.map((save: any) => ({
+      ...save,
+      gameSettings: save.gameSettings || save.settings || {},
+      episodeCount: save.episodeCount || save.history?.length || 0,
+      lastAction: save.lastAction || 'Начало игры'
+    }));
+    setSaves(normalizedSaves.sort((a: GameSave, b: GameSave) => 
       new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
     ));
   };
 
   const handleDelete = (id: string) => {
-    const savedGames = JSON.parse(localStorage.getItem('saved-games') || '[]');
+    const savedGames = JSON.parse(localStorage.getItem('game-saves') || '[]');
     const updated = savedGames.filter((g: GameSave) => g.id !== id);
-    localStorage.setItem('saved-games', JSON.stringify(updated));
+    localStorage.setItem('game-saves', JSON.stringify(updated));
     loadSaves();
     toast({
       title: 'Удалено',

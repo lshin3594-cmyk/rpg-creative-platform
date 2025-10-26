@@ -34,7 +34,13 @@ const Index = () => {
 
   useEffect(() => {
     const savedGames = JSON.parse(localStorage.getItem('game-saves') || '[]');
-    setSaves(savedGames.sort((a: GameSave, b: GameSave) => 
+    const normalizedSaves = savedGames.map((save: any) => ({
+      ...save,
+      gameSettings: save.gameSettings || save.settings || {},
+      episodeCount: save.episodeCount || save.history?.length || 0,
+      lastAction: save.lastAction || 'Начало игры'
+    }));
+    setSaves(normalizedSaves.sort((a: GameSave, b: GameSave) => 
       new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
     ).slice(0, 3));
   }, []);
