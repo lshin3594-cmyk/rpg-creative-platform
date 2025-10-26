@@ -3,10 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import Icon from '@/components/ui/icon';
 import { useNavigate } from 'react-router-dom';
 import { PreviewCarousel } from '@/components/PreviewCarousel';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-// import { formatDistanceToNow } from 'date-fns';
-// import { ru } from 'date-fns/locale';
+import { formatDistanceToNow } from 'date-fns';
+import { ru } from 'date-fns/locale';
 
 interface GameSave {
   id: string;
@@ -32,28 +32,27 @@ const Index = () => {
   const navigate = useNavigate();
   const [saves, setSaves] = useState<GameSave[]>([]);
 
-  // ВРЕМЕННО ОТКЛЮЧЕНО для диагностики
-  // useEffect(() => {
-  //   try {
-  //     const savedGames = JSON.parse(localStorage.getItem('game-saves') || '[]');
-  //     const normalizedSaves = savedGames
-  //       .map((save: any) => ({
-  //         ...save,
-  //         gameSettings: save.gameSettings || save.settings || {},
-  //         episodeCount: save.episodeCount || save.history?.length || 0,
-  //         lastAction: save.lastAction || 'Начало игры',
-  //         savedAt: save.savedAt || new Date().toISOString()
-  //       }))
-  //       .filter((save: any) => save.gameSettings?.name);
-  //     
-  //     setSaves(normalizedSaves.sort((a: GameSave, b: GameSave) => 
-  //       new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
-  //     ).slice(0, 3));
-  //   } catch (error) {
-  //     console.error('Error loading saves:', error);
-  //     setSaves([]);
-  //   }
-  // }, []);
+  useEffect(() => {
+    try {
+      const savedGames = JSON.parse(localStorage.getItem('game-saves') || '[]');
+      const normalizedSaves = savedGames
+        .map((save: any) => ({
+          ...save,
+          gameSettings: save.gameSettings || save.settings || {},
+          episodeCount: save.episodeCount || save.history?.length || 0,
+          lastAction: save.lastAction || 'Начало игры',
+          savedAt: save.savedAt || new Date().toISOString()
+        }))
+        .filter((save: any) => save.gameSettings?.name);
+      
+      setSaves(normalizedSaves.sort((a: GameSave, b: GameSave) => 
+        new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
+      ).slice(0, 3));
+    } catch (error) {
+      console.error('Error loading saves:', error);
+      setSaves([]);
+    }
+  }, []);
 
   const menuItems = [
     {
