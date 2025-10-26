@@ -64,12 +64,14 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
         />
 
         <div className="flex-1 flex flex-col overflow-hidden">
-        <GameHeader
-          gameSettings={gameSettings}
-          currentEpisode={currentEpisode}
-          messages={messages}
-          onBack={() => navigate('/')}
-        />
+        <div className="flex-shrink-0">
+          <GameHeader
+            gameSettings={gameSettings}
+            currentEpisode={currentEpisode}
+            messages={messages}
+            onBack={() => navigate('/')}
+          />
+        </div>
 
         <div className="flex-1 overflow-hidden">
           <StoryMessages
