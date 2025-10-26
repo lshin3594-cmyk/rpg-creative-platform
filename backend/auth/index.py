@@ -8,8 +8,9 @@ import os
 import hashlib
 import hmac
 import base64
+import jwt
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
@@ -26,23 +27,28 @@ def verify_password(stored_hash: str, password: str) -> bool:
     return hmac.compare_digest(stored_key, new_key)
 
 def create_token(user_id: int, username: str) -> str:
+    jwt_secret = os.environ.get('JWT_SECRET')
+    if not jwt_secret:
+        raise ValueError('JWT_SECRET not configured')
+    
     payload = {
         'user_id': user_id,
         'username': username,
-        'exp': (datetime.utcnow() + timedelta(days=30)).isoformat()
+        'exp': datetime.utcnow() + timedelta(days=30)
     }
-    token_str = json.dumps(payload)
-    return base64.b64encode(token_str.encode()).decode()
+    return jwt.encode(payload, jwt_secret, algorithm='HS256')
 
-def verify_token(token: str) -> Dict[str, Any]:
+def verify_token(token: str) -> Optional[Dict[str, Any]]:
+    jwt_secret = os.environ.get('JWT_SECRET')
+    if not jwt_secret:
+        return None
+    
     try:
-        decoded = base64.b64decode(token.encode()).decode()
-        payload = json.loads(decoded)
-        exp = datetime.fromisoformat(payload['exp'])
-        if datetime.utcnow() > exp:
-            return None
+        payload = jwt.decode(token, jwt_secret, algorithms=['HS256'])
         return payload
-    except:
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
         return None
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:

@@ -17,38 +17,29 @@
       "bodyMatcher": "type"
     },
     {
-      "name": "Create character",
+      "name": "Create character without auth returns 401",
       "method": "POST",
       "path": "/?type=characters",
       "body": {
         "name": "Test Hero",
-        "role": "Warrior",
-        "avatar": "https://example.com/avatar.jpg",
-        "stats": "Strength: 18",
-        "personality": "Brave",
-        "backstory": "A test hero"
+        "role": "Warrior"
       },
-      "expectedStatus": 201,
+      "expectedStatus": 401,
       "expectedBody": {
-        "name": "string",
-        "role": "string"
+        "error": "string"
       },
       "bodyMatcher": "partial"
     },
     {
-      "name": "Create world",
+      "name": "Create world without auth returns 401",
       "method": "POST",
       "path": "/?type=worlds",
       "body": {
-        "name": "Test World",
-        "description": "A test world",
-        "image": "https://example.com/world.jpg",
-        "genre": "Fantasy"
+        "name": "Test World"
       },
-      "expectedStatus": 201,
+      "expectedStatus": 401,
       "expectedBody": {
-        "name": "string",
-        "description": "string"
+        "error": "string"
       },
       "bodyMatcher": "partial"
     }

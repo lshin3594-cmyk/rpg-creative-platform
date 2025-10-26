@@ -1,14 +1,57 @@
 '''
-Business: Manage RPG game entities (characters and worlds) - full CRUD operations
+Business: Manage RPG game entities (characters and worlds) - full CRUD operations with JWT auth
 Args: event with httpMethod (GET/POST/PUT/DELETE), entity type, body, queryStringParameters
 Returns: HTTP response with entities data or operation status
 '''
 
 import json
 import os
-from typing import Dict, Any
+from typing import Dict, Any, Optional, Tuple
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import jwt
+
+def verify_jwt(token: str) -> Optional[Dict[str, Any]]:
+    jwt_secret = os.environ.get('JWT_SECRET')
+    if not jwt_secret:
+        return None
+    
+    try:
+        payload = jwt.decode(token, jwt_secret, algorithms=['HS256'])
+        return payload
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+
+def require_auth(event: Dict[str, Any]) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
+    headers = event.get('headers', {})
+    auth_header = headers.get('X-Auth-Token', headers.get('x-auth-token', ''))
+    
+    if not auth_header:
+        error_response = {
+            'statusCode': 401,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'error': 'Требуется авторизация'})
+        }
+        return None, error_response
+    
+    user = verify_jwt(auth_header)
+    if not user:
+        error_response = {
+            'statusCode': 401,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'error': 'Недействительный токен'})
+        }
+        return None, error_response
+    
+    return user, None
 
 def get_db_connection():
     dsn = os.environ.get('DATABASE_URL')
@@ -25,7 +68,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Allow-Headers': 'Content-Type, X-Auth-Token',
                 'Access-Control-Max-Age': '86400'
             },
             'body': ''
@@ -75,6 +118,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             }
         
         elif method == 'POST':
+            user, error = require_auth(event)
+            if error:
+                return error
+            
             body = json.loads(event.get('body', '{}'))
             
             if entity_type == 'characters':
@@ -134,6 +181,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             }
         
         elif method == 'PUT':
+            user, error = require_auth(event)
+            if error:
+                return error
+            
             entity_id = params.get('id')
             body = json.loads(event.get('body', '{}'))
             
@@ -238,6 +289,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             }
         
         elif method == 'DELETE':
+            user, error = require_auth(event)
+            if error:
+                return error
+            
             entity_id = params.get('id')
             
             if not entity_id:

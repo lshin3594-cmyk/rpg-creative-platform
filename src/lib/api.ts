@@ -13,6 +13,10 @@ class APIClient {
     'Content-Type': 'application/json',
   };
 
+  private getAuthToken(): string | null {
+    return localStorage.getItem('auth_token');
+  }
+
   private getURL(functionName: keyof typeof func2url): string {
     const url = func2url[functionName];
     if (!url) {
@@ -28,9 +32,16 @@ class APIClient {
     const url = this.getURL(functionName);
     const { method = 'POST', headers = {}, body } = options;
 
+    const token = this.getAuthToken();
+    const finalHeaders = { ...this.baseHeaders, ...headers };
+    
+    if (token) {
+      finalHeaders['X-Auth-Token'] = token;
+    }
+
     const response = await fetch(url, {
       method,
-      headers: { ...this.baseHeaders, ...headers },
+      headers: finalHeaders,
       body: body ? JSON.stringify(body) : undefined,
     });
 
