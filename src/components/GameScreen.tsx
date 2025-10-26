@@ -73,7 +73,7 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
           />
         </div>
 
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 relative overflow-hidden">
           <StoryMessages
             ref={scrollRef}
             messages={messages}
