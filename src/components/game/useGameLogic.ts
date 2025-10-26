@@ -30,7 +30,18 @@ export const useGameLogic = () => {
 
   useEffect(() => {
     const settingsJson = localStorage.getItem('current-game-settings');
-    if (settingsJson) {
+    if (!settingsJson) {
+      console.log('Нет настроек игры, редирект на главную');
+      toast({
+        title: 'Настройки игры не найдены',
+        description: 'Сначала создайте игру',
+        variant: 'destructive'
+      });
+      navigate('/');
+      return;
+    }
+
+    try {
       const settings = JSON.parse(settingsJson);
       setGameSettings({
         ...settings,
@@ -47,6 +58,10 @@ export const useGameLogic = () => {
       }
       
       storyInitializedRef.current = false;
+    } catch (e) {
+      console.error('Ошибка парсинга настроек', e);
+      navigate('/');
+      return;
     }
 
     const savedGameJson = localStorage.getItem('current-game-progress');
@@ -71,7 +86,7 @@ export const useGameLogic = () => {
         console.error('Failed to restore game progress', e);
       }
     }
-  }, []);
+  }, [navigate, toast]);
 
 
 
