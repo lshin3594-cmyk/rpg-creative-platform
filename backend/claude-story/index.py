@@ -82,7 +82,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     import urllib.request
     import urllib.error
     
-    api_url = "https://api.air.fail/api/v1/chat/completions"
+    api_url = "https://api.air.fail/public/openai/v1/chat/completions"
     
     payload = {
         "model": "claude-3-5-sonnet-20241022",
@@ -95,7 +95,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': f'Bearer {api_key}'
+        'Authorization': api_key
     }
     
     req = urllib.request.Request(
