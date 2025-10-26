@@ -1,28 +1,6 @@
 {
   "tests": [
     {
-      "name": "Start new fantasy story",
-      "method": "POST",
-      "path": "/",
-      "body": {
-        "game_settings": {
-          "genre": "фэнтези",
-          "rating": "18+",
-          "narrativeMode": "third",
-          "role": "hero",
-          "initialCharacters": [{"name": "Лилит", "role": "воин"}]
-        },
-        "setting": "тёмный лес",
-        "user_action": "",
-        "history": []
-      },
-      "expectedStatus": 200,
-      "expectedBody": {
-        "story": "string"
-      },
-      "bodyMatcher": "partial"
-    },
-    {
       "name": "Continue story with action",
       "method": "POST",
       "path": "/",

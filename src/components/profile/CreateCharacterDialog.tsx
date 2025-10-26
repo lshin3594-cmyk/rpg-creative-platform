@@ -11,12 +11,12 @@ import { useToast } from '@/hooks/use-toast';
 interface CreateCharacterDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (character: { name: string; role: string; personality: string; avatar: string }) => void;
+  onSubmit: (character: { name: string; role: string; personality: string; avatar: string; scenes?: string; quotes?: string; ideas?: string }) => void;
 }
 
 export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateCharacterDialogProps) => {
   const { toast } = useToast();
-  const [newCharacter, setNewCharacter] = useState({ name: '', role: '', personality: '', avatar: '' });
+  const [newCharacter, setNewCharacter] = useState({ name: '', role: '', personality: '', avatar: '', scenes: '', quotes: '', ideas: '' });
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleSubmit = () => {
@@ -25,7 +25,7 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
       return;
     }
     onSubmit(newCharacter);
-    setNewCharacter({ name: '', role: '', personality: '', avatar: '' });
+    setNewCharacter({ name: '', role: '', personality: '', avatar: '', scenes: '', quotes: '', ideas: '' });
     onClose();
   };
 
@@ -176,6 +176,58 @@ Extract and translate only visual details to English:`;
               placeholder="https://example.com/avatar.png"
               className="bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50"
             />
+          </div>
+
+          <div className="p-4 rounded-lg bg-purple-900/20 border border-purple-500/30 space-y-4">
+            <div className="flex items-center gap-2 text-purple-200">
+              <Icon name="Lightbulb" size={18} className="text-yellow-400" />
+              <h3 className="font-semibold">Живой NPC — идеи для ИИ</h3>
+            </div>
+            <p className="text-xs text-purple-300/70">
+              Опишите сцены, цитаты и идеи — ИИ поймёт характер NPC и создаст его реакции на ваши решения
+            </p>
+
+            <div className="space-y-2">
+              <Label htmlFor="char-scenes" className="text-purple-200 text-sm flex items-center gap-2">
+                <Icon name="Film" size={14} />
+                Сцены с участием NPC
+              </Label>
+              <Textarea
+                id="char-scenes"
+                value={newCharacter.scenes}
+                onChange={(e) => setNewCharacter({ ...newCharacter, scenes: e.target.value })}
+                placeholder="Например: 'Встреча в таверне — NPC защищает игрока от бандитов' или 'Предательство — NPC уходит к врагам'"
+                className="bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50 min-h-20 text-sm"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="char-quotes" className="text-purple-200 text-sm flex items-center gap-2">
+                <Icon name="Quote" size={14} />
+                Фразы и цитаты NPC
+              </Label>
+              <Textarea
+                id="char-quotes"
+                value={newCharacter.quotes}
+                onChange={(e) => setNewCharacter({ ...newCharacter, quotes: e.target.value })}
+                placeholder="Например: 'Клянусь, я отомщу!' или 'Доверяй, но проверяй, друг мой'"
+                className="bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50 min-h-20 text-sm"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="char-ideas" className="text-purple-200 text-sm flex items-center gap-2">
+                <Icon name="Sparkles" size={14} />
+                Идеи для развития
+              </Label>
+              <Textarea
+                id="char-ideas"
+                value={newCharacter.ideas}
+                onChange={(e) => setNewCharacter({ ...newCharacter, ideas: e.target.value })}
+                placeholder="Например: 'NPC влюбляется в героя' или 'NPC скрывает секрет о прошлом'"
+                className="bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50 min-h-20 text-sm"
+              />
+            </div>
           </div>
         </div>
 
