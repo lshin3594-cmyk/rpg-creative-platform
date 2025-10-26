@@ -6,12 +6,15 @@ import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { GameJournal } from '@/components/game/GameJournal';
 
 const STORY_AI_URL = 'https://functions.poehali.dev/f9547351-df35-40b5-9a78-8d12690971c3';
+const IMAGE_GEN_URL = 'https://functions.poehali.dev/16a136ce-ff21-4430-80df-ad1caa87a3a7';
 
 interface HistoryEntry {
   user: string;
   ai: string;
+  image?: string;
 }
 
 type LoadingStage = 'idle' | 'world' | 'story' | 'done';
@@ -32,6 +35,27 @@ export default function PlayGame() {
   const [selectedCharacter, setSelectedCharacter] = useState<any>(null);
   const [loadingStage, setLoadingStage] = useState<LoadingStage>('idle');
   const [stageErrors, setStageErrors] = useState<{world?: string, story?: string}>({});
+  const [journalOpen, setJournalOpen] = useState(false);
+  const [journalEntries, setJournalEntries] = useState<any[]>([
+    {
+      episode: 1,
+      title: 'Начало приключения',
+      time: '10:00, понедельник',
+      location: 'Таверна "Золотой дракон"',
+      events: [
+        'Герой прибыл в город Элдориа',
+        'Встреча с загадочным торговцем'
+      ],
+      npcs: [
+        { name: 'Торговец Маркус', relationship: 30, change: 10 },
+        { name: 'Бармен Джон', relationship: 15 }
+      ],
+      emotions: ['Любопытство', 'Лёгкое беспокойство'],
+      clues: ['Карта с меткой неизвестного места'],
+      questions: ['Кто такой загадочный торговец?', 'Что за место на карте?'],
+      plans: ['Изучить карту', 'Собрать информацию в таверне']
+    }
+  ]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -151,9 +175,41 @@ export default function PlayGame() {
       
       if (response.ok) {
         const data = await response.json();
-        setHistory(newHistory);
-        setCurrentStory(data.story || 'История продолжается...');
-        saveGame(newHistory, data.story || '');
+        const story = data.story || 'История продолжается...';
+        
+        toast({
+          title: '🎨 Генерирую иллюстрацию...',
+          description: 'Создаю изображение для эпизода',
+        });
+        
+        let imageUrl = '';
+        try {
+          const shortPrompt = story.slice(0, 200);
+          const imgResponse = await fetch(IMAGE_GEN_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              prompt: `${gameSettings.genre} scene: ${shortPrompt}` 
+            })
+          });
+          
+          if (imgResponse.ok) {
+            const imgData = await imgResponse.json();
+            imageUrl = imgData.url || '';
+          }
+        } catch (imgError) {
+          console.error('Image generation failed:', imgError);
+        }
+        
+        const updatedHistory = [...newHistory];
+        updatedHistory[updatedHistory.length - 1] = {
+          ...updatedHistory[updatedHistory.length - 1],
+          image: imageUrl
+        };
+        
+        setHistory(updatedHistory);
+        setCurrentStory(story);
+        saveGame(updatedHistory, story);
         
         toast({
           title: '💾 Сохранено',
@@ -342,6 +398,15 @@ export default function PlayGame() {
             <Badge variant="outline" className="text-purple-300 border-purple-500/30">
               {gameSettings.genre}
             </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setJournalOpen(true)}
+              className="gap-2 border-purple-500/30 text-purple-300"
+            >
+              <Icon name="BookOpen" size={16} />
+              Журнал
+            </Button>
           </div>
         </div>
       </div>
@@ -350,8 +415,17 @@ export default function PlayGame() {
         <div className="max-w-4xl mx-auto space-y-6">
           {history.map((entry, idx) => (
             <div key={idx} className="space-y-3">
-              <div className="bg-purple-900/20 backdrop-blur-sm border border-purple-500/30 rounded-lg p-4">
-                <p className="text-purple-100 whitespace-pre-wrap">{entry.ai}</p>
+              <div className="bg-purple-900/20 backdrop-blur-sm border border-purple-500/30 rounded-lg overflow-hidden">
+                {entry.image && (
+                  <img 
+                    src={entry.image} 
+                    alt={`Episode ${idx + 1}`}
+                    className="w-full h-64 object-cover"
+                  />
+                )}
+                <div className="p-4">
+                  <p className="text-purple-100 whitespace-pre-wrap">{entry.ai}</p>
+                </div>
               </div>
               <div className="bg-pink-900/20 backdrop-blur-sm border border-pink-500/30 rounded-lg p-4 ml-8">
                 <p className="text-sm text-pink-200 mb-1 font-semibold">Ваше действие:</p>
@@ -408,6 +482,12 @@ export default function PlayGame() {
           </div>
         </div>
       </div>
+
+      <GameJournal 
+        entries={journalEntries}
+        isOpen={journalOpen}
+        onClose={() => setJournalOpen(false)}
+      />
     </div>
   );
 }

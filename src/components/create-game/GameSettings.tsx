@@ -6,8 +6,6 @@ interface GameSettingsProps {
   setGenres: (genres: string[]) => void;
   rating: string;
   setRating: (rating: string) => void;
-  eloquenceLevel: number;
-  setEloquenceLevel: (level: number) => void;
 }
 
 const AVAILABLE_GENRES = [
@@ -20,16 +18,27 @@ const AVAILABLE_GENRES = [
   'Постапокалипсис',
   'Историческое',
   'Драма',
-  'Приключения'
+  'Приключения',
+  'Боевик',
+  'Триллер',
+  'Мистика',
+  'Комедия',
+  'Психологическое',
+  'Нуар',
+  'Стимпанк',
+  'Военное',
+  'Шпионское',
+  'Космическая опера',
+  'Антиутопия',
+  'Супергерои',
+  'Выживание'
 ];
 
 export const GameSettings = ({
   genres,
   setGenres,
   rating,
-  setRating,
-  eloquenceLevel,
-  setEloquenceLevel
+  setRating
 }: GameSettingsProps) => {
   const toggleGenre = (genre: string) => {
     if (genres.includes(genre)) {
@@ -96,30 +105,7 @@ export const GameSettings = ({
         </div>
       </div>
 
-      <div className="mt-4 pt-4 border-t border-purple-500/20">
-        <Label className="text-purple-200/80 text-sm mb-3 block">
-          Уровень красноречия
-        </Label>
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <input
-              type="range"
-              min="1"
-              max="5"
-              value={eloquenceLevel}
-              onChange={(e) => setEloquenceLevel(Number(e.target.value))}
-              className="flex-1 h-2 bg-black/30 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-400 [&::-webkit-slider-thumb]:cursor-pointer"
-            />
-            <span className="text-purple-300 font-bold text-lg min-w-[2rem] text-center">
-              {eloquenceLevel}
-            </span>
-          </div>
-          <div className="flex justify-between text-xs text-purple-300/60">
-            <span>Простые фразы</span>
-            <span>Литературный стиль</span>
-          </div>
-        </div>
-      </div>
+
     </div>
   );
 };

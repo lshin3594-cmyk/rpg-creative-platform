@@ -23,7 +23,7 @@ const CreateGame = () => {
   const [narrativeMode, setNarrativeMode] = useState<'first' | 'third' | 'love-interest'>('third');
   const [genres, setGenres] = useState<string[]>(['Фэнтези']);
   const [rating, setRating] = useState('18+');
-  const [eloquenceLevel, setEloquenceLevel] = useState(3);
+
   const [availableCharacters, setAvailableCharacters] = useState<any[]>([]);
   const [selectedCharacterIds, setSelectedCharacterIds] = useState<number[]>([]);
   const [loadingCharacters, setLoadingCharacters] = useState(false);
@@ -102,7 +102,6 @@ const CreateGame = () => {
       playerCount: 1,
       genre: genres.join(', '),
       rating,
-      tone: eloquenceLevel,
       initialCharacters: selectedChars.map(c => ({
         name: c.name,
         role: c.role,
@@ -178,8 +177,6 @@ const CreateGame = () => {
             setGenres={setGenres}
             rating={rating}
             setRating={setRating}
-            eloquenceLevel={eloquenceLevel}
-            setEloquenceLevel={setEloquenceLevel}
           />
 
           <CharacterSelector 
