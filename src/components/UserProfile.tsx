@@ -41,19 +41,25 @@ export const UserProfile = () => {
     localStorage.setItem('user-characters', JSON.stringify(defaultChar));
   }, []);
 
-  const handleCreateCharacter = (newCharacter: { name: string; role: string; personality: string; avatar: string }) => {
+  const handleCreateCharacter = (newCharacter: { name: string; role: string; personality: string; avatar: string; scenes?: string; quotes?: string; ideas?: string; isMainCharacter?: boolean }) => {
     const character: Character = {
       id: Date.now().toString(),
       name: newCharacter.name,
       role: newCharacter.role,
       avatar: newCharacter.avatar || '',
-      personality: newCharacter.personality
+      personality: newCharacter.personality,
+      scenes: newCharacter.scenes,
+      quotes: newCharacter.quotes,
+      ideas: newCharacter.ideas,
+      isMainCharacter: newCharacter.isMainCharacter
     };
 
     const updatedCharacters = [...characters, character];
     setCharacters(updatedCharacters);
     localStorage.setItem('user-characters', JSON.stringify(updatedCharacters));
-    toast({ title: 'Персонаж создан и сохранён! 🎭' });
+    
+    const charType = newCharacter.isMainCharacter ? 'Главный герой' : 'NPC';
+    toast({ title: `${charType} создан! 🎭`, description: `${newCharacter.name} добавлен в список персонажей` });
   };
 
   const handleDeleteCharacter = (id: string) => {

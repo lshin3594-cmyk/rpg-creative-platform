@@ -5,27 +5,29 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Switch } from '@/components/ui/switch';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
 
 interface CreateCharacterDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (character: { name: string; role: string; personality: string; avatar: string; scenes?: string; quotes?: string; ideas?: string }) => void;
+  onSubmit: (character: { name: string; role: string; personality: string; avatar: string; scenes?: string; quotes?: string; ideas?: string; isMainCharacter?: boolean }) => void;
 }
 
 export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateCharacterDialogProps) => {
   const { toast } = useToast();
-  const [newCharacter, setNewCharacter] = useState({ name: '', role: '', personality: '', avatar: '', scenes: '', quotes: '', ideas: '' });
+  const [newCharacter, setNewCharacter] = useState({ name: '', role: '', personality: '', avatar: '', scenes: '', quotes: '', ideas: '', isMainCharacter: false });
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!newCharacter.name || !newCharacter.role) {
       toast({ title: 'Заполните имя и роль', variant: 'destructive' });
       return;
     }
     onSubmit(newCharacter);
-    setNewCharacter({ name: '', role: '', personality: '', avatar: '', scenes: '', quotes: '', ideas: '' });
+    setNewCharacter({ name: '', role: '', personality: '', avatar: '', scenes: '', quotes: '', ideas: '', isMainCharacter: false });
     onClose();
   };
 
@@ -96,6 +98,25 @@ Extract and translate only visual details to English:`;
             Заполните информацию о новом персонаже
           </DialogDescription>
         </DialogHeader>
+
+        <div className="flex items-center justify-between p-4 rounded-lg bg-purple-900/20 border border-purple-500/30">
+          <div className="flex items-center gap-3">
+            <Icon name={newCharacter.isMainCharacter ? 'Crown' : 'Users'} size={20} className={newCharacter.isMainCharacter ? 'text-yellow-400' : 'text-purple-400'} />
+            <div>
+              <Label className="text-sm font-semibold text-purple-200">
+                {newCharacter.isMainCharacter ? 'Главный герой (ГГ)' : 'NPC (неигровой персонаж)'}
+              </Label>
+              <p className="text-xs text-purple-300/60 mt-0.5">
+                {newCharacter.isMainCharacter ? 'За этого персонажа играет игрок' : 'Этим персонажем управляет ИИ'}
+              </p>
+            </div>
+          </div>
+          <Switch
+            checked={newCharacter.isMainCharacter}
+            onCheckedChange={(checked) => setNewCharacter({ ...newCharacter, isMainCharacter: checked })}
+            className="data-[state=checked]:bg-yellow-500"
+          />
+        </div>
 
         <div className="space-y-6 py-4">
           <div className="flex items-start gap-6">
@@ -178,14 +199,15 @@ Extract and translate only visual details to English:`;
             />
           </div>
 
-          <div className="p-4 rounded-lg bg-purple-900/20 border border-purple-500/30 space-y-4">
-            <div className="flex items-center gap-2 text-purple-200">
-              <Icon name="Lightbulb" size={18} className="text-yellow-400" />
-              <h3 className="font-semibold">Живой NPC — идеи для ИИ</h3>
-            </div>
-            <p className="text-xs text-purple-300/70">
-              Опишите сцены, цитаты и идеи — ИИ поймёт характер NPC и создаст его реакции на ваши решения
-            </p>
+          {!newCharacter.isMainCharacter && (
+            <div className="p-4 rounded-lg bg-purple-900/20 border border-purple-500/30 space-y-4">
+              <div className="flex items-center gap-2 text-purple-200">
+                <Icon name="Lightbulb" size={18} className="text-yellow-400" />
+                <h3 className="font-semibold">Живой NPC — идеи для ИИ</h3>
+              </div>
+              <p className="text-xs text-purple-300/70">
+                Опишите сцены, цитаты и идеи — ИИ поймёт характер NPC и создаст его реакции на ваши решения
+              </p>
 
             <div className="space-y-2">
               <Label htmlFor="char-scenes" className="text-purple-200 text-sm flex items-center gap-2">
@@ -228,7 +250,8 @@ Extract and translate only visual details to English:`;
                 className="bg-black/30 border-purple-500/30 text-white placeholder:text-purple-300/50 min-h-20 text-sm"
               />
             </div>
-          </div>
+            </div>
+          )}
         </div>
 
         <div className="flex gap-3">

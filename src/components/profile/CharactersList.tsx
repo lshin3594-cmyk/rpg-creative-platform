@@ -10,6 +10,10 @@ export interface Character {
   role: string;
   avatar: string;
   personality?: string;
+  scenes?: string;
+  quotes?: string;
+  ideas?: string;
+  isMainCharacter?: boolean;
 }
 
 interface CharactersListProps {
@@ -59,7 +63,12 @@ export const CharactersList = ({ characters, onDelete, onCreateNew, onEdit }: Ch
                 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-semibold text-purple-100 truncate">{char.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-purple-100 truncate">{char.name}</h3>
+                      {char.isMainCharacter && (
+                        <Icon name="Crown" size={16} className="text-yellow-400 flex-shrink-0" title="Главный герой" />
+                      )}
+                    </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       {onEdit && (
                         <Button
@@ -81,9 +90,16 @@ export const CharactersList = ({ characters, onDelete, onCreateNew, onEdit }: Ch
                       </Button>
                     </div>
                   </div>
-                  <Badge variant="outline" className="mt-1 border-purple-500/50 text-purple-300">
-                    {char.role}
-                  </Badge>
+                  <div className="flex gap-2 mt-1">
+                    <Badge variant="outline" className="border-purple-500/50 text-purple-300">
+                      {char.role}
+                    </Badge>
+                    {char.isMainCharacter && (
+                      <Badge variant="outline" className="border-yellow-500/50 text-yellow-300 bg-yellow-500/10">
+                        ГГ
+                      </Badge>
+                    )}
+                  </div>
                   {char.personality && (
                     <p className="text-sm text-purple-300/70 mt-2 line-clamp-2">
                       {char.personality}
