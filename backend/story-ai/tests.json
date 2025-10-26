@@ -1,0 +1,48 @@
+{
+  "tests": [
+    {
+      "name": "Start new fantasy story",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "game_settings": {
+          "genre": "фэнтези",
+          "rating": "18+",
+          "tone": 3,
+          "characters": [{"name": "Лилит"}]
+        },
+        "user_action": "",
+        "history": []
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "story": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Continue story with action",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "game_settings": {
+          "genre": "романтика",
+          "rating": "18+",
+          "tone": 5
+        },
+        "user_action": "Подхожу ближе",
+        "history": [
+          {
+            "user": "Начни игру",
+            "ai": "Ты входишь в таверну..."
+          }
+        ]
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "story": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
