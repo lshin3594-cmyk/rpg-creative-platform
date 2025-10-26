@@ -14,7 +14,7 @@ interface StoryMessagesProps {
 export const StoryMessages = forwardRef<HTMLDivElement, StoryMessagesProps>(
   ({ messages, gameSettings, isProcessing, processingTime, generatingIllustration }, ref) => {
     return (
-      <ScrollArea className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/40" ref={ref}>
+      <ScrollArea className="h-full w-full bg-gradient-to-b from-black/20 to-black/40" ref={ref}>
         <div className="p-6">
           {messages.length === 0 && !isProcessing ? (
             <div className="h-full flex items-center justify-center">

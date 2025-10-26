@@ -63,28 +63,25 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
           onKickAI={handleKickAI}
         />
 
-        <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-shrink-0">
+        <div className="flex-1 flex flex-col h-full">
           <GameHeader
             gameSettings={gameSettings}
             currentEpisode={currentEpisode}
             messages={messages}
             onBack={() => navigate('/')}
           />
-        </div>
 
-        <div className="flex-1 relative overflow-hidden">
-          <StoryMessages
-            ref={scrollRef}
-            messages={messages}
-            gameSettings={gameSettings}
-            isProcessing={isProcessing}
-            processingTime={processingTime}
-            generatingIllustration={generatingIllustration}
-          />
-        </div>
+          <div className="flex-1 min-h-0">
+            <StoryMessages
+              ref={scrollRef}
+              messages={messages}
+              gameSettings={gameSettings}
+              isProcessing={isProcessing}
+              processingTime={processingTime}
+              generatingIllustration={generatingIllustration}
+            />
+          </div>
 
-        <div className="flex-shrink-0 sticky bottom-0 z-20 bg-background/95 backdrop-blur-sm">
           <StoryInput
             ref={inputRef}
             value={currentInput}
@@ -94,7 +91,6 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
             isProcessing={isProcessing}
             messagesCount={messages.length}
           />
-        </div>
         </div>
       </div>
 
