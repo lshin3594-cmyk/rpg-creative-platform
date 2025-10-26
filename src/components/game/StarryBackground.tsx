@@ -28,7 +28,7 @@ export const StarryBackground = () => {
       fadeSpeed: number;
     }> = [];
 
-    for (let i = 0; i < 150; i++) {
+    for (let i = 0; i < 300; i++) {
       stars.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
@@ -57,11 +57,12 @@ export const StarryBackground = () => {
           0,
           star.x,
           star.y,
-          star.size * 3
+          star.size * 4
         );
-        gradient.addColorStop(0, `rgba(255, 215, 0, ${star.opacity * 0.5})`);
-        gradient.addColorStop(0.4, `rgba(255, 193, 7, ${star.opacity * 0.3})`);
-        gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+        gradient.addColorStop(0, `rgba(147, 51, 234, ${star.opacity * 0.8})`);
+        gradient.addColorStop(0.3, `rgba(99, 102, 241, ${star.opacity * 0.6})`);
+        gradient.addColorStop(0.6, `rgba(59, 130, 246, ${star.opacity * 0.3})`);
+        gradient.addColorStop(1, 'rgba(147, 51, 234, 0)');
 
         ctx.fillStyle = gradient;
         ctx.beginPath();
