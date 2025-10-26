@@ -74,20 +74,26 @@ export default function PlayGame() {
     });
   }, [currentStory]);
 
+  const initializedRef = useRef(false);
+
   useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+    
     if (!gameSettings && !existingSave) {
       navigate('/create-game');
       return;
     }
     
     if (existingSave) {
+      console.log('📂 Loading existing save:', existingSave);
       setGameId(existingSave.id);
       setHistory(existingSave.history || []);
       setCurrentStory(existingSave.currentStory || '');
       setIsStarting(false);
       setLoadingStage('done');
-    } else if (gameSettings && !gameStartedRef.current) {
-      gameStartedRef.current = true;
+    } else if (gameSettings) {
+      console.log('🎮 Starting new game');
       const id = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       setGameId(id);
       startGame();
