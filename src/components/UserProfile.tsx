@@ -32,19 +32,27 @@ export const UserProfile = () => {
   useEffect(() => {
     const savedCharacters = localStorage.getItem('user-characters');
     if (savedCharacters) {
-      setCharacters(JSON.parse(savedCharacters));
-    } else {
-      // Персонаж по умолчанию
-      const defaultChar = [{
-        id: '1',
-        name: 'Космический Рейнджер',
-        role: 'Исследователь',
-        avatar: 'https://cdn.poehali.dev/files/179eeb57-770d-43b9-b464-f8c287a1afbb.png',
-        personality: 'Отважный защитник галактики'
-      }];
-      setCharacters(defaultChar);
-      localStorage.setItem('user-characters', JSON.stringify(defaultChar));
+      try {
+        const parsed = JSON.parse(savedCharacters);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCharacters(parsed);
+          return;
+        }
+      } catch (e) {
+        console.error('Failed to parse saved characters:', e);
+      }
     }
+    
+    // Персонаж по умолчанию только если совсем пусто
+    const defaultChar = [{
+      id: '1',
+      name: 'Космический Рейнджер',
+      role: 'Исследователь',
+      avatar: 'https://cdn.poehali.dev/files/179eeb57-770d-43b9-b464-f8c287a1afbb.png',
+      personality: 'Отважный защитник галактики'
+    }];
+    setCharacters(defaultChar);
+    localStorage.setItem('user-characters', JSON.stringify(defaultChar));
   }, []);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newCharacter, setNewCharacter] = useState({ name: '', role: '', personality: '', avatar: '' });
