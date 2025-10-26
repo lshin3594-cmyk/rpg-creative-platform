@@ -1,50 +1,83 @@
 import { Label } from '@/components/ui/label';
+import Icon from '@/components/ui/icon';
 
 interface GameSettingsProps {
-  genre: string;
-  setGenre: (genre: string) => void;
+  genres: string[];
+  setGenres: (genres: string[]) => void;
   rating: string;
   setRating: (rating: string) => void;
   eloquenceLevel: number;
   setEloquenceLevel: (level: number) => void;
 }
 
+const AVAILABLE_GENRES = [
+  'Фэнтези',
+  'Киберпанк',
+  'Ужасы',
+  'Романтика',
+  'Детектив',
+  'Научная фантастика',
+  'Постапокалипсис',
+  'Историческое',
+  'Драма',
+  'Приключения'
+];
+
 export const GameSettings = ({
-  genre,
-  setGenre,
+  genres,
+  setGenres,
   rating,
   setRating,
   eloquenceLevel,
   setEloquenceLevel
 }: GameSettingsProps) => {
+  const toggleGenre = (genre: string) => {
+    if (genres.includes(genre)) {
+      setGenres(genres.filter(g => g !== genre));
+    } else {
+      setGenres([...genres, genre]);
+    }
+  };
+
   return (
     <div className="relative p-6 rounded-xl bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-purple-900/40 border border-purple-500/40 backdrop-blur-md">
       <Label className="text-purple-100 text-base mb-4 block">
         Настройки игры
       </Label>
-      <div className="grid grid-cols-2 gap-4">
+      
+      <div className="space-y-4">
         <div>
-          <Label htmlFor="genre" className="text-purple-200/80 text-sm mb-2 block">
-            Жанр
+          <Label className="text-purple-200/80 text-sm mb-3 block">
+            Жанры (можно выбрать несколько)
           </Label>
-          <select
-            id="genre"
-            value={genre}
-            onChange={(e) => setGenre(e.target.value)}
-            className="w-full p-3 rounded-lg bg-black/30 border border-purple-500/30 text-white focus:border-purple-400 focus:outline-none"
-          >
-            <option value="Фэнтези">Фэнтези</option>
-            <option value="Киберпанк">Киберпанк</option>
-            <option value="Ужасы">Ужасы</option>
-            <option value="Романтика">Романтика</option>
-            <option value="Детектив">Детектив</option>
-            <option value="Научная фантастика">Научная фантастика</option>
-            <option value="Постапокалипсис">Постапокалипсис</option>
-            <option value="Историческое">Историческое</option>
-            <option value="Драма">Драма</option>
-            <option value="Приключения">Приключения</option>
-          </select>
+          <div className="flex flex-wrap gap-2">
+            {AVAILABLE_GENRES.map(genre => (
+              <button
+                key={genre}
+                onClick={() => toggleGenre(genre)}
+                className={`
+                  px-3 py-2 rounded-lg border transition-all text-sm
+                  ${
+                    genres.includes(genre)
+                      ? 'bg-purple-500/40 border-purple-400 text-purple-100'
+                      : 'bg-black/20 border-purple-500/30 text-purple-300/70 hover:border-purple-400/50 hover:text-purple-200'
+                  }
+                `}
+              >
+                {genres.includes(genre) && (
+                  <Icon name="Check" size={14} className="inline mr-1" />
+                )}
+                {genre}
+              </button>
+            ))}
+          </div>
+          {genres.length === 0 && (
+            <p className="text-purple-300/60 text-xs mt-2">
+              Выберите хотя бы один жанр
+            </p>
+          )}
         </div>
+
         <div>
           <Label htmlFor="rating" className="text-purple-200/80 text-sm mb-2 block">
             Рейтинг
@@ -62,6 +95,7 @@ export const GameSettings = ({
           </select>
         </div>
       </div>
+
       <div className="mt-4 pt-4 border-t border-purple-500/20">
         <Label className="text-purple-200/80 text-sm mb-3 block">
           Уровень красноречия

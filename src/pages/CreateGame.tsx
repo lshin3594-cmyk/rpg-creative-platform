@@ -21,7 +21,7 @@ const CreateGame = () => {
   const [aiInstructions, setAiInstructions] = useState('');
   const [role, setRole] = useState<'hero' | 'author'>('hero');
   const [narrativeMode, setNarrativeMode] = useState<'first' | 'third' | 'love-interest'>('third');
-  const [genre, setGenre] = useState('Фэнтези');
+  const [genres, setGenres] = useState<string[]>(['Фэнтези']);
   const [rating, setRating] = useState('18+');
   const [eloquenceLevel, setEloquenceLevel] = useState(3);
   const [availableCharacters, setAvailableCharacters] = useState<any[]>([]);
@@ -82,6 +82,15 @@ const CreateGame = () => {
       return;
     }
 
+    if (genres.length === 0) {
+      toast({
+        title: 'Ошибка',
+        description: 'Выберите хотя бы один жанр',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     const selectedChars = availableCharacters.filter(c => selectedCharacterIds.includes(c.id));
     
     const gameSettings = {
@@ -91,7 +100,7 @@ const CreateGame = () => {
       role,
       narrativeMode,
       playerCount: 1,
-      genre,
+      genre: genres.join(', '),
       rating,
       eloquenceLevel,
       initialCharacters: selectedChars.map(c => ({
@@ -166,8 +175,8 @@ const CreateGame = () => {
           />
 
           <GameSettings 
-            genre={genre}
-            setGenre={setGenre}
+            genres={genres}
+            setGenres={setGenres}
             rating={rating}
             setRating={setRating}
             eloquenceLevel={eloquenceLevel}
