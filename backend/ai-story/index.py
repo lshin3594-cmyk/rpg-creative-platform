@@ -178,14 +178,19 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
                 # GPT-4o через air.fail прокси
                 print(f"GPT-4o API attempt {attempt + 1}/{max_retries}")
                 
-                # Конвертируем messages в один промпт для air.fail
-                prompt_parts = []
-                for msg in messages:
-                    role_label = msg['role'].upper()
-                    content = msg['content']
-                    prompt_parts.append(f"{role_label}: {content}")
+                # Извлекаем system prompt и формируем правильную структуру
+                system_content = ""
+                conversation_parts = []
                 
-                full_prompt = "\n\n".join(prompt_parts)
+                for msg in messages:
+                    if msg['role'] == 'system':
+                        system_content = msg['content']
+                    else:
+                        role_label = "USER" if msg['role'] == 'user' else "ASSISTANT"
+                        conversation_parts.append(f"{role_label}: {msg['content']}")
+                
+                # Формируем финальный промпт: system сверху, потом диалог
+                full_prompt = f"SYSTEM INSTRUCTION (CRITICAL - MUST FOLLOW):\n{system_content}\n\n{'=' * 80}\n\nCONVERSATION:\n" + "\n\n".join(conversation_parts)
                 
                 # Запрос к air.fail GPT-4o
                 import urllib.request
