@@ -63,6 +63,7 @@ export default function PlayGame() {
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const gameStartedRef = useRef(false);
+  const storyReceivedRef = useRef(false);
 
   // DEBUG: Log currentStory changes
   useEffect(() => {
@@ -107,6 +108,16 @@ export default function PlayGame() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [history, currentStory]);
+
+  useEffect(() => {
+    if (storyReceivedRef.current && currentStory && currentStory.length > 0 && isStarting) {
+      console.log('🎯 Story confirmed in state, closing loading screen');
+      console.log('🎯 currentStory:', currentStory.slice(0, 100));
+      setIsLoading(false);
+      setIsStarting(false);
+      storyReceivedRef.current = false;
+    }
+  }, [currentStory, isStarting]);
 
   const startGame = async () => {
     console.log('🎮 Starting game with settings:', gameSettings);
@@ -161,6 +172,7 @@ export default function PlayGame() {
       console.log('✅ currentStory state updated');
       console.log('✅ Story preview:', story.slice(0, 100));
       
+      storyReceivedRef.current = true;
       setLoadingStage('done');
       saveGame([], story);
       
@@ -187,9 +199,7 @@ export default function PlayGame() {
         variant: 'destructive'
       });
       setCurrentStory('Не удалось начать игру. Проверьте логи выше.');
-    } finally {
-      setIsLoading(false);
-      setIsStarting(false);
+      storyReceivedRef.current = true;
     }
   };
 
