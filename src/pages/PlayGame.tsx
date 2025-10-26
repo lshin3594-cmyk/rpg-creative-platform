@@ -63,6 +63,15 @@ export default function PlayGame() {
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // DEBUG: Log currentStory changes
+  useEffect(() => {
+    console.log('🔄 currentStory CHANGED:', {
+      length: currentStory?.length,
+      hasValue: !!currentStory,
+      preview: currentStory?.slice(0, 100)
+    });
+  }, [currentStory]);
+
   useEffect(() => {
     if (!gameSettings && !existingSave) {
       navigate('/create-game');
@@ -333,26 +342,16 @@ export default function PlayGame() {
                 selectedCharacter={selectedCharacter}
               />
 
-              {/* DEBUG: Always show story if it exists */}
-              {currentStory ? (
-                <div className="mb-4">
-                  <div className="p-4 bg-yellow-500/20 border border-yellow-500 rounded mb-2">
-                    <p className="text-yellow-500 font-bold">DEBUG INFO:</p>
-                    <p className="text-white">Story length: {currentStory.length}</p>
-                    <p className="text-white">isStarting: {String(isStarting)}</p>
-                    <p className="text-white">isLoading: {String(isLoading)}</p>
-                  </div>
-                  <CurrentStory
-                    currentStory={currentStory}
-                    isStarting={isStarting}
-                  />
+              {/* DEBUG: ALWAYS SHOW THIS BLOCK */}
+              <div className="mb-4 p-8 bg-blue-500 border-4 border-white rounded-lg">
+                <h1 className="text-4xl font-bold text-white mb-4">🔥 DEBUG BLOCK 🔥</h1>
+                <p className="text-2xl text-white">currentStory length: {currentStory?.length || 0}</p>
+                <p className="text-2xl text-white">currentStory exists: {String(!!currentStory)}</p>
+                <p className="text-2xl text-white">isStarting: {String(isStarting)}</p>
+                <div className="mt-4 p-4 bg-white text-black max-h-40 overflow-auto">
+                  <pre>{currentStory || '(пусто)'}</pre>
                 </div>
-              ) : (
-                <div className="p-4 bg-red-500/20 border border-red-500 rounded">
-                  <p className="text-red-500 font-bold">NO STORY DATA!</p>
-                  <p className="text-white">currentStory is: {String(currentStory)}</p>
-                </div>
-              )}
+              </div>
             </div>
           </div>
 
