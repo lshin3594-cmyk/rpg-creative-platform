@@ -130,15 +130,15 @@ export const CreateCharacterModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Icon name="UserPlus" size={24} className="text-primary" />
             Создание персонажа
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-6 overflow-y-auto flex-1 pr-2">
           {/* Левая колонка - Форма */}
           <div className="space-y-4">
             <div className="space-y-2">
@@ -223,14 +223,14 @@ export const CreateCharacterModal = ({
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 flex-1 flex flex-col min-h-0">
               <Label htmlFor="char-desc">Описание и характер</Label>
               <Textarea
                 id="char-desc"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Характер, история, особенности..."
-                rows={4}
+                className="flex-1 min-h-[120px] resize-none"
               />
             </div>
           </div>
@@ -285,9 +285,9 @@ export const CreateCharacterModal = ({
           </div>
         </div>
 
-        <div className="flex gap-2 pt-4 border-t">
+        <div className="flex gap-2 pt-4 border-t flex-shrink-0 mt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Отмена
+            Закрыть
           </Button>
           <Button 
             onClick={handleCreate}
@@ -295,7 +295,7 @@ export const CreateCharacterModal = ({
             className="ml-auto gap-2"
           >
             <Icon name="Check" size={16} />
-            Создать персонажа
+            Сохранить
           </Button>
         </div>
       </DialogContent>
