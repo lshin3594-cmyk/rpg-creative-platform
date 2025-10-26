@@ -53,7 +53,11 @@ export const CreateCharacterModal = ({
 
     setIsGenerating(true);
     try {
-      const prompt = `Portrait of ${name}, ${appearance}, ${gameSettings.setting ? `in ${gameSettings.setting} setting` : 'fantasy style'}, detailed character art, high quality`;
+      const genderText = gender === 'male' ? 'male' : 'female';
+      const ageText = age ? `, ${age} years old` : '';
+      const settingText = gameSettings.setting ? `in ${gameSettings.setting} setting` : 'fantasy style';
+      
+      const prompt = `Portrait of ${genderText} character named ${name}${ageText}, ${appearance}, ${settingText}, detailed character art, high quality`;
       
       const response = await fetch('https://functions.poehali.dev/16a136ce-ff21-4430-80df-ad1caa87a3a7', {
         method: 'POST',
