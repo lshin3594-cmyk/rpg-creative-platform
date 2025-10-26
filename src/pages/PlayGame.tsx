@@ -28,6 +28,8 @@ export default function PlayGame() {
   const [isStarting, setIsStarting] = useState(true);
   const [gameId, setGameId] = useState<string>('');
   const [selectedCharacter, setSelectedCharacter] = useState<any>(null);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingText, setLoadingText] = useState('Подключаюсь к нейросети...');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -67,6 +69,20 @@ export default function PlayGame() {
   const startGame = async () => {
     setIsLoading(true);
     setIsStarting(true);
+    setLoadingProgress(0);
+    setLoadingText('Подключаюсь к GPT-4o...');
+    
+    const progressInterval = setInterval(() => {
+      setLoadingProgress(prev => {
+        if (prev >= 90) return 90;
+        return prev + Math.random() * 15;
+      });
+    }, 500);
+    
+    setTimeout(() => setLoadingText('Генерирую начало истории...'), 2000);
+    setTimeout(() => setLoadingText('Создаю атмосферу мира...'), 5000);
+    setTimeout(() => setLoadingText('Почти готово...'), 10000);
+    
     try {
       const response = await fetch(STORY_AI_URL, {
         method: 'POST',
@@ -80,6 +96,9 @@ export default function PlayGame() {
         })
       });
 
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+      
       if (response.ok) {
         const data = await response.json();
         setCurrentStory(data.story || 'История началась...');
@@ -94,6 +113,7 @@ export default function PlayGame() {
         setCurrentStory('Не удалось начать игру. Попробуйте снова.');
       }
     } catch (error) {
+      clearInterval(progressInterval);
       console.error('Failed to start game:', error);
       toast({
         title: 'Ошибка сети',
@@ -102,8 +122,10 @@ export default function PlayGame() {
       });
       setCurrentStory('Ошибка загрузки. Попробуйте снова.');
     } finally {
+      clearInterval(progressInterval);
       setIsLoading(false);
       setIsStarting(false);
+      setLoadingProgress(0);
     }
   };
 
@@ -113,6 +135,18 @@ export default function PlayGame() {
     const action = userAction.trim();
     setUserAction('');
     setIsLoading(true);
+    setLoadingProgress(0);
+    setLoadingText('Отправляю действие в GPT-4o...');
+    
+    const progressInterval = setInterval(() => {
+      setLoadingProgress(prev => {
+        if (prev >= 90) return 90;
+        return prev + Math.random() * 15;
+      });
+    }, 500);
+    
+    setTimeout(() => setLoadingText('ИИ обдумывает последствия...'), 2000);
+    setTimeout(() => setLoadingText('Генерирую продолжение...'), 5000);
 
     const newHistory: HistoryEntry[] = [
       ...history,
@@ -132,6 +166,9 @@ export default function PlayGame() {
         })
       });
 
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+      
       if (response.ok) {
         const data = await response.json();
         setHistory(newHistory);
@@ -152,6 +189,7 @@ export default function PlayGame() {
         setCurrentStory('Не удалось продолжить историю. Попробуйте ещё раз.');
       }
     } catch (error) {
+      clearInterval(progressInterval);
       console.error('Failed to continue story:', error);
       toast({
         title: 'Ошибка сети',
@@ -160,7 +198,9 @@ export default function PlayGame() {
       });
       setCurrentStory('Ошибка. Попробуйте ещё раз.');
     } finally {
+      clearInterval(progressInterval);
       setIsLoading(false);
+      setLoadingProgress(0);
     }
   };
 
@@ -369,9 +409,20 @@ export default function PlayGame() {
           )}
 
           {isLoading && (
-            <div className="flex items-center gap-2 text-purple-300">
-              <Icon name="Loader2" className="animate-spin" size={16} />
-              {gameSettings.role === 'hero' ? 'Мастер думает...' : 'ИИ генерирует историю...'}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-purple-300">
+                <Icon name="Loader2" className="animate-spin" size={16} />
+                <span className="text-sm">{loadingText}</span>
+              </div>
+              <div className="w-full bg-purple-900/20 rounded-full h-2 overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-yellow-500 to-amber-500 transition-all duration-500 ease-out"
+                  style={{ width: `${loadingProgress}%` }}
+                />
+              </div>
+              <div className="text-xs text-purple-400/70 text-center">
+                {Math.round(loadingProgress)}% • ~{Math.round((100 - loadingProgress) / 5)}с
+              </div>
             </div>
           )}
         </div>

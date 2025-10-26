@@ -75,9 +75,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     form_data = {
         "content": f"{system_prompt}\n\n{user_prompt}",
         "info": json.dumps({
-            "version": "gpt-4o",
-            "temperature": 0.8,
-            "max_tokens": 400
+            "version": "gpt-4o-mini",
+            "temperature": 0.7,
+            "max_tokens": 350
         })
     }
     
