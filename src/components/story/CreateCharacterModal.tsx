@@ -35,6 +35,7 @@ export const CreateCharacterModal = ({
   const [description, setDescription] = useState('');
   const [appearance, setAppearance] = useState('');
   const [gender, setGender] = useState<'male' | 'female'>('female');
+  const [age, setAge] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedAvatar, setGeneratedAvatar] = useState<string>('');
   
@@ -137,7 +138,10 @@ export const CreateCharacterModal = ({
           {/* Левая колонка - Форма */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Пол</Label>
+              <Label className="flex items-center gap-2">
+                <Icon name="Users" size={16} className="text-primary" />
+                Пол
+              </Label>
               <div className="flex gap-2">
                 <Button
                   type="button"
@@ -158,6 +162,19 @@ export const CreateCharacterModal = ({
                   Женский
                 </Button>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="char-age" className="flex items-center gap-2">
+                <Icon name="Calendar" size={16} className="text-primary" />
+                Возраст
+              </Label>
+              <Input
+                id="char-age"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                placeholder="Например: 25 лет"
+              />
             </div>
 
             <div className="space-y-2">
