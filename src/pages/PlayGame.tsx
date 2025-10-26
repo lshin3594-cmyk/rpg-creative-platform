@@ -62,6 +62,7 @@ export default function PlayGame() {
     }
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const gameStartedRef = useRef(false);
 
   // DEBUG: Log currentStory changes
   useEffect(() => {
@@ -84,7 +85,8 @@ export default function PlayGame() {
       setCurrentStory(existingSave.currentStory || '');
       setIsStarting(false);
       setLoadingStage('done');
-    } else if (gameSettings) {
+    } else if (gameSettings && !gameStartedRef.current) {
+      gameStartedRef.current = true;
       const id = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       setGameId(id);
       startGame();
