@@ -6,6 +6,10 @@ interface CurrentStoryProps {
 }
 
 export function CurrentStory({ currentStory, isStarting }: CurrentStoryProps) {
+  if (!currentStory || currentStory.length === 0) {
+    return null;
+  }
+
   return (
     <div className="flex gap-3 items-start">
       <Avatar className="w-10 h-10 border-2 border-secondary/30">
