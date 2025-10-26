@@ -110,6 +110,13 @@ export default function PlayGame() {
   }, [history, currentStory]);
 
   useEffect(() => {
+    console.log('🔍 RENDER CHECK - currentStory:', {
+      exists: !!currentStory,
+      length: currentStory?.length,
+      isStarting,
+      preview: currentStory?.slice(0, 50)
+    });
+    
     if (storyReceivedRef.current && currentStory && currentStory.length > 0 && isStarting) {
       console.log('🎯 Story confirmed in state, closing loading screen');
       console.log('🎯 currentStory:', currentStory.slice(0, 100));
