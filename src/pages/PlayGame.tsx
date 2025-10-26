@@ -91,8 +91,6 @@ export default function PlayGame() {
     };
   };
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     if (!gameSettings) {
       navigate('/create-game');
