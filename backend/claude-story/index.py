@@ -7,6 +7,7 @@ from typing import Dict, Any
 # Простой in-memory кеш (живёт между запросами в одном контейнере)
 CACHE: Dict[str, tuple] = {}
 CACHE_TTL = 3600  # 1 час
+CACHE_STATS = {'hits': 0, 'misses': 0}  # Статистика
 
 def get_cache_key(prompt: str) -> str:
     """Создаёт хеш-ключ для кеша"""
@@ -14,12 +15,17 @@ def get_cache_key(prompt: str) -> str:
 
 def get_from_cache(key: str) -> str | None:
     """Получает ответ из кеша если он свежий"""
+    import sys
     if key in CACHE:
         cached_time, cached_value = CACHE[key]
         if time.time() - cached_time < CACHE_TTL:
+            CACHE_STATS['hits'] += 1
+            hit_rate = CACHE_STATS['hits']/(CACHE_STATS['hits']+CACHE_STATS['misses'])*100
+            print(f"CACHE HIT! Stats: {CACHE_STATS['hits']} hits, {CACHE_STATS['misses']} misses, hit rate: {hit_rate:.1f}%", file=sys.stderr)
             return cached_value
         else:
             del CACHE[key]
+    CACHE_STATS['misses'] += 1
     return None
 
 def save_to_cache(key: str, value: str):
@@ -101,12 +107,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     cached_response = get_from_cache(cache_key)
     
     if cached_response:
+        import sys
+        print(f"Returning cached response, cache size: {len(CACHE)}", file=sys.stderr)
         return {
             'statusCode': 200,
             'headers': {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*',
-                'X-Cache': 'HIT'
+                'X-Cache': 'HIT',
+                'X-Cache-Size': str(len(CACHE))
             },
             'body': json.dumps({'story': cached_response}),
             'isBase64Encoded': False
@@ -146,13 +155,30 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         with urllib.request.urlopen(req, timeout=25) as response:
             result = json.loads(response.read().decode('utf-8'))
             
+            # Логируем что получили
+            import sys
+            print(f"air.fail response type: {type(result)}", file=sys.stderr)
+            print(f"air.fail response: {json.dumps(result) if not isinstance(result, str) else result[:200]}", file=sys.stderr)
+            
             # air.fail возвращает список сообщений или объект с response
             if isinstance(result, list):
                 # Если список - берём последнее сообщение
-                story_text = result[-1].get('content', str(result)) if result else "Ошибка генерации"
+                if result:
+                    story_text = result[-1].get('content', '') if isinstance(result[-1], dict) else str(result[-1])
+                else:
+                    story_text = "Ошибка: пустой ответ от API"
+            elif isinstance(result, dict):
+                # Если объект - ищем response/content/choices
+                story_text = result.get('response') or result.get('content') or result.get('text', '')
+                # Если ничего не нашли, может быть это OpenAI формат?
+                if not story_text and 'choices' in result:
+                    story_text = result['choices'][0].get('message', {}).get('content', '')
             else:
-                # Если объект - ищем response/content
-                story_text = result.get('response', result.get('content', str(result)))
+                story_text = str(result)
+            
+            # Финальная проверка
+            if not story_text or len(story_text.strip()) < 10:
+                story_text = f"Ошибка: некорректный ответ API. Тип: {type(result)}, данные: {str(result)[:200]}"
             
             # Сохраняем в кеш
             save_to_cache(cache_key, story_text)
