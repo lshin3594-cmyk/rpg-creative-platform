@@ -82,10 +82,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     import urllib.request
     import urllib.error
     
-    api_url = "https://api.air.fail/v1/chat/completions"
+    api_url = "https://api.air.fail/api/v1/chat/completions"
     
     payload = {
-        "model": "anthropic/claude-3.5-sonnet",
+        "model": "claude-3-5-sonnet-20241022",
         "max_tokens": 1024,
         "messages": [
             {"role": "system", "content": system_prompt},
