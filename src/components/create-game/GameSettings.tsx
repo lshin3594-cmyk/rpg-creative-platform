@@ -6,6 +6,8 @@ interface GameSettingsProps {
   setGenres: (genres: string[]) => void;
   rating: string;
   setRating: (rating: string) => void;
+  aiModel: 'deepseek' | 'gpt4o';
+  setAiModel: (model: 'deepseek' | 'gpt4o') => void;
 }
 
 const AVAILABLE_GENRES = [
@@ -38,7 +40,9 @@ export const GameSettings = ({
   genres,
   setGenres,
   rating,
-  setRating
+  setRating,
+  aiModel,
+  setAiModel
 }: GameSettingsProps) => {
   const toggleGenre = (genre: string) => {
     if (genres.includes(genre)) {
@@ -102,6 +106,26 @@ export const GameSettings = ({
             <option value="16+">16+ (Взрослые темы)</option>
             <option value="18+">18+ (Без цензуры)</option>
           </select>
+        </div>
+
+        <div>
+          <Label htmlFor="aiModel" className="text-purple-200/80 text-sm mb-2 block">
+            ИИ модель
+          </Label>
+          <select
+            id="aiModel"
+            value={aiModel}
+            onChange={(e) => setAiModel(e.target.value as 'deepseek' | 'gpt4o')}
+            className="w-full p-3 rounded-lg bg-black/30 border border-purple-500/30 text-white focus:border-purple-400 focus:outline-none"
+          >
+            <option value="gpt4o">GPT-4o (рекомендуется) — лучше следует сеттингу</option>
+            <option value="deepseek">DeepSeek — быстрее, но хуже с уникальными мирами</option>
+          </select>
+          <p className="text-purple-300/60 text-xs mt-2">
+            {aiModel === 'gpt4o' 
+              ? '✅ GPT-4o точнее следует вашему сеттингу и не добавляет лишних персонажей'
+              : '⚠️ DeepSeek может добавлять элементы из других вселенных'}
+          </p>
         </div>
       </div>
 

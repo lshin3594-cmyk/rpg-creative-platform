@@ -16,11 +16,6 @@ import httpx
 CLAUDE_API_KEY = os.environ.get('CLAUDE_API_KEY', '')
 DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
 
-# DeepSeek основной (работает из России без VPN)
-# Claude доступен через env переменную USE_CLAUDE=true если захочешь через VPN
-USE_CLAUDE = os.environ.get('USE_CLAUDE', 'false').lower() == 'true'
-print(f'AI Provider: {"Claude via Anthropic API" if USE_CLAUDE else "DeepSeek"}')
-
 # Кеш
 CACHE: Dict[str, tuple] = {}
 CACHE_TTL = 1800  # 30 минут
@@ -91,13 +86,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
 def generate_story_continuation(action: str, settings: Dict, history: List[Dict]) -> Dict[str, Any]:
     """
-    Генерирует продолжение истории используя DeepSeek API
+    Генерирует продолжение истории используя выбранную AI модель
     """
     
     role = settings.get('role', 'hero')
     narrative_mode = settings.get('narrativeMode', 'third')
     setting_description = settings.get('setting', '')
     game_name = settings.get('name', 'Приключение')
+    ai_model = settings.get('aiModel', 'gpt4o')  # По умолчанию GPT-4o
+    
+    # Определяем какую модель использовать
+    use_gpt = ai_model == 'gpt4o'
+    print(f'AI Model selected: {"GPT-4o via air.fail" if use_gpt else "DeepSeek"}')
     
     # Формируем системный промт
     system_prompt = build_system_prompt(role, narrative_mode, setting_description, game_name)
@@ -174,49 +174,57 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
     max_retries = 3
     for attempt in range(max_retries):
         try:
-            if USE_CLAUDE:
-                # Claude через air.fail прокси (их кастомный формат)
-                print(f"Claude API attempt {attempt + 1}/{max_retries}")
+            if use_gpt:
+                # GPT-4o через air.fail прокси
+                print(f"GPT-4o API attempt {attempt + 1}/{max_retries}")
                 
-                # Конвертируем messages в один промпт
+                # Конвертируем messages в один промпт для air.fail
                 prompt_parts = []
                 for msg in messages:
-                    role = msg['role']
+                    role_label = msg['role'].upper()
                     content = msg['content']
-                    if role == 'system':
-                        prompt_parts.append(f"SYSTEM: {content}")
-                    elif role == 'user':
-                        prompt_parts.append(f"USER: {content}")
-                    elif role == 'assistant':
-                        prompt_parts.append(f"ASSISTANT: {content}")
+                    prompt_parts.append(f"{role_label}: {content}")
                 
                 full_prompt = "\n\n".join(prompt_parts)
                 
-                # Используем официальный Anthropic API
-                print(f"Using Anthropic API endpoint")
-                response = httpx.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={
-                        "x-api-key": CLAUDE_API_KEY,
-                        "anthropic-version": "2023-06-01",
-                        "Content-Type": "application/json"
-                    },
-                    json={
-                        "model": "claude-3-5-sonnet-20241022",
-                        "messages": messages,
-                        "max_tokens": 600,
-                        "temperature": 0.8
-                    },
-                    timeout=15.0
-                )
+                # Запрос к air.fail GPT-4o
+                import urllib.request
+                import urllib.error
+                import urllib.parse
                 
-                if response.status_code != 200:
-                    raise Exception(f"Anthropic API error {response.status_code}: {response.text[:200]}")
+                api_url = "https://api.air.fail/public/text/chatgpt"
+                form_data = {
+                    "content": full_prompt,
+                    "info": json.dumps({
+                        "version": "gpt-4o",
+                        "temperature": 0.7,
+                        "max_tokens": 1200
+                    })
+                }
                 
-                result_data = response.json()
-                # Anthropic API возвращает другой формат
-                ai_text = result_data['content'][0]['text']
-                print(f"Claude API success, response length: {len(ai_text)}")
+                data = urllib.parse.urlencode(form_data).encode('utf-8')
+                headers = {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Authorization': CLAUDE_API_KEY  # Используем тот же ключ для air.fail
+                }
+                
+                req = urllib.request.Request(api_url, data=data, headers=headers, method='POST')
+                
+                with urllib.request.urlopen(req, timeout=25) as response:
+                    result = json.loads(response.read().decode('utf-8'))
+                    
+                    # air.fail возвращает список сообщений
+                    if isinstance(result, list) and result:
+                        ai_text = result[-1].get('content', '') if isinstance(result[-1], dict) else str(result[-1])
+                    elif isinstance(result, dict):
+                        ai_text = result.get('content') or result.get('response') or result.get('text', '')
+                    else:
+                        ai_text = str(result)
+                    
+                    if not ai_text or len(ai_text.strip()) < 10:
+                        raise Exception(f"Empty response from GPT-4o API")
+                    
+                    print(f"GPT-4o success, response length: {len(ai_text)}")
                 
             else:
                 # Fallback на DeepSeek

@@ -24,6 +24,7 @@ export interface GameSettings {
   genre?: string;
   rating?: string;
   eloquenceLevel?: number;
+  aiModel?: 'deepseek' | 'gpt4o';
 }
 
 import func2url from '../../../backend/func2url.json';
