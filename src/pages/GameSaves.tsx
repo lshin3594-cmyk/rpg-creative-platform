@@ -10,16 +10,22 @@ import { ru } from 'date-fns/locale';
 
 interface GameSave {
   id: string;
-  settings: {
+  gameSettings: {
     name: string;
     genre: string;
     rating: string;
+    setting?: string;
+    initialCharacters?: Array<{
+      name: string;
+      role?: string;
+    }>;
   };
   history: any[];
   currentStory: string;
   episodeCount: number;
   savedAt: string;
   lastAction: string;
+  coverUrl?: string;
 }
 
 export default function GameSaves() {
@@ -50,7 +56,7 @@ export default function GameSaves() {
   };
 
   const handleContinue = (save: GameSave) => {
-    navigate('/play-game', { state: { gameSettings: save.settings, existingSave: save } });
+    navigate('/play-game', { state: { gameSettings: save.gameSettings, existingSave: save } });
   };
 
   return (
@@ -87,23 +93,56 @@ export default function GameSaves() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {saves.map((save) => (
-              <Card key={save.id} className="bg-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all group">
+              <Card key={save.id} className="bg-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all group overflow-hidden">
+                {save.coverUrl && (
+                  <div className="relative w-full h-40 overflow-hidden">
+                    <img 
+                      src={save.coverUrl} 
+                      alt={save.gameSettings.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+                  </div>
+                )}
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 line-clamp-1">
                     <Icon name="Gamepad2" size={18} className="flex-shrink-0 text-primary" />
-                    <span className="truncate">{save.settings.name}</span>
+                    <span className="truncate">{save.gameSettings.name}</span>
                   </CardTitle>
                   <CardDescription className="flex flex-wrap gap-2">
                     <Badge variant="secondary" className="text-xs">
-                      {save.settings.genre}
+                      {save.gameSettings.genre}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      {save.settings.rating}
+                      {save.gameSettings.rating}
                     </Badge>
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
+                    {save.gameSettings.setting && (
+                      <div className="text-xs text-muted-foreground bg-primary/5 p-2 rounded border border-primary/10">
+                        <Icon name="Map" size={12} className="inline mr-1" />
+                        {save.gameSettings.setting.slice(0, 80)}{save.gameSettings.setting.length > 80 ? '...' : ''}
+                      </div>
+                    )}
+                    
+                    {save.gameSettings.initialCharacters && save.gameSettings.initialCharacters.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {save.gameSettings.initialCharacters.slice(0, 3).map((char, idx) => (
+                          <Badge key={idx} variant="outline" className="text-xs">
+                            <Icon name="User" size={10} className="mr-1" />
+                            {char.name}
+                          </Badge>
+                        ))}
+                        {save.gameSettings.initialCharacters.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{save.gameSettings.initialCharacters.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                    
                     <div className="text-sm space-y-1">
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Icon name="BookMarked" size={14} />

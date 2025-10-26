@@ -10,16 +10,22 @@ import { ru } from 'date-fns/locale';
 
 interface GameSave {
   id: string;
-  settings: {
+  gameSettings: {
     name: string;
     genre: string;
     rating: string;
+    setting?: string;
+    initialCharacters?: Array<{
+      name: string;
+      role?: string;
+    }>;
   };
   history: any[];
   currentStory: string;
   episodeCount: number;
   savedAt: string;
   lastAction: string;
+  coverUrl?: string;
 }
 
 const Index = () => {
@@ -27,10 +33,10 @@ const Index = () => {
   const [saves, setSaves] = useState<GameSave[]>([]);
 
   useEffect(() => {
-    const savedGames = JSON.parse(localStorage.getItem('saved-games') || '[]');
+    const savedGames = JSON.parse(localStorage.getItem('game-saves') || '[]');
     setSaves(savedGames.sort((a: GameSave, b: GameSave) => 
       new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
-    ).slice(0, 3)); // Показываем только 3 последних
+    ).slice(0, 3));
   }, []);
 
   const menuItems = [
@@ -55,7 +61,7 @@ const Index = () => {
   ];
 
   const handleContinue = (save: GameSave) => {
-    navigate('/play-game', { state: { gameSettings: save.settings, existingSave: save } });
+    navigate('/play-game', { state: { gameSettings: save.gameSettings, existingSave: save } });
   };
 
   return (
@@ -111,23 +117,49 @@ const Index = () => {
             
             <div className="grid gap-4 md:grid-cols-3">
               {saves.map((save) => (
-                <Card key={save.id} className="bg-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all group">
+                <Card key={save.id} className="bg-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all group overflow-hidden">
+                  {save.coverUrl && (
+                    <div className="relative w-full h-32 overflow-hidden">
+                      <img 
+                        src={save.coverUrl} 
+                        alt={save.gameSettings.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+                    </div>
+                  )}
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 line-clamp-1 text-base">
                       <Icon name="Gamepad2" size={16} className="flex-shrink-0 text-primary" />
-                      <span className="truncate">{save.settings.name}</span>
+                      <span className="truncate">{save.gameSettings.name}</span>
                     </CardTitle>
                     <CardDescription className="flex flex-wrap gap-2">
                       <Badge variant="secondary" className="text-xs">
-                        {save.settings.genre}
+                        {save.gameSettings.genre}
                       </Badge>
                       <Badge variant="outline" className="text-xs">
-                        {save.settings.rating}
+                        {save.gameSettings.rating}
                       </Badge>
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
+                      {save.gameSettings.initialCharacters && save.gameSettings.initialCharacters.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {save.gameSettings.initialCharacters.slice(0, 2).map((char, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs">
+                              <Icon name="User" size={10} className="mr-1" />
+                              {char.name}
+                            </Badge>
+                          ))}
+                          {save.gameSettings.initialCharacters.length > 2 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{save.gameSettings.initialCharacters.length - 2}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                      
                       <div className="text-sm space-y-1">
                         <div className="flex items-center gap-2 text-muted-foreground">
                           <Icon name="BookMarked" size={14} />

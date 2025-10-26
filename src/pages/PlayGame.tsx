@@ -241,16 +241,42 @@ export default function PlayGame() {
     }
   };
 
-  const saveGame = (historyData: HistoryEntry[], story: string) => {
+  const saveGame = async (historyData: HistoryEntry[], story: string) => {
     const saves = JSON.parse(localStorage.getItem('game-saves') || '[]');
     const existingIndex = saves.findIndex((s: any) => s.id === gameId);
+    
+    let coverUrl = '';
+    if (existingIndex >= 0) {
+      coverUrl = saves[existingIndex].coverUrl || '';
+    }
+    
+    if (!coverUrl && historyData.length === 0) {
+      try {
+        const coverPrompt = `${gameSettings.genre} game cover art, ${gameSettings.setting}, cinematic, high quality, professional book cover`;
+        const imgResponse = await fetch(IMAGE_GEN_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: coverPrompt })
+        });
+        
+        if (imgResponse.ok) {
+          const imgData = await imgResponse.json();
+          coverUrl = imgData.url || '';
+        }
+      } catch (error) {
+        console.error('Failed to generate cover:', error);
+      }
+    }
     
     const saveData = {
       id: gameId,
       gameSettings,
       history: historyData,
       currentStory: story,
-      savedAt: Date.now()
+      savedAt: Date.now(),
+      coverUrl,
+      episodeCount: historyData.length + 1,
+      lastAction: historyData.length > 0 ? historyData[historyData.length - 1].user : 'Начало игры'
     };
     
     if (existingIndex >= 0) {
