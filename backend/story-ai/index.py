@@ -75,8 +75,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         main_char = characters[0] if characters else None
         mc_name = main_char.get('name', 'Игрок') if main_char else 'Игрок'
         mc_role = main_char.get('role', 'герой') if main_char else 'герой'
+        mc_desc = main_char.get('description', '') if main_char else ''
         
-        npc_str = ', '.join([c.get('name', '') for c in characters[1:4]]) if len(characters) > 1 else 'встретит в мире'
+        npc_list = characters[1:] if len(characters) > 1 else []
+        npc_str = ''
+        if npc_list:
+            npc_descriptions = []
+            for npc in npc_list[:5]:
+                npc_name = npc.get('name', '')
+                npc_role = npc.get('role', '')
+                npc_desc = npc.get('description', '')
+                npc_descriptions.append(f"{npc_name} ({npc_role}): {npc_desc if npc_desc else 'персонаж из мира'}")
+            npc_str = '\n'.join(npc_descriptions)
+        else:
+            npc_str = 'Создай интересных NPC по ходу истории'
         
         pov_instruction = {
             'first': f'От первого лица ({mc_name}). ИГРОК ИГРАЕТ ЗА {mc_name.upper()}.',
@@ -91,9 +103,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 ГЛАВНЫЙ ПЕРСОНАЖ (управляется игроком):
 • Имя: {mc_name}
 • Роль: {mc_role}
+{f'• Описание: {mc_desc}' if mc_desc else ''}
 • ⚠️ КРИТИЧНО: НИКОГДА не пиши действия/мысли/слова за {mc_name}!
 
-NPC (ты играешь за них): {npc_str}
+NPC (ты играешь за них, создай их в мире):
+{npc_str}
+
+ВАЖНО ПРО NPC: Если указаны конкретные NPC выше — используй их в истории, создай для них роли в мире, дай им характер и мотивацию. Если NPC не указаны — создавай новых персонажей по ходу сюжета.
 
 Повествование: {pov_instruction}
 

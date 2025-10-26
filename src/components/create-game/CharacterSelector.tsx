@@ -28,27 +28,46 @@ export const CharacterSelector = ({
 }: CharacterSelectorProps) => {
   return (
     <div className="relative p-6 rounded-xl bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-purple-900/40 border border-purple-500/40 backdrop-blur-md">
-      <div className="flex items-center justify-between mb-4">
-        <Label className="text-purple-100 text-base">
-          Персонажи (необязательно)
-        </Label>
-        {selectedCharacterIds.length > 0 && (
-          <span className="text-purple-300/70 text-sm">
-            Выбрано: {selectedCharacterIds.length}
-          </span>
-        )}
+      <div className="space-y-2 mb-4">
+        <div className="flex items-center justify-between">
+          <Label className="text-purple-100 text-base">
+            Персонажи (необязательно)
+          </Label>
+          {selectedCharacterIds.length > 0 && (
+            <span className="text-purple-300/70 text-sm">
+              Выбрано: {selectedCharacterIds.length}
+            </span>
+          )}
+        </div>
+        <p className="text-xs text-purple-300/60">
+          <Icon name="Info" size={12} className="inline mr-1" />
+          Первый персонаж — главный герой (вами управляется). Остальные — NPC, которых ИИ создаст в мире.
+        </p>
       </div>
 
       <div className="flex flex-wrap gap-3">
-        {selectedCharacterIds.map(charId => {
+        {selectedCharacterIds.map((charId, index) => {
           const char = availableCharacters.find(c => c.id === charId);
           if (!char) return null;
+          const isMainCharacter = index === 0;
           return (
-            <div key={char.id} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-500/30 border border-purple-400">
+            <div key={char.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
+              isMainCharacter 
+                ? 'bg-primary/40 border-primary ring-2 ring-primary/30' 
+                : 'bg-purple-500/30 border-purple-400'
+            }`}>
+              {isMainCharacter && (
+                <Icon name="Star" size={12} className="text-yellow-400 fill-yellow-400" />
+              )}
               {char.avatar && (
                 <img src={char.avatar} alt={char.name} className="w-8 h-8 rounded-full object-cover" />
               )}
-              <span className="text-sm text-purple-100">{char.name}</span>
+              <div className="flex flex-col">
+                <span className="text-sm text-purple-100">{char.name}</span>
+                {isMainCharacter && (
+                  <span className="text-xs text-purple-300/70">Главный герой</span>
+                )}
+              </div>
               <button
                 onClick={() => toggleCharacter(char.id)}
                 className="ml-1 hover:text-red-400 transition-colors"
