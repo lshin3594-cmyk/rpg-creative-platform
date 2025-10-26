@@ -33,16 +33,25 @@ const Index = () => {
   const [saves, setSaves] = useState<GameSave[]>([]);
 
   useEffect(() => {
-    const savedGames = JSON.parse(localStorage.getItem('game-saves') || '[]');
-    const normalizedSaves = savedGames.map((save: any) => ({
-      ...save,
-      gameSettings: save.gameSettings || save.settings || {},
-      episodeCount: save.episodeCount || save.history?.length || 0,
-      lastAction: save.lastAction || 'Начало игры'
-    }));
-    setSaves(normalizedSaves.sort((a: GameSave, b: GameSave) => 
-      new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
-    ).slice(0, 3));
+    try {
+      const savedGames = JSON.parse(localStorage.getItem('game-saves') || '[]');
+      const normalizedSaves = savedGames
+        .map((save: any) => ({
+          ...save,
+          gameSettings: save.gameSettings || save.settings || {},
+          episodeCount: save.episodeCount || save.history?.length || 0,
+          lastAction: save.lastAction || 'Начало игры',
+          savedAt: save.savedAt || new Date().toISOString()
+        }))
+        .filter((save: any) => save.gameSettings?.name);
+      
+      setSaves(normalizedSaves.sort((a: GameSave, b: GameSave) => 
+        new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
+      ).slice(0, 3));
+    } catch (error) {
+      console.error('Error loading saves:', error);
+      setSaves([]);
+    }
   }, []);
 
   const menuItems = [
@@ -174,7 +183,13 @@ const Index = () => {
                         <div className="flex items-center gap-2 text-muted-foreground">
                           <Icon name="Clock" size={14} />
                           <span className="text-xs">
-                            {formatDistanceToNow(new Date(save.savedAt), { addSuffix: true, locale: ru })}
+                            {(() => {
+                              try {
+                                return formatDistanceToNow(new Date(save.savedAt), { addSuffix: true, locale: ru });
+                              } catch {
+                                return 'недавно';
+                              }
+                            })()}
                           </span>
                         </div>
                       </div>
