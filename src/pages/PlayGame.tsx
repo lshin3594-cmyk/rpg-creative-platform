@@ -331,6 +331,17 @@ export default function PlayGame() {
             className="flex-1 overflow-y-auto p-4 space-y-6"
           >
             <div className="container mx-auto max-w-4xl" key={currentStory ? 'with-story' : 'no-story'}>
+              {/* МЕГА DEBUG - ВСЕГДА ПЕРВЫМ */}
+              <div className="bg-red-500 text-white p-4 mb-4 font-mono text-xs">
+                <div>🔍 DEBUG INFO:</div>
+                <div>isStarting: {String(isStarting)}</div>
+                <div>loadingStage: {loadingStage}</div>
+                <div>currentStory type: {typeof currentStory}</div>
+                <div>currentStory length: {currentStory?.length || 0}</div>
+                <div>currentStory truthiness: {String(!!currentStory)}</div>
+                <div>history length: {history.length}</div>
+              </div>
+
               {isStarting && loadingStage !== 'done' && (
                 <div className="bg-card border rounded-lg p-6 mb-6">
                   <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
