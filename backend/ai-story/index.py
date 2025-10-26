@@ -13,7 +13,12 @@ from typing import Dict, Any, List
 from openai import OpenAI
 import httpx
 
+CLAUDE_API_KEY = os.environ.get('CLAUDE_API_KEY', '')
 DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
+
+# ВРЕМЕННО: отключаем Claude (проблемы с air.fail API), используем только DeepSeek
+USE_CLAUDE = False  # TODO: починить air.fail интеграцию
+print(f'AI Provider: {"Claude" if USE_CLAUDE else "DeepSeek"}')
 
 # Кеш
 CACHE: Dict[str, tuple] = {}
@@ -122,35 +127,71 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
     max_retries = 2
     for attempt in range(max_retries):
         try:
-            # Вызываем DeepSeek API с таймаутом
-            timeout_config = httpx.Timeout(
-                connect=5.0,
-                read=30.0,
-                write=10.0,
-                pool=5.0
-            )
-            http_client = httpx.Client(timeout=timeout_config)
-            client = OpenAI(
-                api_key=DEEPSEEK_API_KEY,
-                base_url="https://api.deepseek.com",
-                http_client=http_client,
-                timeout=30.0,
-                max_retries=0
-            )
-            
-            print(f"DeepSeek API attempt {attempt + 1}/{max_retries}")
-            
-            response = client.chat.completions.create(
-                model="deepseek-chat",
-                messages=messages,
-                max_tokens=600,
-                temperature=0.8,
-                top_p=0.9,
-                stream=False
-            )
-            
-            ai_text = response.choices[0].message.content
-            print(f"DeepSeek API success, response length: {len(ai_text)}")
+            if USE_CLAUDE:
+                # Claude через air.fail прокси (их кастомный формат)
+                print(f"Claude API attempt {attempt + 1}/{max_retries}")
+                
+                # Конвертируем messages в один промпт
+                prompt_parts = []
+                for msg in messages:
+                    role = msg['role']
+                    content = msg['content']
+                    if role == 'system':
+                        prompt_parts.append(f"SYSTEM: {content}")
+                    elif role == 'user':
+                        prompt_parts.append(f"USER: {content}")
+                    elif role == 'assistant':
+                        prompt_parts.append(f"ASSISTANT: {content}")
+                
+                full_prompt = "\n\n".join(prompt_parts)
+                
+                response = httpx.post(
+                    "https://api.air.fail/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {CLAUDE_API_KEY}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "claude-3-5-sonnet-20241022",
+                        "messages": messages,
+                        "max_tokens": 600,
+                        "temperature": 0.8
+                    },
+                    timeout=15.0
+                )
+                
+                if response.status_code != 200:
+                    raise Exception(f"API error {response.status_code}: {response.text[:200]}")
+                
+                result_data = response.json()
+                ai_text = result_data['choices'][0]['message']['content']
+                print(f"Claude API success, response length: {len(ai_text)}")
+                
+            else:
+                # Fallback на DeepSeek
+                print(f"DeepSeek API attempt {attempt + 1}/{max_retries}")
+                
+                timeout_config = httpx.Timeout(connect=5.0, read=20.0, write=10.0, pool=5.0)
+                http_client = httpx.Client(timeout=timeout_config)
+                
+                client = OpenAI(
+                    api_key=DEEPSEEK_API_KEY,
+                    base_url="https://api.deepseek.com",
+                    http_client=http_client,
+                    timeout=20.0,
+                    max_retries=0
+                )
+                
+                response = client.chat.completions.create(
+                    model="deepseek-chat",
+                    messages=messages,
+                    max_tokens=400,  # Уменьшено для скорости
+                    temperature=0.7,  # Чуть меньше случайности = быстрее
+                    stream=False
+                )
+                
+                ai_text = response.choices[0].message.content
+                print(f"DeepSeek API success, response length: {len(ai_text)}")
             
             # Извлекаем персонажей из текста
             characters = extract_characters(ai_text)
@@ -169,7 +210,8 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
         except Exception as e:
             error_name = type(e).__name__
             error_msg = str(e)
-            print(f"DeepSeek API attempt {attempt + 1} failed: {error_name} - {error_msg}")
+            provider = "Claude" if USE_CLAUDE else "DeepSeek"
+            print(f"{provider} API attempt {attempt + 1} failed: {error_name} - {error_msg}")
             
             if attempt < max_retries - 1:
                 print(f"Retrying... ({attempt + 2}/{max_retries})")
