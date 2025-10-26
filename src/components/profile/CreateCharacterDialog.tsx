@@ -62,7 +62,8 @@ Extract and translate only visual details to English:`;
       const translationData = await translationResponse.json();
       const visualDescription = translationData.content?.[0]?.text || `${newCharacter.name}, ${newCharacter.role}`;
       
-      const prompt = `Portrait of ${visualDescription}, highly detailed character art, professional digital painting, cinematic lighting, 8k quality`;
+      const shortDescription = visualDescription.slice(0, 300);
+      const prompt = `Portrait of ${shortDescription}, professional character art, cinematic lighting`;
       
       const response = await fetch('https://functions.poehali.dev/16a136ce-ff21-4430-80df-ad1caa87a3a7', {
         method: 'POST',
