@@ -30,13 +30,13 @@ const CreateGame = () => {
   const [showCharactersList, setShowCharactersList] = useState(false);
 
   useEffect(() => {
-    const fetchCharacters = async () => {
+    const loadCharacters = () => {
       setLoadingCharacters(true);
       try {
-        const response = await fetch(`${GAME_ENTITIES_URL}?type=characters`);
-        if (response.ok) {
-          const data = await response.json();
-          setAvailableCharacters(data);
+        const savedCharacters = localStorage.getItem('user-characters');
+        if (savedCharacters) {
+          const chars = JSON.parse(savedCharacters);
+          setAvailableCharacters(chars);
         }
       } catch (error) {
         console.error('Failed to load characters:', error);
@@ -44,7 +44,7 @@ const CreateGame = () => {
         setLoadingCharacters(false);
       }
     };
-    fetchCharacters();
+    loadCharacters();
   }, []);
 
   const generateRandomName = () => {
