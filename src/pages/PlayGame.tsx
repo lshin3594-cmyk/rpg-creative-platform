@@ -62,7 +62,7 @@ export default function PlayGame() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!gameSettings) {
+    if (!gameSettings && !existingSave) {
       navigate('/create-game');
       return;
     }
@@ -73,7 +73,7 @@ export default function PlayGame() {
       setCurrentStory(existingSave.currentStory || '');
       setIsStarting(false);
       setLoadingStage('done');
-    } else {
+    } else if (gameSettings) {
       const id = `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       setGameId(id);
       startGame();
@@ -242,6 +242,8 @@ export default function PlayGame() {
   };
 
   const saveGame = async (historyData: HistoryEntry[], story: string) => {
+    if (!gameSettings) return;
+    
     const saves = JSON.parse(localStorage.getItem('game-saves') || '[]');
     const existingIndex = saves.findIndex((s: any) => s.id === gameId);
     
@@ -250,7 +252,7 @@ export default function PlayGame() {
       coverUrl = saves[existingIndex].coverUrl || '';
     }
     
-    if (!coverUrl && historyData.length === 0) {
+    if (!coverUrl && historyData.length === 0 && gameSettings.genre && gameSettings.setting) {
       try {
         const coverPrompt = `${gameSettings.genre} game cover art, ${gameSettings.setting}, cinematic, high quality, professional book cover`;
         const imgResponse = await fetch(IMAGE_GEN_URL, {
