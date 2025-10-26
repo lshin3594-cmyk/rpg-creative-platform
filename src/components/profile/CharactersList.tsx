@@ -16,9 +16,10 @@ interface CharactersListProps {
   characters: Character[];
   onDelete: (id: string) => void;
   onCreateNew: () => void;
+  onEdit?: (character: Character) => void;
 }
 
-export const CharactersList = ({ characters, onDelete, onCreateNew }: CharactersListProps) => {
+export const CharactersList = ({ characters, onDelete, onCreateNew, onEdit }: CharactersListProps) => {
   return (
     <Card className="bg-gradient-to-br from-purple-900/30 via-pink-900/20 to-purple-900/30 border-purple-500/40 backdrop-blur-md">
       <CardHeader>
@@ -59,14 +60,26 @@ export const CharactersList = ({ characters, onDelete, onCreateNew }: Characters
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="font-semibold text-purple-100 truncate">{char.name}</h3>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onDelete(char.id)}
-                      className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Icon name="Trash2" size={16} />
-                    </Button>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {onEdit && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onEdit(char)}
+                          className="text-purple-300 hover:text-purple-200 hover:bg-purple-500/20 h-8 w-8 p-0"
+                        >
+                          <Icon name="Pencil" size={16} />
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDelete(char.id)}
+                        className="text-red-400 hover:text-red-300 hover:bg-red-500/20 h-8 w-8 p-0"
+                      >
+                        <Icon name="Trash2" size={16} />
+                      </Button>
+                    </div>
                   </div>
                   <Badge variant="outline" className="mt-1 border-purple-500/50 text-purple-300">
                     {char.role}

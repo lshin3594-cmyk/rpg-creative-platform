@@ -34,12 +34,36 @@ export const universeStorage = {
     return newUniverse;
   },
 
-  update(id: string, updates: Partial<Omit<Universe, 'id' | 'createdAt'>>): Universe | null {
+  async update(id: string, updates: Partial<Omit<Universe, 'id' | 'createdAt'>>): Promise<Universe | null> {
     const universes = this.getAll();
+    const universe = universes.find(u => u.id === id);
+    
+    if (!universe) return null;
+    
+    try {
+      const response = await fetch('https://functions.poehali.dev/3075b346-65de-494b-be4b-4fc1cc68b759', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: parseInt(id),
+          name: updates.name || universe.name,
+          description: updates.description || universe.description,
+          genre: updates.genre || universe.genre,
+          tags: updates.tags || universe.tags,
+          source_type: 'custom'
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update universe');
+      }
+    } catch (error) {
+      console.error('Failed to update universe in backend:', error);
+    }
+    
     const index = universes.findIndex(u => u.id === id);
-    
-    if (index === -1) return null;
-    
     universes[index] = {
       ...universes[index],
       ...updates,

@@ -1,0 +1,17 @@
+{
+  "tests": [
+    {
+      "name": "Update character with valid data",
+      "method": "PUT",
+      "path": "/",
+      "body": {
+        "id": 1,
+        "name": "Updated Character",
+        "personality": "Updated personality",
+        "age": "25",
+        "gender": "female"
+      },
+      "expectedStatus": 404
+    }
+  ]
+}

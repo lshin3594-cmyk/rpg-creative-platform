@@ -57,7 +57,7 @@ export const EditUniverseDialog = ({ universe, open, onOpenChange, onSave }: Edi
     }
   }, [universe]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!universe) return;
 
     if (!name.trim()) {
@@ -69,7 +69,7 @@ export const EditUniverseDialog = ({ universe, open, onOpenChange, onSave }: Edi
       return;
     }
 
-    universeStorage.update(universe.id, {
+    await universeStorage.update(universe.id, {
       name: name.trim(),
       description: description.trim(),
       genre,

@@ -6,6 +6,7 @@ import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ProfileSettings } from '@/components/profile/ProfileSettings';
 import { CharactersList, Character } from '@/components/profile/CharactersList';
 import { CreateCharacterDialog } from '@/components/profile/CreateCharacterDialog';
+import { EditCharacterDialog } from '@/components/profile/EditCharacterDialog';
 
 export const UserProfile = () => {
   const { user, logout } = useAuth();
@@ -13,6 +14,7 @@ export const UserProfile = () => {
   const { toast } = useToast();
   const [characters, setCharacters] = useState<Character[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [editingCharacter, setEditingCharacter] = useState<Character | null>(null);
 
   useEffect(() => {
     const savedCharacters = localStorage.getItem('user-characters');
@@ -61,6 +63,14 @@ export const UserProfile = () => {
     toast({ title: 'Персонаж удалён', description: 'Персонаж успешно удалён из списка' });
   };
 
+  const handleEditCharacter = () => {
+    const savedCharacters = localStorage.getItem('user-characters');
+    if (savedCharacters) {
+      setCharacters(JSON.parse(savedCharacters));
+    }
+    setEditingCharacter(null);
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/');
@@ -80,11 +90,18 @@ export const UserProfile = () => {
         characters={characters} 
         onDelete={handleDeleteCharacter}
         onCreateNew={() => setIsCreateDialogOpen(true)}
+        onEdit={setEditingCharacter}
       />
       <CreateCharacterDialog
         isOpen={isCreateDialogOpen}
         onClose={() => setIsCreateDialogOpen(false)}
         onSubmit={handleCreateCharacter}
+      />
+      <EditCharacterDialog
+        character={editingCharacter}
+        open={!!editingCharacter}
+        onOpenChange={(open) => !open && setEditingCharacter(null)}
+        onSave={handleEditCharacter}
       />
     </div>
   );

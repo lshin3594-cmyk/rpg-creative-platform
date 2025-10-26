@@ -1,0 +1,17 @@
+{
+  "tests": [
+    {
+      "name": "Update universe with valid data",
+      "method": "PUT",
+      "path": "/",
+      "body": {
+        "id": 1,
+        "name": "Updated Universe",
+        "description": "Updated description",
+        "genre": "fantasy",
+        "tags": ["magic", "adventure"]
+      },
+      "expectedStatus": 404
+    }
+  ]
+}
