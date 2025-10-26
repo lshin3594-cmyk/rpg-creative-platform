@@ -36,6 +36,8 @@ export default function PlayGame() {
   const [loadingStage, setLoadingStage] = useState<LoadingStage>('idle');
   const [stageErrors, setStageErrors] = useState<{world?: string, story?: string}>({});
   const [journalOpen, setJournalOpen] = useState(false);
+  const [metaCommand, setMetaCommand] = useState('');
+  const [showMetaInput, setShowMetaInput] = useState(false);
   const [journalEntries, setJournalEntries] = useState<any[]>([
     {
       episode: 1,
@@ -56,6 +58,39 @@ export default function PlayGame() {
       plans: ['Изучить карту', 'Собрать информацию в таверне']
     }
   ]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const parseMetaFromStory = (story: string, episodeNum: number) => {
+    const metaMatch = story.match(/\*\*\[МЕТА\]\*\*([\s\S]*?)---/);
+    if (!metaMatch) return null;
+
+    const metaText = metaMatch[1];
+    
+    const timeMatch = metaText.match(/⏰[^:]*:\s*(.+)/);
+    const eventsMatch = metaText.match(/🎬[^:]*:\s*(.+)/);
+    const relationsMatch = metaText.match(/💕[^:]*:\s*(.+)/);
+    const emotionsMatch = metaText.match(/🧠[^:]*:\s*(.+)/);
+    const cluesMatch = metaText.match(/🔍[^:]*:\s*(.+)/);
+    const questionsMatch = metaText.match(/❓[^:]*:\s*(.+)/);
+    const plansMatch = metaText.match(/🎯[^:]*:\s*(.+)/);
+
+    const storyWithoutMeta = story.replace(/\*\*\[МЕТА\]\*\*[\s\S]*?---\s*/, '');
+
+    return {
+      episode: episodeNum,
+      title: `Эпизод ${episodeNum}`,
+      time: timeMatch ? timeMatch[1].trim() : undefined,
+      location: timeMatch ? timeMatch[1].split(',').pop()?.trim() : undefined,
+      events: eventsMatch ? [eventsMatch[1].trim()] : [],
+      npcs: [],
+      emotions: emotionsMatch ? [emotionsMatch[1].trim()] : [],
+      clues: cluesMatch ? [cluesMatch[1].trim()] : [],
+      questions: questionsMatch ? [questionsMatch[1].trim()] : [],
+      plans: plansMatch ? [plansMatch[1].trim()] : [],
+      cleanStory: storyWithoutMeta
+    };
+  };
+
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -150,7 +185,12 @@ export default function PlayGame() {
   const handleSendAction = async () => {
     if (!userAction.trim() || isLoading) return;
 
-    const action = userAction.trim();
+    let action = userAction.trim();
+    if (metaCommand.trim()) {
+      action = `@[МЕТА-КОМАНДА]: ${metaCommand.trim()}\n\n${action}`;
+      setMetaCommand('');
+    }
+    
     setUserAction('');
     setIsLoading(true);
 
@@ -205,9 +245,16 @@ export default function PlayGame() {
           image: imageUrl
         };
         
+        const parsedMeta = parseMetaFromStory(story, updatedHistory.length);
+        if (parsedMeta) {
+          setJournalEntries(prev => [...prev, parsedMeta]);
+          setCurrentStory(parsedMeta.cleanStory);
+        } else {
+          setCurrentStory(story);
+        }
+        
         setHistory(updatedHistory);
-        setCurrentStory(story);
-        saveGame(updatedHistory, story);
+        saveGame(updatedHistory, parsedMeta?.cleanStory || story);
         
         toast({
           title: '💾 Сохранено',
@@ -441,6 +488,30 @@ export default function PlayGame() {
 
       <div className="bg-purple-900/30 backdrop-blur-sm border-t border-purple-500/30 p-4">
         <div className="max-w-4xl mx-auto space-y-3">
+          {showMetaInput && (
+            <div className="bg-orange-900/20 border border-orange-500/30 rounded-lg p-3">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-semibold text-orange-300 flex items-center gap-2">
+                  <Icon name="Code" size={16} />
+                  Обращение к ИИ (мета-команды)
+                </label>
+                <button 
+                  onClick={() => setShowMetaInput(false)}
+                  className="text-orange-400 hover:text-orange-200"
+                >
+                  <Icon name="X" size={16} />
+                </button>
+              </div>
+              <Textarea
+                value={metaCommand}
+                onChange={(e) => setMetaCommand(e.target.value)}
+                placeholder="Например: Добавь в игру систему крафта / Сделай NPC более агрессивными..."
+                disabled={isLoading}
+                className="min-h-[80px] bg-orange-950/50 border-orange-500/30 text-orange-100 placeholder:text-orange-400/50"
+              />
+            </div>
+          )}
+          
           <Textarea
             value={userAction}
             onChange={(e) => setUserAction(e.target.value)}
@@ -475,6 +546,14 @@ export default function PlayGame() {
             >
               <Icon name="Zap" size={18} />
               Пнуть ИИ
+            </Button>
+            <Button
+              onClick={() => setShowMetaInput(!showMetaInput)}
+              variant="outline"
+              className="border-orange-500/30 text-orange-300"
+            >
+              <Icon name="Code" size={18} />
+              {showMetaInput ? 'Скрыть' : 'Мета'}
             </Button>
           </div>
         </div>

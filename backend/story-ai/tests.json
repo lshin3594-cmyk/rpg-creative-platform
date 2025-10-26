@@ -8,9 +8,11 @@
         "game_settings": {
           "genre": "фэнтези",
           "rating": "18+",
-          "tone": 3,
-          "characters": [{"name": "Лилит"}]
+          "narrativeMode": "third",
+          "role": "hero",
+          "initialCharacters": [{"name": "Лилит", "role": "воин"}]
         },
+        "setting": "тёмный лес",
         "user_action": "",
         "history": []
       },
@@ -28,8 +30,11 @@
         "game_settings": {
           "genre": "романтика",
           "rating": "18+",
-          "tone": 5
+          "narrativeMode": "third",
+          "role": "hero",
+          "initialCharacters": [{"name": "Аня", "role": "студентка"}]
         },
+        "setting": "университет",
         "user_action": "Подхожу ближе",
         "history": [
           {
