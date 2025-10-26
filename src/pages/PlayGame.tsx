@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 
-const STORY_AI_URL = 'https://functions.poehali.dev/9ea67dc2-c306-4906-bf0f-da435600b92c';
+const STORY_AI_URL = 'https://functions.poehali.dev/f9547351-df35-40b5-9a78-8d12690971c3';
 
 interface HistoryEntry {
   user: string;
@@ -60,8 +60,10 @@ export default function PlayGame() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          game_settings: gameSettings,
-          user_action: '',
+          genre: gameSettings.genre || 'фэнтези',
+          setting: gameSettings.setting || 'средневековье',
+          difficulty: 'medium',
+          userAction: '',
           history: []
         })
       });
@@ -97,8 +99,10 @@ export default function PlayGame() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          game_settings: gameSettings,
-          user_action: action,
+          genre: gameSettings.genre || 'фэнтези',
+          setting: gameSettings.setting || 'средневековье',
+          difficulty: 'medium',
+          userAction: action,
           history: newHistory
         })
       });
@@ -166,8 +170,10 @@ export default function PlayGame() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          game_settings: gameSettings,
-          user_action: '[продолжи историю дальше]',
+          genre: gameSettings.genre || 'фэнтези',
+          setting: gameSettings.setting || 'средневековье',
+          difficulty: 'medium',
+          userAction: '[продолжи историю дальше]',
           history: history
         })
       });
