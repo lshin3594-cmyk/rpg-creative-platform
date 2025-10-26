@@ -146,9 +146,10 @@ export default function PlayGame() {
       const data = await response.json();
       console.log('✅ Story received:', data);
       
-      const story = data.text || 'История началась...';
+      const story = String(data.text || 'История началась...');
       
       console.log('📝 Raw story text:', story);
+      console.log('📝 Story type:', typeof story);
       console.log('📝 Story length:', story.length);
       console.log('📝 Setting currentStory now...');
       setCurrentStory(story);
@@ -216,9 +217,10 @@ export default function PlayGame() {
       
       if (response.ok) {
         const data = await response.json();
-        const story = data.text || 'История продолжается...';
+        const story = String(data.text || 'История продолжается...');
         
         console.log('📝 Story continuation:', story);
+        console.log('📝 Story type:', typeof story);
         
         const newHistoryEntry: HistoryEntry = { 
           user: action, 
