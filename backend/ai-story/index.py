@@ -16,9 +16,9 @@ import httpx
 CLAUDE_API_KEY = os.environ.get('CLAUDE_API_KEY', '')
 DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
 
-# ВРЕМЕННО: отключаем Claude (проблемы с air.fail API), используем только DeepSeek
-USE_CLAUDE = False  # TODO: починить air.fail интеграцию
-print(f'AI Provider: {"Claude" if USE_CLAUDE else "DeepSeek"}')
+# Пробуем Claude через air.fail
+USE_CLAUDE = True
+print(f'AI Provider: {"Claude via air.fail" if USE_CLAUDE else "DeepSeek"}')
 
 # Кеш
 CACHE: Dict[str, tuple] = {}
@@ -145,20 +145,38 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
                 
                 full_prompt = "\n\n".join(prompt_parts)
                 
-                response = httpx.post(
+                # Пробуем разные эндпоинты air.fail
+                urls_to_try = [
                     "https://api.air.fail/v1/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {CLAUDE_API_KEY}",
-                        "Content-Type": "application/json"
-                    },
-                    json={
-                        "model": "claude-3-5-sonnet-20241022",
-                        "messages": messages,
-                        "max_tokens": 600,
-                        "temperature": 0.8
-                    },
-                    timeout=15.0
-                )
+                    "https://api.air.fail/chat/completions", 
+                    "https://air.fail/v1/chat/completions",
+                    "https://api.air.fail/v1/completions"
+                ]
+                
+                last_error = None
+                for url in urls_to_try:
+                    try:
+                        print(f"Trying URL: {url}")
+                        response = httpx.post(
+                            url,
+                            headers={
+                                "Authorization": f"Bearer {CLAUDE_API_KEY}",
+                                "Content-Type": "application/json"
+                            },
+                            json={
+                                "model": "claude-3-5-sonnet-20241022",
+                                "messages": messages,
+                                "max_tokens": 600,
+                                "temperature": 0.8
+                            },
+                            timeout=15.0
+                        )
+                        
+                        if response.status_code == 200:
+                            break
+                    except Exception as e:
+                        last_error = e
+                        continue
                 
                 if response.status_code != 200:
                     raise Exception(f"API error {response.status_code}: {response.text[:200]}")
