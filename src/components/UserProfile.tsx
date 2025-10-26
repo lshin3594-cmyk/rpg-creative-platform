@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useBackgroundMusic } from '@/hooks/useBackgroundMusic';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 
@@ -26,15 +26,26 @@ export const UserProfile = () => {
   const navigate = useNavigate();
   const { isPlaying, toggle } = useBackgroundMusic();
   const { toast } = useToast();
-  const [characters, setCharacters] = useState<Character[]>([
-    {
-      id: '1',
-      name: 'Космический Рейнджер',
-      role: 'Исследователь',
-      avatar: 'https://cdn.poehali.dev/files/179eeb57-770d-43b9-b464-f8c287a1afbb.png',
-      personality: 'Отважный защитник галактики'
+  const [characters, setCharacters] = useState<Character[]>([]);
+
+  // Загрузка персонажей из localStorage при монтировании
+  useEffect(() => {
+    const savedCharacters = localStorage.getItem('user-characters');
+    if (savedCharacters) {
+      setCharacters(JSON.parse(savedCharacters));
+    } else {
+      // Персонаж по умолчанию
+      const defaultChar = [{
+        id: '1',
+        name: 'Космический Рейнджер',
+        role: 'Исследователь',
+        avatar: 'https://cdn.poehali.dev/files/179eeb57-770d-43b9-b464-f8c287a1afbb.png',
+        personality: 'Отважный защитник галактики'
+      }];
+      setCharacters(defaultChar);
+      localStorage.setItem('user-characters', JSON.stringify(defaultChar));
     }
-  ]);
+  }, []);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newCharacter, setNewCharacter] = useState({ name: '', role: '', personality: '', avatar: '' });
   const [isGenerating, setIsGenerating] = useState(false);
@@ -53,10 +64,12 @@ export const UserProfile = () => {
       personality: newCharacter.personality
     };
 
-    setCharacters([...characters, character]);
+    const updatedCharacters = [...characters, character];
+    setCharacters(updatedCharacters);
+    localStorage.setItem('user-characters', JSON.stringify(updatedCharacters));
     setNewCharacter({ name: '', role: '', personality: '', avatar: '' });
     setIsCreateDialogOpen(false);
-    toast({ title: 'Персонаж создан! 🎭' });
+    toast({ title: 'Персонаж создан и сохранён! 🎭' });
   };
 
   const generateAvatar = async () => {
