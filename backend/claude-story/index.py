@@ -82,21 +82,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     import urllib.request
     import urllib.error
     
-    api_url = "https://api.air.fail/v1/messages"
+    api_url = "https://api.air.fail/v1/chat/completions"
     
     payload = {
-        "model": "claude-3-5-sonnet-20241022",
+        "model": "anthropic/claude-3.5-sonnet",
         "max_tokens": 1024,
-        "system": system_prompt,
         "messages": [
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
         ]
     }
     
     headers = {
         'Content-Type': 'application/json',
-        'x-api-key': api_key,
-        'anthropic-version': '2023-06-01'
+        'Authorization': f'Bearer {api_key}'
     }
     
     req = urllib.request.Request(
@@ -109,7 +108,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     try:
         with urllib.request.urlopen(req, timeout=30) as response:
             result = json.loads(response.read().decode('utf-8'))
-            story_text = result['content'][0]['text']
+            story_text = result['choices'][0]['message']['content']
             
             return {
                 'statusCode': 200,
