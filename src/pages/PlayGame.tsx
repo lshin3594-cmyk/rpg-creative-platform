@@ -294,14 +294,22 @@ export default function PlayGame() {
     navigate('/');
   };
 
+  if (!gameSettings) {
+    return null;
+  }
+
+  const messages = history.flatMap(h => [
+    { type: 'user', content: h.user },
+    { type: 'ai', content: h.ai }
+  ]);
+
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
       <GameHeader
+        gameSettings={gameSettings}
+        currentEpisode={history.length + 1}
+        messages={messages}
         onBack={handleBack}
-        onJournalToggle={() => setJournalOpen(!journalOpen)}
-        onMetaToggle={() => setShowMetaInput(!showMetaInput)}
-        isJournalOpen={journalOpen}
-        showMetaInput={showMetaInput}
       />
 
       <div className="flex-1 overflow-hidden flex">
