@@ -60,7 +60,6 @@ export const universeStorage = {
         throw new Error('Failed to update universe');
       }
     } catch (error) {
-      console.error('Failed to update universe in backend:', error);
     }
     
     const index = universes.findIndex(u => u.id === id);

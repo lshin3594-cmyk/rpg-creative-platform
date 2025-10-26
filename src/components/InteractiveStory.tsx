@@ -61,7 +61,6 @@ export const InteractiveStory = ({
         timestamp: new Date() 
       }]);
     } catch (error) {
-      console.error('Error continuing story:', error);
     } finally {
       setIsGenerating(false);
     }

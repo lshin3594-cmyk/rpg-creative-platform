@@ -26,7 +26,6 @@ export const UserProfile = () => {
           return;
         }
       } catch (e) {
-        console.error('Failed to parse saved characters:', e);
       }
     }
     

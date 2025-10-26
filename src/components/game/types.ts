@@ -26,7 +26,9 @@ export interface GameSettings {
   eloquenceLevel?: number;
 }
 
-export const AI_STORY_URL = 'https://functions.poehali.dev/43b376d8-4248-4a7e-8065-56da54df84d7';
-export const IMAGE_GEN_URL = 'https://functions.poehali.dev/16a136ce-ff21-4430-80df-ad1caa87a3a7';
-export const SAVE_STORY_URL = 'https://functions.poehali.dev/71ffaad1-3e69-422c-ad49-81aec9f550de';
-export const DELETE_STORY_URL = 'https://functions.poehali.dev/b06b582b-44ec-4e65-b045-619ec719ad04';
+import func2url from '../../../backend/func2url.json';
+
+export const AI_STORY_URL = func2url['ai-story'];
+export const IMAGE_GEN_URL = func2url['generate-image'];
+export const SAVE_STORY_URL = func2url['save-story'];
+export const DELETE_STORY_URL = func2url['delete-story'];

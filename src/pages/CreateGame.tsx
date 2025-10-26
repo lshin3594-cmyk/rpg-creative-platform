@@ -39,7 +39,6 @@ const CreateGame = () => {
           setAvailableCharacters(chars);
         }
       } catch (error) {
-        console.error('Failed to load characters:', error);
       } finally {
         setLoadingCharacters(false);
       }

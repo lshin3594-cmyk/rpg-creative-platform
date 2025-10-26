@@ -28,9 +28,6 @@ export const AuthModal = ({ open, onClose }: AuthModalProps) => {
     const appId = '54268217';
     const authUrl = `https://oauth.vk.com/authorize?client_id=${appId}&display=page&redirect_uri=${encodeURIComponent(redirectUri)}&scope=email&response_type=code&v=5.131`;
     
-    console.log('VK Auth URL:', authUrl);
-    console.log('Redirect URI:', redirectUri);
-    
     window.location.href = authUrl;
   };
 

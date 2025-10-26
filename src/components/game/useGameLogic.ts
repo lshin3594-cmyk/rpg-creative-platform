@@ -32,7 +32,6 @@ export const useGameLogic = () => {
     const settingsJson = localStorage.getItem('current-game-settings');
     if (settingsJson) {
       const settings = JSON.parse(settingsJson);
-      console.log('🎮 Game settings loaded:', settings);
       setGameSettings({
         ...settings,
         genre: settings.genre || 'Фэнтези',
@@ -43,14 +42,11 @@ export const useGameLogic = () => {
       if (settings.initialCharacters && settings.initialCharacters.length > 0) {
         const validChars = settings.initialCharacters.filter((c: any) => c.name && c.role);
         if (validChars.length > 0) {
-          console.log('📋 Loading initial characters:', validChars);
           setCharacters(validChars);
         }
       }
       
       storyInitializedRef.current = false;
-    } else {
-      console.warn('⚠️ No game settings found in localStorage');
     }
   }, []);
 
@@ -77,9 +73,7 @@ export const useGameLogic = () => {
               story_context: storyContent
             })
           });
-          console.log('✅ Game auto-saved');
         } catch (error) {
-          console.error('❌ Auto-save failed:', error);
         }
       };
       saveGame();
@@ -136,7 +130,6 @@ export const useGameLogic = () => {
       
       return data.url;
     } catch (error) {
-      console.error('Illustration generation failed:', error);
       return undefined;
     }
   };
@@ -237,14 +230,12 @@ export const useGameLogic = () => {
       }
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        console.error('Request timeout');
         toast({
           title: 'Время ожидания истекло',
           description: 'ИИ слишком долго думает. Попробуйте упростить запрос или повторить позже.',
           variant: 'destructive'
         });
       } else {
-        console.error('Error:', error);
         toast({
           title: 'Ошибка ИИ',
           description: 'Не удалось получить ответ. Попробуйте ещё раз.',
@@ -329,35 +320,21 @@ export const useGameLogic = () => {
   };
 
   useEffect(() => {
-    console.log('🔍 Autostart check:', {
-      hasSettings: !!gameSettings,
-      messagesCount: messages.length,
-      isProcessing,
-      initialized: storyInitializedRef.current,
-      settingName: gameSettings?.name
-    });
-
     if (!gameSettings) {
-      console.log('⏳ Waiting for game settings...');
       return;
     }
 
     if (messages.length > 0) {
-      console.log('📚 Messages already exist, skipping autostart');
       return;
     }
 
     if (storyInitializedRef.current) {
-      console.log('🔒 Story already initialized, skipping');
       return;
     }
 
     if (isProcessing) {
-      console.log('⚙️ Already processing, skipping');
       return;
     }
-
-    console.log('✅ All checks passed! Starting story automatically...');
     storyInitializedRef.current = true;
     setIsProcessing(true);
     setProcessingTime(0);
@@ -375,12 +352,6 @@ export const useGameLogic = () => {
         const startAction = gameSettings.setting 
           ? `Начни историю в сеттинге: ${gameSettings.setting}`
           : 'Начни захватывающую историю';
-
-        console.log('🚀 Sending request to AI backend:', {
-          url: AI_STORY_URL,
-          action: startAction,
-          settings: gameSettings
-        });
 
         const response = await fetch(AI_STORY_URL, {
           method: 'POST',
@@ -427,12 +398,9 @@ export const useGameLogic = () => {
         }
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
-          console.log('Auto-start aborted');
           return;
         }
-        console.error('Auto-start error:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error('Error details:', errorMessage);
         toast({
           title: 'Ошибка запуска',
           description: `Не удалось начать историю: ${errorMessage}`,

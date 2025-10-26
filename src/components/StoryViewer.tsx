@@ -53,7 +53,6 @@ export const StoryViewer = ({ isOpen, onClose, story }: StoryViewerProps) => {
         setIsPlaying(true);
       }
     } catch (error) {
-      console.error('Error playing audio:', error);
     } finally {
       setIsLoadingAudio(false);
     }

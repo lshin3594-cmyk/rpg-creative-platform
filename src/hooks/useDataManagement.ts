@@ -75,7 +75,6 @@ export const useDataManagement = () => {
       setProfileStats(prev => ({ ...prev, charactersCreated: data.length }));
       return loadedChars;
     } catch (error) {
-      console.error('Error loading characters:', error);
       return [];
     } finally {
       setIsLoadingCharacters(false);
@@ -93,7 +92,6 @@ export const useDataManagement = () => {
       })));
       setProfileStats(prev => ({ ...prev, worldsCreated: data.length }));
     } catch (error) {
-      console.error('Error loading worlds:', error);
     } finally {
       setIsLoadingWorlds(false);
     }
@@ -116,7 +114,6 @@ export const useDataManagement = () => {
         }));
       }
     } catch (error) {
-      console.error('Error loading stories:', error);
     } finally {
       setIsLoadingStories(false);
     }
@@ -138,7 +135,6 @@ export const useDataManagement = () => {
       }
       return false;
     } catch (error) {
-      console.error('Error creating character:', error);
       return false;
     }
   };
@@ -159,7 +155,6 @@ export const useDataManagement = () => {
       }
       return false;
     } catch (error) {
-      console.error('Error creating world:', error);
       return false;
     }
   };
@@ -180,7 +175,6 @@ export const useDataManagement = () => {
       }
       return false;
     } catch (error) {
-      console.error('Error updating character:', error);
       return false;
     }
   };
@@ -197,7 +191,6 @@ export const useDataManagement = () => {
       }
       return false;
     } catch (error) {
-      console.error('Error deleting character:', error);
       return false;
     }
   };
@@ -218,7 +211,6 @@ export const useDataManagement = () => {
       }
       return false;
     } catch (error) {
-      console.error('Error updating world:', error);
       return false;
     }
   };
@@ -235,7 +227,6 @@ export const useDataManagement = () => {
       }
       return false;
     } catch (error) {
-      console.error('Error deleting world:', error);
       return false;
     }
   };
@@ -251,7 +242,6 @@ export const useDataManagement = () => {
       })));
       setProfileStats(prev => ({ ...prev, plotsCreated: data.length }));
     } catch (error) {
-      console.error('Error loading plots:', error);
     } finally {
       setIsLoadingPlots(false);
     }
@@ -273,7 +263,6 @@ export const useDataManagement = () => {
       }
       return false;
     } catch (error) {
-      console.error('Error creating plot:', error);
       return false;
     }
   };
@@ -294,7 +283,6 @@ export const useDataManagement = () => {
       }
       return false;
     } catch (error) {
-      console.error('Error updating plot:', error);
       return false;
     }
   };
@@ -311,7 +299,6 @@ export const useDataManagement = () => {
       }
       return false;
     } catch (error) {
-      console.error('Error deleting plot:', error);
       return false;
     }
   };
@@ -328,7 +315,6 @@ export const useDataManagement = () => {
       }
       return false;
     } catch (error) {
-      console.error('Error deleting story:', error);
       return false;
     }
   };
@@ -352,7 +338,6 @@ export const useDataManagement = () => {
       }
       return false;
     } catch (error) {
-      console.error('Error toggling favorite:', error);
       return false;
     }
   };

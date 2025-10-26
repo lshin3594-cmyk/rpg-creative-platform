@@ -26,7 +26,7 @@ export const useStoryGeneration = () => {
     const world = selectedWrld ? worlds.find(w => w.id === selectedWrld) : null;
     
     try {
-      const response = await fetch('https://functions.poehali.dev/71ffaad1-3e69-422c-ad49-81aec9f550de', {
+      const response = await fetch(funcUrls['save-story'], {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,7 +44,6 @@ export const useStoryGeneration = () => {
       const savedStory = await response.json();
       return savedStory;
     } catch (error) {
-      console.error('Error saving story:', error);
       return false;
     }
   };
@@ -66,7 +65,7 @@ export const useStoryGeneration = () => {
         `${c.name} (${c.role}) - ${c.personality}`
       ).join('; ');
       
-      const response = await fetch('https://functions.poehali.dev/52ab4d94-b7a4-4399-ab17-b239ff31342a', {
+      const response = await fetch(funcUrls['generate-story'], {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +92,6 @@ export const useStoryGeneration = () => {
         setShowInteractive(true);
       }
     } catch (error) {
-      console.error('Error generating story:', error);
     } finally {
       setIsGenerating(false);
     }
@@ -112,7 +110,7 @@ export const useStoryGeneration = () => {
       `${c.name} (${c.role}) - ${c.personality}`
     ).join('; ');
     
-    const response = await fetch('https://functions.poehali.dev/52ab4d94-b7a4-4399-ab17-b239ff31342a', {
+    const response = await fetch(funcUrls['generate-story'], {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

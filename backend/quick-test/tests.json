@@ -1,0 +1,11 @@
+{
+  "tests": [
+    {
+      "name": "Quick creativity test",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    }
+  ]
+}

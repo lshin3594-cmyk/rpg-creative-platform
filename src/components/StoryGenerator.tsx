@@ -82,7 +82,6 @@ export const StoryGenerator = ({ storyId }: StoryGeneratorProps = {}) => {
 
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
-      console.error('Error:', error);
     } finally {
       setIsProcessing(false);
     }
@@ -126,7 +125,6 @@ export const StoryGenerator = ({ storyId }: StoryGeneratorProps = {}) => {
 
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
-      console.error('Error:', error);
     } finally {
       setIsProcessing(false);
     }
@@ -155,7 +153,6 @@ export const StoryGenerator = ({ storyId }: StoryGeneratorProps = {}) => {
 
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
-      console.error('Error:', error);
     } finally {
       setIsProcessing(false);
     }

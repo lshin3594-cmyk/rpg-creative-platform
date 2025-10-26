@@ -35,7 +35,6 @@ export const useBackgroundMusic = () => {
         setIsPlaying(true);
         localStorage.setItem('background-music-enabled', 'true');
       } catch (error) {
-        console.error('Failed to play music:', error);
       }
     }
   };
@@ -49,7 +48,6 @@ export const useBackgroundMusic = () => {
   };
 
   const toggle = () => {
-    console.log('Toggle music clicked, current state:', isPlaying);
     if (isPlaying) {
       pause();
     } else {

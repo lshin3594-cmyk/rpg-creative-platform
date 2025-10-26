@@ -85,7 +85,6 @@ export default function PlayGame() {
         const chars = JSON.parse(savedCharacters);
         setSelectedCharacter(chars[0] || null);
       } catch (e) {
-        console.error('Failed to parse characters:', e);
       }
     }
   }, []);
