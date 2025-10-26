@@ -16,9 +16,10 @@ import httpx
 CLAUDE_API_KEY = os.environ.get('CLAUDE_API_KEY', '')
 DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
 
-# Пробуем Claude через air.fail
-USE_CLAUDE = True
-print(f'AI Provider: {"Claude via air.fail" if USE_CLAUDE else "DeepSeek"}')
+# DeepSeek основной (работает из России без VPN)
+# Claude доступен через env переменную USE_CLAUDE=true если захочешь через VPN
+USE_CLAUDE = os.environ.get('USE_CLAUDE', 'false').lower() == 'true'
+print(f'AI Provider: {"Claude via Anthropic API" if USE_CLAUDE else "DeepSeek"}')
 
 # Кеш
 CACHE: Dict[str, tuple] = {}
@@ -145,44 +146,30 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
                 
                 full_prompt = "\n\n".join(prompt_parts)
                 
-                # Пробуем разные эндпоинты air.fail
-                urls_to_try = [
-                    "https://api.air.fail/v1/chat/completions",
-                    "https://api.air.fail/chat/completions", 
-                    "https://air.fail/v1/chat/completions",
-                    "https://api.air.fail/v1/completions"
-                ]
-                
-                last_error = None
-                for url in urls_to_try:
-                    try:
-                        print(f"Trying URL: {url}")
-                        response = httpx.post(
-                            url,
-                            headers={
-                                "Authorization": f"Bearer {CLAUDE_API_KEY}",
-                                "Content-Type": "application/json"
-                            },
-                            json={
-                                "model": "claude-3-5-sonnet-20241022",
-                                "messages": messages,
-                                "max_tokens": 600,
-                                "temperature": 0.8
-                            },
-                            timeout=15.0
-                        )
-                        
-                        if response.status_code == 200:
-                            break
-                    except Exception as e:
-                        last_error = e
-                        continue
+                # Используем официальный Anthropic API
+                print(f"Using Anthropic API endpoint")
+                response = httpx.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={
+                        "x-api-key": CLAUDE_API_KEY,
+                        "anthropic-version": "2023-06-01",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "claude-3-5-sonnet-20241022",
+                        "messages": messages,
+                        "max_tokens": 600,
+                        "temperature": 0.8
+                    },
+                    timeout=15.0
+                )
                 
                 if response.status_code != 200:
-                    raise Exception(f"API error {response.status_code}: {response.text[:200]}")
+                    raise Exception(f"Anthropic API error {response.status_code}: {response.text[:200]}")
                 
                 result_data = response.json()
-                ai_text = result_data['choices'][0]['message']['content']
+                # Anthropic API возвращает другой формат
+                ai_text = result_data['content'][0]['text']
                 print(f"Claude API success, response length: {len(ai_text)}")
                 
             else:
