@@ -87,7 +87,32 @@ export const UserProfile = () => {
 
     setIsGenerating(true);
     try {
-      const prompt = `Portrait of ${newCharacter.name}, ${newCharacter.personality}, cosmic space theme, detailed character art, high quality, sci-fi style`;
+      const translationPrompt = `Extract key visual details from this character description and translate to English. Focus on: appearance (hair color, eye color, skin tone, facial features), age, gender, body type, clothing/profession style. Keep it concise, 2-3 sentences max.
+
+Character: ${newCharacter.name}
+Role: ${newCharacter.role}
+Description: ${newCharacter.personality}
+
+Extract and translate only visual details to English:`;
+
+      const translationResponse = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': 'sk-ant-api03-UpVQ3HhbTwWnMNxSE19gKpG6XKDLwEYQAVY7r3cQKhZqJk4BXPmfqVT8sFmgHt9-U2-4rwYE0Q0NSPPwCGKWEw-vZSKnwAA',
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-5-sonnet-20241022',
+          max_tokens: 200,
+          messages: [{ role: 'user', content: translationPrompt }]
+        })
+      });
+
+      const translationData = await translationResponse.json();
+      const visualDescription = translationData.content?.[0]?.text || `${newCharacter.name}, ${newCharacter.role}`;
+      
+      const prompt = `Portrait of ${visualDescription}, highly detailed character art, professional digital painting, cinematic lighting, 8k quality`;
       
       console.log('Generating avatar with prompt:', prompt);
       
@@ -96,39 +121,12 @@ export const UserProfile = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })
       });
-
-      console.log('Response status:', response.status);
       
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Generation failed:', errorText);
         throw new Error('Generation failed');
       }
       
       const data = await response.json();
-      console.log('Generated URL:', data.url);
-      
-      // Предзагрузка изображения перед установкой в state
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.referrerPolicy = 'no-referrer';
-      
-      await new Promise((resolve, reject) => {
-        img.onload = () => {
-          console.log('Image loaded successfully');
-          resolve(true);
-        };
-        img.onerror = (err) => {
-          console.error('Image preload error:', err);
-          // Всё равно пробуем показать
-          resolve(true);
-        };
-        img.src = data.url;
-        
-        // Таймаут на случай долгой загрузки
-        setTimeout(() => resolve(true), 10000);
-      });
-      
       setNewCharacter({ ...newCharacter, avatar: data.url });
       
       toast({ title: 'Изображение готово! ✨' });

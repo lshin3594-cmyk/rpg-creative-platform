@@ -161,7 +161,31 @@ export default function PlayGame() {
             <Icon name="ArrowLeft" size={16} />
             Назад
           </Button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/journal')}
+              className="gap-2 text-purple-300 hover:text-purple-100"
+            >
+              <Icon name="BookOpen" size={16} />
+              Журнал
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                const episodesList = history.map((entry, idx) => `Эпизод ${idx + 1}: ${entry.user.slice(0, 50)}...`);
+                toast({
+                  title: '📖 Эпизоды игры',
+                  description: episodesList.join('\n') || 'Пока нет сохранённых эпизодов'
+                });
+              }}
+              className="gap-2 text-purple-300 hover:text-purple-100"
+            >
+              <Icon name="List" size={16} />
+              Эпизоды ({history.length})
+            </Button>
             <div className="text-sm text-muted-foreground">
               {gameSettings.genre} • {gameSettings.rating}
             </div>
@@ -183,7 +207,7 @@ export default function PlayGame() {
                 <div className="text-foreground">{entry.user}</div>
               </div>
               <div className="bg-secondary/30 rounded-lg p-4 mr-12">
-                <div className="text-sm text-primary/60 mb-1">Мастер:</div>
+                <div className="text-sm text-primary/60 mb-1">{gameSettings.role === 'hero' ? 'ИИ Мастер:' : 'ИИ:'}</div>
                 <div className="text-foreground whitespace-pre-wrap">{entry.ai}</div>
               </div>
             </div>
@@ -192,7 +216,7 @@ export default function PlayGame() {
           {currentStory && (
             <div className="bg-secondary/30 rounded-lg p-4 mr-12">
               <div className="text-sm text-primary/60 mb-1">
-                {isStarting ? 'Начало истории:' : 'Мастер:'}
+                {isStarting ? 'Начало истории:' : (gameSettings.role === 'hero' ? 'ИИ Мастер:' : 'ИИ:')}
               </div>
               <div className="text-foreground whitespace-pre-wrap">{currentStory}</div>
             </div>
@@ -201,7 +225,7 @@ export default function PlayGame() {
           {isLoading && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Icon name="Loader2" className="animate-spin" size={16} />
-              Мастер думает...
+              {gameSettings.role === 'hero' ? 'Мастер думает...' : 'ИИ генерирует историю...'}
             </div>
           )}
         </div>
