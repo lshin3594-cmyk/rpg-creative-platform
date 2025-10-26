@@ -9,8 +9,10 @@ import { CurrentStory } from '@/components/game/CurrentStory';
 import { ActionInput } from '@/components/game/ActionInput';
 import { parseMetaFromStory } from '@/components/game/MetaParser';
 
-const STORY_AI_URL = 'https://functions.poehali.dev/9ea67dc2-c306-4906-bf0f-da435600b92c';
-const IMAGE_GEN_URL = 'https://functions.poehali.dev/16a136ce-ff21-4430-80df-ad1caa87a3a7';
+import func2url from '../../backend/func2url.json';
+
+const AI_STORY_URL = func2url['ai-story'];
+const IMAGE_GEN_URL = func2url['generate-image'];
 
 interface HistoryEntry {
   user: string;
@@ -105,13 +107,12 @@ export default function PlayGame() {
       await new Promise(resolve => setTimeout(resolve, 800));
       
       setLoadingStage('story');
-      const response = await fetch(STORY_AI_URL, {
+      const response = await fetch(AI_STORY_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          game_settings: gameSettings,
-          setting: gameSettings.setting || 'средневековье',
-          user_action: '',
+          action: 'Начни игру',
+          settings: gameSettings,
           history: []
         })
       });
@@ -125,8 +126,8 @@ export default function PlayGame() {
       
       const data = await response.json();
       setLoadingStage('done');
-      setCurrentStory(data.story || 'История началась...');
-      saveGame([], data.story || '');
+      setCurrentStory(data.text || 'История началась...');
+      saveGame([], data.text || '');
     } catch (error: any) {
       console.error('Failed to start game:', error);
       const errorMsg = error.message || 'Неизвестная ошибка';
@@ -162,20 +163,24 @@ export default function PlayGame() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(STORY_AI_URL, {
+      const messagesHistory = history.flatMap(h => [
+        { type: 'user', content: h.user },
+        { type: 'assistant', content: h.ai }
+      ]);
+
+      const response = await fetch(AI_STORY_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          game_settings: gameSettings,
-          setting: gameSettings.setting || 'средневековье',
-          user_action: action,
-          history: history
+          action: action,
+          settings: gameSettings,
+          history: messagesHistory
         })
       });
       
       if (response.ok) {
         const data = await response.json();
-        const story = data.story || 'История продолжается...';
+        const story = data.text || 'История продолжается...';
         
         toast({
           title: '🎨 Генерирую иллюстрацию...',
