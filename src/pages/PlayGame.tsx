@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { GameJournal } from '@/components/game/GameJournal';
 
-const STORY_AI_URL = 'https://functions.poehali.dev/f9547351-df35-40b5-9a78-8d12690971c3';
+const STORY_AI_URL = 'https://functions.poehali.dev/9ea67dc2-c306-4906-bf0f-da435600b92c';
 const IMAGE_GEN_URL = 'https://functions.poehali.dev/16a136ce-ff21-4430-80df-ad1caa87a3a7';
 
 interface HistoryEntry {
@@ -107,10 +107,9 @@ export default function PlayGame() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          genre: gameSettings.genre || 'фэнтези',
+          game_settings: gameSettings,
           setting: gameSettings.setting || 'средневековье',
-          difficulty: 'medium',
-          userAction: '',
+          user_action: '',
           history: []
         })
       });
@@ -165,10 +164,9 @@ export default function PlayGame() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          genre: gameSettings.genre || 'фэнтези',
+          game_settings: gameSettings,
           setting: gameSettings.setting || 'средневековье',
-          difficulty: 'medium',
-          userAction: action,
+          user_action: action,
           history: newHistory
         })
       });
@@ -281,10 +279,9 @@ export default function PlayGame() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          genre: gameSettings.genre || 'фэнтези',
+          game_settings: gameSettings,
           setting: gameSettings.setting || 'средневековье',
-          difficulty: 'medium',
-          userAction: '[продолжи историю дальше]',
+          user_action: '[продолжи историю дальше]',
           history: history
         })
       });
