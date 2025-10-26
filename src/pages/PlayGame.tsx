@@ -162,11 +162,6 @@ export default function PlayGame() {
     setUserAction('');
     setIsLoading(true);
 
-    const newHistory: HistoryEntry[] = [
-      ...history,
-      { user: action, ai: currentStory }
-    ];
-
     try {
       const response = await fetch(STORY_AI_URL, {
         method: 'POST',
@@ -175,7 +170,7 @@ export default function PlayGame() {
           game_settings: gameSettings,
           setting: gameSettings.setting || 'средневековье',
           user_action: action,
-          history: newHistory
+          history: history
         })
       });
       
@@ -207,8 +202,12 @@ export default function PlayGame() {
           console.error('Image generation failed:', imgError);
         }
         
-        const updatedHistory = [...newHistory];
-        updatedHistory[updatedHistory.length - 1].image = imageUrl;
+        const newHistoryEntry: HistoryEntry = { 
+          user: action, 
+          ai: story,
+          image: imageUrl 
+        };
+        const updatedHistory = [...history, newHistoryEntry];
         
         setHistory(updatedHistory);
         setCurrentStory(story);
@@ -227,7 +226,6 @@ export default function PlayGame() {
           description: `Не удалось получить ответ (${response.status})`,
           variant: 'destructive'
         });
-        setHistory(newHistory);
         setCurrentStory('Ошибка при генерации истории.');
       }
     } catch (error) {
@@ -237,7 +235,6 @@ export default function PlayGame() {
         description: 'Не удалось отправить действие',
         variant: 'destructive'
       });
-      setHistory(newHistory);
       setCurrentStory('Произошла ошибка. Попробуйте ещё раз.');
     } finally {
       setIsLoading(false);
