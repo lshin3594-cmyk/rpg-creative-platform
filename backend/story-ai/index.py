@@ -6,8 +6,34 @@ Returns: HTTP response с сгенерированной историей
 
 import json
 import os
+import hashlib
+import time
 from typing import Dict, Any
 import requests
+
+# Кеш
+CACHE: Dict[str, tuple] = {}
+CACHE_TTL = 1800  # 30 минут
+
+def get_cache_key(prompt: str) -> str:
+    return hashlib.md5(prompt.encode('utf-8')).hexdigest()
+
+def get_from_cache(key: str) -> str | None:
+    if key in CACHE:
+        cached_time, cached_value = CACHE[key]
+        if time.time() - cached_time < CACHE_TTL:
+            return cached_value
+        else:
+            del CACHE[key]
+    return None
+
+def save_to_cache(key: str, value: str):
+    CACHE[key] = (time.time(), value)
+    if len(CACHE) > 50:
+        current_time = time.time()
+        expired_keys = [k for k, (t, _) in CACHE.items() if current_time - t >= CACHE_TTL]
+        for k in expired_keys:
+            del CACHE[k]
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     try:
@@ -72,6 +98,21 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         else:
             messages.append({'role': 'user', 'content': "Начни игру. Опиши стартовую сцену."})
         
+        # Проверяем кеш
+        cache_key = get_cache_key(json.dumps(messages, ensure_ascii=False))
+        cached = get_from_cache(cache_key)
+        if cached:
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                    'X-Cache': 'HIT'
+                },
+                'isBase64Encoded': False,
+                'body': json.dumps({'story': cached})
+            }
+        
         api_key = os.environ.get('DEEPSEEK_API_KEY')
         
         if not api_key:
@@ -106,9 +147,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         result = response.json()
         story_text = result['choices'][0]['message']['content']
         
+        # Сохраняем в кеш
+        save_to_cache(cache_key, story_text)
+        
         return {
             'statusCode': 200,
-            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'X-Cache': 'MISS'
+            },
             'isBase64Encoded': False,
             'body': json.dumps({'story': story_text})
         }

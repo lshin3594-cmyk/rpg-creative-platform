@@ -7,11 +7,37 @@ Returns: HTTP response with AI story continuation and extracted NPCs
 import json
 import os
 import re
+import hashlib
+import time
 from typing import Dict, Any, List
 from openai import OpenAI
 import httpx
 
 DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
+
+# Кеш
+CACHE: Dict[str, tuple] = {}
+CACHE_TTL = 1800  # 30 минут
+
+def get_cache_key(prompt: str) -> str:
+    return hashlib.md5(prompt.encode('utf-8')).hexdigest()
+
+def get_from_cache(key: str) -> Dict | None:
+    if key in CACHE:
+        cached_time, cached_value = CACHE[key]
+        if time.time() - cached_time < CACHE_TTL:
+            return cached_value
+        else:
+            del CACHE[key]
+    return None
+
+def save_to_cache(key: str, value: Dict):
+    CACHE[key] = (time.time(), value)
+    if len(CACHE) > 50:
+        current_time = time.time()
+        expired_keys = [k for k, (t, _) in CACHE.items() if current_time - t >= CACHE_TTL]
+        for k in expired_keys:
+            del CACHE[k]
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'POST')
@@ -87,6 +113,12 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
     else:
         messages.append({'role': 'user', 'content': action})
     
+    # Проверяем кеш
+    cache_key = get_cache_key(json.dumps(messages, ensure_ascii=False))
+    cached = get_from_cache(cache_key)
+    if cached:
+        return cached
+    
     max_retries = 2
     for attempt in range(max_retries):
         try:
@@ -123,11 +155,16 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
             # Извлекаем персонажей из текста
             characters = extract_characters(ai_text)
             
-            return {
+            result = {
                 'text': ai_text,
                 'characters': characters,
                 'episode': len(history) // 2 + 1
             }
+            
+            # Сохраняем в кеш
+            save_to_cache(cache_key, result)
+            
+            return result
             
         except Exception as e:
             error_name = type(e).__name__

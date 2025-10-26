@@ -1,6 +1,36 @@
 import json
 import os
+import hashlib
+import time
 from typing import Dict, Any
+
+# Простой in-memory кеш (живёт между запросами в одном контейнере)
+CACHE: Dict[str, tuple] = {}
+CACHE_TTL = 3600  # 1 час
+
+def get_cache_key(prompt: str) -> str:
+    """Создаёт хеш-ключ для кеша"""
+    return hashlib.md5(prompt.encode('utf-8')).hexdigest()
+
+def get_from_cache(key: str) -> str | None:
+    """Получает ответ из кеша если он свежий"""
+    if key in CACHE:
+        cached_time, cached_value = CACHE[key]
+        if time.time() - cached_time < CACHE_TTL:
+            return cached_value
+        else:
+            del CACHE[key]
+    return None
+
+def save_to_cache(key: str, value: str):
+    """Сохраняет ответ в кеш"""
+    CACHE[key] = (time.time(), value)
+    # Чистим старые записи если кеш разросся
+    if len(CACHE) > 100:
+        current_time = time.time()
+        expired_keys = [k for k, (t, _) in CACHE.items() if current_time - t >= CACHE_TTL]
+        for k in expired_keys:
+            del CACHE[k]
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
@@ -65,6 +95,23 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         user_prompt = "Продолжи историю."
     
+    # Проверяем кеш
+    full_prompt = f"{system_prompt}\n\n{user_prompt}"
+    cache_key = get_cache_key(full_prompt)
+    cached_response = get_from_cache(cache_key)
+    
+    if cached_response:
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'X-Cache': 'HIT'
+            },
+            'body': json.dumps({'story': cached_response}),
+            'isBase64Encoded': False
+        }
+    
     # Запрос к GPT-4o API через air.fail
     import urllib.request
     import urllib.error
@@ -107,9 +154,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 # Если объект - ищем response/content
                 story_text = result.get('response', result.get('content', str(result)))
             
+            # Сохраняем в кеш
+            save_to_cache(cache_key, story_text)
+            
             return {
                 'statusCode': 200,
-                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                    'X-Cache': 'MISS'
+                },
                 'body': json.dumps({'story': story_text}),
                 'isBase64Encoded': False
             }

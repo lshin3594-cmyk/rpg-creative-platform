@@ -7,9 +7,35 @@ Returns: HTTP response with generated story text
 
 import json
 import os
+import hashlib
+import time
 from typing import Dict, Any, List
 import psycopg2
 from psycopg2.extras import RealDictCursor
+
+# Кеш
+CACHE: Dict[str, tuple] = {}
+CACHE_TTL = 3600  # 1 час (фанфики дольше живут)
+
+def get_cache_key(prompt: str) -> str:
+    return hashlib.md5(prompt.encode('utf-8')).hexdigest()
+
+def get_from_cache(key: str) -> str | None:
+    if key in CACHE:
+        cached_time, cached_value = CACHE[key]
+        if time.time() - cached_time < CACHE_TTL:
+            return cached_value
+        else:
+            del CACHE[key]
+    return None
+
+def save_to_cache(key: str, value: str):
+    CACHE[key] = (time.time(), value)
+    if len(CACHE) > 30:  # Меньше лимит т.к. фанфики большие
+        current_time = time.time()
+        expired_keys = [k for k, (t, _) in CACHE.items() if current_time - t >= CACHE_TTL]
+        for k in expired_keys:
+            del CACHE[k]
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'GET')
@@ -157,6 +183,29 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     user_prompt = custom_prompt if custom_prompt else f"Напиши фанфик по вселенной {universe['name']} с этими персонажами. Создай оригинальную историю, которая раскроет их характеры."
     
+    # Проверяем кеш
+    full_prompt = f"{system_prompt}\n\n{user_prompt}"
+    cache_key = get_cache_key(full_prompt)
+    cached = get_from_cache(cache_key)
+    
+    if cached:
+        # Возвращаем из кеша (не сохраняем в БД повторно)
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'X-Cache': 'HIT'
+            },
+            'body': json.dumps({
+                'story_id': None,
+                'content': cached,
+                'universe': universe['name'],
+                'characters': [c['name'] for c in characters]
+            }),
+            'isBase64Encoded': False
+        }
+    
     response = requests.post(
         'https://api.deepseek.com/v1/chat/completions',
         headers={
@@ -189,6 +238,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     result = response.json()
     generated_text = result['choices'][0]['message']['content']
     
+    # Сохраняем в кеш
+    save_to_cache(cache_key, generated_text)
+    
     conn = psycopg2.connect(database_url)
     cur = conn.cursor()
     
@@ -216,7 +268,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         'statusCode': 200,
         'headers': {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': '*',
+            'X-Cache': 'MISS'
         },
         'body': json.dumps({
             'story_id': story_id,
