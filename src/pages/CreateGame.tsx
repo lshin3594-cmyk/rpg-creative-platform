@@ -114,6 +114,10 @@ const CreateGame = () => {
       createdAt: new Date().toISOString()
     };
 
+    // Сохраняем настройки в localStorage перед переходом
+    localStorage.setItem('current-game-settings', JSON.stringify(gameSettings));
+    localStorage.removeItem('current-game-progress'); // Очищаем прогресс старой игры
+
     navigate('/play-game', { state: { gameSettings } });
   };
 
