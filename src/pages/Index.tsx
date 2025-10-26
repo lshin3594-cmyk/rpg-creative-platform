@@ -7,7 +7,6 @@ import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
-import { Input } from '@/components/ui/input';
 
 interface GameSave {
   id: string;
@@ -32,24 +31,11 @@ interface GameSave {
 const Index = () => {
   const navigate = useNavigate();
   const [saves, setSaves] = useState<GameSave[]>([]);
-  const [gameName, setGameName] = useState('');
 
   useEffect(() => {
     try {
       const savedGames = JSON.parse(localStorage.getItem('game-saves') || '[]');
-      const normalizedSaves = savedGames
-        .map((save: any) => ({
-          ...save,
-          gameSettings: save.gameSettings || save.settings || {},
-          episodeCount: save.episodeCount || save.history?.length || 0,
-          lastAction: save.lastAction || 'Начало игры',
-          savedAt: save.savedAt || new Date().toISOString()
-        }))
-        .filter((save: any) => save.gameSettings?.name);
-      
-      setSaves(normalizedSaves.sort((a: GameSave, b: GameSave) => 
-        new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
-      ).slice(0, 3));
+      setSaves(savedGames.slice(0, 3));
     } catch (error) {
       console.error('Error loading saves:', error);
       setSaves([]);
@@ -58,75 +44,65 @@ const Index = () => {
 
 
 
+  const menuItems = [
+    {
+      title: 'НАЧАТЬ ИГРУ',
+      description: 'Создайте игру с нуля',
+      icon: 'Play',
+      onClick: () => navigate('/create-game'),
+    },
+    {
+      title: 'МОИ ИГРЫ',
+      description: 'Продолжите свои предыдущие игры',
+      icon: 'BookMarked',
+      onClick: () => navigate('/game-saves'),
+    },
+    {
+      title: 'СОЗДАТЬ ПЕРСОНАЖА',
+      description: 'Настройте идеального героя',
+      icon: 'UserPlus',
+      onClick: () => navigate('/profile'),
+    },
+  ];
+
   const handleContinue = (save: GameSave) => {
     navigate('/play-game', { state: { gameSettings: save.gameSettings, existingSave: save } });
   };
 
-  const handleStartGame = () => {
-    if (gameName.trim()) {
-      navigate('/create-game', { state: { gameName } });
-    }
-  };
-
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="w-full border-b border-purple-500/20 backdrop-blur-sm bg-background/80 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20">
-              <Icon name="Sparkles" size={24} className="text-purple-400" />
-            </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              РОЛЕВИК
-            </h1>
-          </div>
-          <Button 
-            onClick={() => navigate('/game-saves')} 
-            variant="outline" 
-            size="sm"
-            className="gap-2 border-purple-500/30 hover:bg-purple-500/10"
-          >
-            <Icon name="BookMarked" size={16} />
-            Мои игры
-          </Button>
-        </div>
-      </header>
-
-      <div className="flex-1 flex items-center justify-center p-4 py-12">
-        <div className="w-full max-w-6xl space-y-8">
-          <PreviewCarousel />
-          
-          <Card className="max-w-2xl mx-auto bg-gradient-to-br from-purple-900/20 via-background/50 to-pink-900/20 border-purple-500/30">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl text-center bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Создать новую игру
-              </CardTitle>
-              <CardDescription className="text-center">
-                Введите название вашей истории
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Например: Подземелья Драконов"
-                  value={gameName}
-                  onChange={(e) => setGameName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleStartGame()}
-                  className="flex-1 bg-background/50 border-purple-500/30 focus-visible:ring-purple-500"
-                />
-                <Button 
-                  onClick={handleStartGame}
-                  disabled={!gameName.trim()}
-                  className="gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                >
-                  <Icon name="Play" size={16} />
-                  Начать
-                </Button>
+    <div className="min-h-screen flex items-center justify-center p-4 py-12">
+      <div className="w-full max-w-6xl space-y-8">
+        <PreviewCarousel />
+        
+        <div className="grid gap-4 md:gap-6 max-w-2xl mx-auto">
+          {menuItems.map((item, index) => (
+            <button
+              key={index}
+              onClick={item.onClick}
+              className="group relative w-full p-6 md:p-8 rounded-xl bg-gradient-to-r from-purple-900/40 via-pink-900/30 to-purple-900/40 border border-purple-500/30 backdrop-blur-sm transition-all duration-300 hover:border-purple-400/60 hover:shadow-lg hover:shadow-purple-500/20 min-h-[100px] md:min-h-[120px]"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/0 via-pink-600/0 to-purple-600/0 group-hover:from-purple-600/10 group-hover:via-pink-600/10 group-hover:to-purple-600/10 rounded-xl transition-all duration-300" />
+              
+              <div className="relative flex items-center justify-between blur-[1px] group-hover:blur-0 brightness-75 group-hover:brightness-100 transition-all duration-300">
+                <div className="flex-1 text-left">
+                  <h3 className="text-xl md:text-2xl font-bold text-white uppercase tracking-wider mb-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-base md:text-lg text-purple-200/80">
+                    {item.description}
+                  </p>
+                </div>
+                
+                <div className="ml-4 p-4 md:p-5 rounded-lg bg-purple-500/20 group-hover:bg-purple-500/40 transition-all duration-300">
+                  <Icon name={item.icon} size={36} className="text-purple-300" />
+                </div>
               </div>
-            </CardContent>
-          </Card>
-          
-          {saves.length > 0 && (
+            </button>
+          ))}
+        </div>
+
+        {/* Мои игры */}
+        {saves.length > 0 && (
           <div className="max-w-6xl mx-auto space-y-4">
             <div className="flex items-center justify-between px-2">
               <h2 className="text-2xl font-bold text-purple-100 flex items-center gap-2">
@@ -226,8 +202,7 @@ const Index = () => {
               ))}
             </div>
           </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
