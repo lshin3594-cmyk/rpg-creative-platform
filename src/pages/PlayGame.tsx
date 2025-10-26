@@ -211,7 +211,6 @@ export default function PlayGame() {
         setHistory(updatedHistory);
         setCurrentStory(story);
         saveGame(updatedHistory, story);
-        }
       } else {
         const errorText = await response.text();
         console.error('Story API error:', response.status, errorText);
