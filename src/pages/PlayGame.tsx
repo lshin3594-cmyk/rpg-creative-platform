@@ -349,15 +349,6 @@ export default function PlayGame() {
           >
             <div className="container mx-auto max-w-4xl">
               <StoryHistory history={history} />
-              
-              {/* ВРЕМЕННЫЙ ДЕБАГ */}
-              <div className="bg-red-500 text-white p-4 mb-4">
-                <h3 className="font-bold">ДЕБАГ currentStory:</h3>
-                <p>Длина: {currentStory?.length || 0}</p>
-                <p>Тип: {typeof currentStory}</p>
-                <p>Первые 100 символов: {currentStory?.slice(0, 100) || 'ПУСТО'}</p>
-              </div>
-              
               <CurrentStory currentStory={currentStory} isStarting={isStarting} />
             </div>
           </div>

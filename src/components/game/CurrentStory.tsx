@@ -10,6 +10,12 @@ export function CurrentStory({ currentStory, isStarting }: CurrentStoryProps) {
     return null;
   }
 
+  const cleanStory = currentStory.replace(/\*\*\[МЕТА\]\*\*[\s\S]*?---\s*/, '').trim();
+  
+  if (!cleanStory || cleanStory.length === 0) {
+    return null;
+  }
+
   return (
     <div className="flex gap-3 items-start">
       <Avatar className="w-10 h-10 border-2 border-secondary/30">
@@ -22,7 +28,7 @@ export function CurrentStory({ currentStory, isStarting }: CurrentStoryProps) {
           {isStarting ? 'Начало приключения' : 'Рассказчик'}
         </p>
         <p className="text-sm whitespace-pre-wrap leading-relaxed text-foreground">
-          {currentStory}
+          {cleanStory}
         </p>
       </div>
     </div>
