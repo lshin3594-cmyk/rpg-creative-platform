@@ -1,8 +1,5 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
 import {
   Dialog,
@@ -16,9 +13,15 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import func2url from '../../../backend/func2url.json';
 
+import { AvatarSection } from './create-character/AvatarSection';
+import { CharacterTypeToggle } from './create-character/CharacterTypeToggle';
+import { BasicInfoFields } from './create-character/BasicInfoFields';
+import { AppearanceField } from './create-character/AppearanceField';
+import { PersonalityField } from './create-character/PersonalityField';
+import { NPCFieldsSection } from './create-character/NPCFieldsSection';
+import { FullscreenAvatarDialog } from './create-character/FullscreenAvatarDialog';
+
 const IMAGE_GEN_URL = func2url['generate-image'];
-
-
 
 interface CreateCharacterDialogProps {
   isOpen: boolean;
@@ -75,15 +78,8 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
 
     setIsGeneratingAvatar(true);
     try {
-      const timestamp = Date.now();
-      
-      // УПРОЩЁННЫЙ промпт — Flux работает лучше с короткими описаниями
       const genderEn = gender === 'male' ? 'man' : 'woman';
-      
-      // Берём ТОЛЬКО внешность, убираем всё лишнее
       const appearanceClean = appearance.trim() || 'face portrait';
-      
-      // Короткий промпт: пол + внешность + базовые требования
       const prompt = `Portrait of ${genderEn}. ${appearanceClean}. Professional headshot, neutral face, SFW`;
       
       console.log('🎨 Generating avatar with prompt:', prompt);
@@ -101,7 +97,6 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
       
       console.log('🖼️ Got image URL:', imageUrl);
       
-      // Просто показываем URL сразу - pollinations.ai сгенерирует при первом запросе
       setGeneratedAvatar(imageUrl);
       
       toast({
@@ -196,361 +191,93 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
 
   return (
     <>
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[85vh] bg-gradient-to-br from-purple-950/95 via-purple-900/90 to-purple-950/95 border border-purple-500/30 backdrop-blur-xl overflow-hidden flex flex-col">
-        <DialogHeader className="border-b border-purple-500/20 pb-4">
-          <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-pink-400 bg-clip-text text-transparent">
-            Создать персонажа
-          </DialogTitle>
-          <DialogDescription className="text-purple-300/70">
-            Заполните данные о персонаже и сгенерируйте аватар
-          </DialogDescription>
-        </DialogHeader>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-2xl max-h-[85vh] bg-gradient-to-br from-purple-950/95 via-purple-900/90 to-purple-950/95 border border-purple-500/30 backdrop-blur-xl overflow-hidden flex flex-col">
+          <DialogHeader className="border-b border-purple-500/20 pb-4">
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-pink-400 bg-clip-text text-transparent">
+              Создать персонажа
+            </DialogTitle>
+            <DialogDescription className="text-purple-300/70">
+              Заполните данные о персонаже и сгенерируйте аватар
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto space-y-6 py-6 px-1">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="relative group">
-              {generatedAvatar ? (
-                <div 
-                  className="w-96 h-96 rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 p-1 cursor-pointer transition-transform hover:scale-105"
-                  onClick={() => setIsFullscreenOpen(true)}
-                >
-                  <img 
-                    src={generatedAvatar} 
-                    alt="Аватар персонажа" 
-                    className="w-full h-full object-cover rounded-2xl"
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-2xl flex items-center justify-center">
-                    <Icon name="Maximize2" size={32} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                </div>
-              ) : (
-                <div className="w-96 h-96 rounded-2xl bg-gradient-to-br from-purple-900/50 to-pink-900/50 border-2 border-purple-500/30 flex items-center justify-center">
-                  <Icon name="User" size={64} className="text-purple-400/50" />
-                </div>
+          <div className="flex-1 overflow-y-auto space-y-6 py-6 px-1">
+            <AvatarSection
+              generatedAvatar={generatedAvatar}
+              isGeneratingAvatar={isGeneratingAvatar}
+              isUploadingImage={isUploadingImage}
+              onGenerateAvatar={handleGenerateAvatar}
+              onUploadImage={handleUploadImage}
+              onAvatarClick={() => setIsFullscreenOpen(true)}
+            />
+
+            <div className="space-y-5">
+              <CharacterTypeToggle
+                isMainCharacter={isMainCharacter}
+                onToggle={setIsMainCharacter}
+              />
+
+              <BasicInfoFields
+                name={name}
+                gender={gender}
+                age={age}
+                race={race}
+                role={role}
+                onNameChange={setName}
+                onGenderChange={setGender}
+                onAgeChange={setAge}
+                onRaceChange={setRace}
+                onRoleChange={setRole}
+              />
+
+              <AppearanceField
+                value={appearance}
+                onChange={setAppearance}
+              />
+
+              <PersonalityField
+                value={personality}
+                onChange={setPersonality}
+              />
+
+              {!isMainCharacter && (
+                <NPCFieldsSection
+                  scenes={scenes}
+                  quotes={quotes}
+                  ideas={ideas}
+                  onScenesChange={setScenes}
+                  onQuotesChange={setQuotes}
+                  onIdeasChange={setIdeas}
+                />
               )}
             </div>
-            
-            <div className="flex gap-3">
-              <Button 
-                onClick={handleGenerateAvatar}
-                disabled={isGeneratingAvatar || isUploadingImage}
-                size="lg"
-                className="flex-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white font-semibold shadow-lg shadow-purple-500/50"
-              >
-                {isGeneratingAvatar ? (
-                  <>
-                    <Icon name="Loader2" size={18} className="animate-spin" />
-                    Генерация...
-                  </>
-                ) : (
-                  <>
-                    <Icon name="Sparkles" size={18} />
-                    {generatedAvatar ? 'Перегенерировать' : 'Сгенерировать аватар'}
-                  </>
-                )}
-              </Button>
-              
-              <label className="flex-1">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleUploadImage}
-                  disabled={isGeneratingAvatar || isUploadingImage}
-                  className="hidden"
-                />
-                <Button 
-                  type="button"
-                  size="lg"
-                  disabled={isGeneratingAvatar || isUploadingImage}
-                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold shadow-lg shadow-green-500/50"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    (e.currentTarget.parentElement as HTMLLabelElement)?.querySelector('input')?.click();
-                  }}
-                >
-                  {isUploadingImage ? (
-                    <>
-                      <Icon name="Loader2" size={18} className="animate-spin" />
-                      Загрузка...
-                    </>
-                  ) : (
-                    <>
-                      <Icon name="Upload" size={18} />
-                      Загрузить свою картинку
-                    </>
-                  )}
-                </Button>
-              </label>
-            </div>
           </div>
 
-          <div className="space-y-5">
-            <div className="p-4 rounded-xl bg-purple-800/40 border-2 border-purple-500/50">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-purple-100 font-semibold mb-1">Тип персонажа</p>
-                  <p className="text-xs text-purple-300/70">
-                    {isMainCharacter ? "Главный герой — протагонист истории" : "NPC — второстепенный персонаж"}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className={`text-sm font-bold transition-colors ${!isMainCharacter ? 'text-blue-400' : 'text-purple-500'}`}>
-                    NPC
-                  </span>
-                  <label className="relative inline-block w-16 h-8 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isMainCharacter}
-                      onChange={(e) => {
-                        setIsMainCharacter(e.target.checked);
-                        if (e.target.checked) {
-                          setScenes('');
-                          setQuotes('');
-                          setIdeas('');
-                        }
-                      }}
-                      className="sr-only peer"
-                    />
-                    <div className="absolute inset-0 rounded-full bg-blue-500 peer-checked:bg-yellow-500 transition-all duration-300 shadow-lg ring-2 ring-blue-400 peer-checked:ring-yellow-400"></div>
-                    <div className="absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-lg transition-all duration-300 peer-checked:translate-x-8 flex items-center justify-center">
-                      <Icon name={isMainCharacter ? "Crown" : "Users"} size={14} className={isMainCharacter ? "text-yellow-500" : "text-blue-500"} />
-                    </div>
-                  </label>
-                  <span className={`text-sm font-bold transition-colors ${isMainCharacter ? 'text-yellow-400' : 'text-purple-500'}`}>
-                    ГГ
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="char-name" className="text-blue-300 font-semibold flex items-center gap-2">
-                <Icon name="User" size={16} />
-                Имя персонажа *
-              </Label>
-              <Input
-                id="char-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Например: Герда Снежная"
-                className="bg-purple-900/30 border-purple-500/40 text-purple-50 placeholder:text-purple-400/50 h-12 text-base focus:border-blue-400 focus:ring-blue-400/50"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="char-gender" className="text-pink-300 font-semibold flex items-center gap-2">
-                <Icon name="Users" size={16} />
-                Пол *
-              </Label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setGender('male')}
-                  className={`h-12 rounded-lg border-2 transition-all font-semibold flex items-center justify-center gap-2 ${
-                    gender === 'male'
-                      ? 'bg-blue-500/30 border-blue-400 text-blue-300 shadow-lg shadow-blue-500/30'
-                      : 'bg-purple-900/20 border-purple-500/30 text-purple-400 hover:border-blue-400/50'
-                  }`}
-                >
-                  <Icon name="User" size={18} />
-                  Мужской
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGender('female')}
-                  className={`h-12 rounded-lg border-2 transition-all font-semibold flex items-center justify-center gap-2 ${
-                    gender === 'female'
-                      ? 'bg-pink-500/30 border-pink-400 text-pink-300 shadow-lg shadow-pink-500/30'
-                      : 'bg-purple-900/20 border-purple-500/30 text-purple-400 hover:border-pink-400/50'
-                  }`}
-                >
-                  <Icon name="User" size={18} />
-                  Женский
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="char-age" className="text-blue-300 font-semibold flex items-center gap-2">
-                <Icon name="Calendar" size={16} />
-                Возраст
-              </Label>
-              <Input
-                id="char-age"
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                placeholder="Например: 25, молодой, пожилой"
-                className="bg-purple-900/30 border-purple-500/40 text-purple-50 placeholder:text-purple-400/50 h-12 text-base focus:border-blue-400 focus:ring-blue-400/50"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="char-race" className="text-pink-300 font-semibold flex items-center gap-2">
-                <Icon name="Dna" size={16} />
-                Раса
-              </Label>
-              <Input
-                id="char-race"
-                value={race}
-                onChange={(e) => setRace(e.target.value)}
-                placeholder="Например: Эльф, Человек, Дроу"
-                className="bg-purple-900/30 border-purple-500/40 text-purple-50 placeholder:text-purple-400/50 h-12 text-base focus:border-pink-400 focus:ring-pink-400/50"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="char-role" className="text-blue-300 font-semibold flex items-center gap-2">
-                <Icon name="Briefcase" size={16} />
-                Роль
-              </Label>
-              <Input
-                id="char-role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                placeholder="Например: Воин, Маг огня, Торговец"
-                className="bg-purple-900/30 border-purple-500/40 text-purple-50 placeholder:text-purple-400/50 h-12 text-base focus:border-blue-400 focus:ring-blue-400/50"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="char-appearance" className="text-pink-300 font-semibold flex items-center gap-2">
-                <Icon name="Palette" size={16} />
-                Внешность (для генерации аватара)
-              </Label>
-              <Textarea
-                id="char-appearance"
-                value={appearance}
-                onChange={(e) => setAppearance(e.target.value)}
-                placeholder="Опишите внешность: цвет волос, глаз, одежду, особенности...&#10;Например: длинные белые волосы, ледяные голубые глаза, серебряная броня"
-                rows={5}
-                className="bg-purple-900/30 border-purple-500/40 text-purple-50 placeholder:text-purple-400/50 text-base focus:border-pink-400 focus:ring-pink-400/50 resize-none"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="char-personality" className="text-blue-300 font-semibold flex items-center gap-2">
-                <Icon name="Heart" size={16} />
-                Описание характера
-              </Label>
-              <Textarea
-                id="char-personality"
-                value={personality}
-                onChange={(e) => setPersonality(e.target.value)}
-                placeholder="Опишите характер, предыстория, мотивацию, особенности поведения...&#10;Например: хладнокровная воительница, потерявшая семью в войне. Не доверяет незнакомцам, но верна союзникам до конца."
-                rows={6}
-                className="bg-purple-900/30 border-purple-500/40 text-purple-50 placeholder:text-purple-400/50 text-base focus:border-blue-400 focus:ring-blue-400/50 resize-none"
-              />
-            </div>
-
-            {!isMainCharacter && (
-              <div className="p-5 rounded-2xl bg-gradient-to-br from-yellow-900/20 via-orange-900/10 to-yellow-900/20 border border-yellow-500/30 space-y-4">
-              <div className="flex items-center gap-2">
-                <Icon name="Lightbulb" size={20} className="text-yellow-400" />
-                <h3 className="text-lg font-bold text-yellow-300">ЖИВОЙ NPC — ИДЕИ ДЛЯ ИИ</h3>
-              </div>
-              <p className="text-sm text-yellow-200/80">
-                Опишите сцены, цитаты и идеи — ИИ поймёт характер NPC и создаст его реакции на ваши решения
-              </p>
-              
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="char-scenes" className="text-yellow-300 font-semibold flex items-center gap-2">
-                    <Icon name="Film" size={16} />
-                    Сцены с участием NPC
-                  </Label>
-                  <Textarea
-                    id="char-scenes"
-                    value={scenes}
-                    onChange={(e) => setScenes(e.target.value)}
-                    placeholder="Например: 'Встреча в таверне — NPC защищает игрока от бандитов' или 'Предательство — NPC уходит к врагам'"
-                    rows={4}
-                    className="bg-yellow-950/30 border-yellow-600/40 text-yellow-50 placeholder:text-yellow-300/50 text-base focus:border-yellow-400 focus:ring-yellow-400/50 resize-none"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="char-quotes" className="text-yellow-300 font-semibold flex items-center gap-2">
-                    <Icon name="Quote" size={16} />
-                    Фразы и цитаты NPC
-                  </Label>
-                  <Textarea
-                    id="char-quotes"
-                    value={quotes}
-                    onChange={(e) => setQuotes(e.target.value)}
-                    placeholder="Например: 'Клянусь, я отомщу!' или 'А что, так нельзя было?'"
-                    rows={4}
-                    className="bg-yellow-950/30 border-yellow-600/40 text-yellow-50 placeholder:text-yellow-300/50 text-base focus:border-yellow-400 focus:ring-yellow-400/50 resize-none"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="char-ideas" className="text-yellow-300 font-semibold flex items-center gap-2">
-                    <Icon name="Sparkles" size={16} />
-                    Идеи для развития
-                  </Label>
-                  <Textarea
-                    id="char-ideas"
-                    value={ideas}
-                    onChange={(e) => setIdeas(e.target.value)}
-                    placeholder="Например: 'Влюбляется в героя' или 'Имеет тайну из прошлого'"
-                    rows={4}
-                    className="bg-yellow-950/30 border-yellow-600/40 text-yellow-50 placeholder:text-yellow-300/50 text-base focus:border-yellow-400 focus:ring-yellow-400/50 resize-none"
-                  />
-                </div>
-              </div>
-            </div>
-            )}
-          </div>
-        </div>
-
-        <DialogFooter className="border-t border-purple-500/20 pt-4 mt-auto">
-          <Button 
-            variant="ghost" 
-            onClick={onClose} 
-            className="text-purple-300 hover:text-purple-100 hover:bg-purple-800/30"
-          >
-            Отмена
-          </Button>
-          <Button 
-            onClick={handleSubmit} 
-            className="bg-gradient-to-r from-blue-600 to-pink-600 hover:from-blue-700 hover:to-pink-700 font-semibold shadow-lg"
-          >
-            <Icon name="Check" size={18} />
-            Создать персонажа
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    {/* Fullscreen Avatar Dialog */}
-    <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
-      <DialogContent className="max-w-7xl h-[95vh] bg-black/95 border-purple-500/30 p-4">
-        <DialogHeader>
-          <DialogTitle className="text-purple-300 text-2xl flex items-center justify-between">
-            <span>Аватар персонажа</span>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsFullscreenOpen(false)}
+          <DialogFooter className="border-t border-purple-500/20 pt-4 mt-auto">
+            <Button 
+              variant="ghost" 
+              onClick={onClose} 
               className="text-purple-300 hover:text-purple-100 hover:bg-purple-800/30"
             >
-              <Icon name="X" size={24} />
+              Отмена
             </Button>
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="flex-1 flex items-center justify-center overflow-hidden">
-          {generatedAvatar && (
-            <img 
-              src={generatedAvatar} 
-              alt="Аватар персонажа в полном размере" 
-              className="max-w-full max-h-full object-contain rounded-xl"
-            />
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+            <Button 
+              onClick={handleSubmit} 
+              className="bg-gradient-to-r from-blue-600 to-pink-600 hover:from-blue-700 hover:to-pink-700 font-semibold shadow-lg"
+            >
+              <Icon name="Check" size={18} />
+              Создать персонажа
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <FullscreenAvatarDialog
+        isOpen={isFullscreenOpen}
+        avatarUrl={generatedAvatar}
+        onClose={() => setIsFullscreenOpen(false)}
+      />
     </>
   );
 };
