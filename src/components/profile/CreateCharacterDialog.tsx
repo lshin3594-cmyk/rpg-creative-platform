@@ -82,8 +82,8 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
       const raceText = race.trim() ? `, ${race}` : '';
       const roleText = role.trim() ? `, ${role}` : '';
       
-      // Короткий и конкретный промпт (Flux лучше следует коротким описаниям)
-      const prompt = `Portrait photo of a ${genderEn}${ageText}${raceText}${roleText}. ${appearance || 'Detailed face'}. Professional photography, realistic, highly detailed face, studio lighting, sharp focus, 8k uhd, photorealistic`;
+      // Строгий промпт для профессиональных портретов (без сексуализации)
+      const prompt = `Professional headshot portrait of a ${genderEn}${ageText}${raceText}${roleText}. Face details: ${appearance || 'detailed facial features'}. Clean professional photograph, formal portrait style, neutral expression, proper clothing, studio lighting, sharp focus on face, high quality photography, SFW, appropriate, respectable`;
       
       console.log('🎨 Generating avatar with prompt:', prompt);
       
