@@ -193,7 +193,9 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
               </div>
               <button
                 type="button"
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   setIsMainCharacter(!isMainCharacter);
                   if (!isMainCharacter) {
                     setScenes('');
@@ -201,12 +203,12 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
                     setIdeas('');
                   }
                 }}
-                className={`relative w-14 h-7 rounded-full transition-colors ${
+                className={`relative w-14 h-7 rounded-full transition-colors shadow-lg ${
                   isMainCharacter ? 'bg-yellow-500' : 'bg-blue-500'
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full transition-transform ${
+                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ${
                     isMainCharacter ? 'translate-x-7' : 'translate-x-0'
                   }`}
                 />
