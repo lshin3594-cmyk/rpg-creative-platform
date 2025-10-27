@@ -130,7 +130,7 @@ const Index = () => {
               disabled={item.loading}
               className={`group relative w-full p-6 md:p-8 rounded-xl border backdrop-blur-sm transition-all duration-300 min-h-[100px] md:min-h-[120px] ${
                 item.highlight 
-                  ? 'bg-gradient-to-r from-purple-600/50 via-pink-600/40 to-purple-600/50 border-purple-400/60 hover:border-purple-300/80 hover:shadow-xl hover:shadow-purple-500/30 hover:scale-[1.02] animate-pulse-slow'
+                  ? 'bg-gradient-to-r from-purple-600/50 via-pink-600/40 to-purple-600/50 border-purple-400/60 hover:border-purple-300/80 hover:shadow-xl hover:shadow-purple-500/30 hover:scale-[1.02]'
                   : 'bg-gradient-to-r from-purple-900/40 via-pink-900/30 to-purple-900/40 border-purple-500/30 hover:border-purple-400/60 hover:shadow-lg hover:shadow-purple-500/20'
               } ${item.loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
