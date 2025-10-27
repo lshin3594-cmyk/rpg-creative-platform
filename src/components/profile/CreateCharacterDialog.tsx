@@ -37,6 +37,7 @@ interface CreateCharacterDialogProps {
 
 export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateCharacterDialogProps) => {
   const [name, setName] = useState('');
+  const [gender, setGender] = useState<'male' | 'female' | ''>('');
   const [race, setRace] = useState('');
   const [role, setRole] = useState('');
   const [appearance, setAppearance] = useState('');
@@ -51,6 +52,15 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
   const { toast } = useToast();
 
   const handleGenerateAvatar = async () => {
+    if (!gender) {
+      toast({
+        title: 'Укажите пол',
+        description: 'Выберите пол персонажа для генерации',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
     if (!appearance.trim()) {
       toast({
         title: 'Заполните внешность',
@@ -63,13 +73,12 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
     setIsGeneratingAvatar(true);
     try {
       const timestamp = Date.now();
-      const characterName = name.trim() || 'character';
-      const raceInfo = race ? `Race: ${race}.` : '';
-      const roleInfo = role ? `Role: ${role}.` : '';
+      const genderText = gender === 'male' ? 'male' : 'female';
+      const raceText = race.trim() ? `, ${race} race` : '';
       
-      const prompt = `Fantasy RPG character portrait. ${raceInfo} ${roleInfo} EXACT physical features: ${appearance}. Style: square portrait format, front-facing headshot, professional character concept art, detailed realistic face, digital painting, sharp focus, high quality. Seed: ${timestamp}`;
+      const prompt = `Portrait of a ${genderText} fantasy character${raceText}. Physical description: ${appearance}. Full body portrait, centered composition, fantasy art style, detailed character design, professional digital illustration, vibrant colors, clear features. Random seed ${timestamp}`;
       
-      console.log('Generating avatar with prompt:', prompt);
+      console.log('🎨 Generating avatar with prompt:', prompt);
       
       const response = await fetch(IMAGE_GEN_URL, {
         method: 'POST',
@@ -120,6 +129,7 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
     });
 
     setName('');
+    setGender('');
     setRace('');
     setRole('');
     setAppearance('');
@@ -235,6 +245,39 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
                 placeholder="Например: Герда Снежная"
                 className="bg-purple-900/30 border-purple-500/40 text-purple-50 placeholder:text-purple-400/50 h-12 text-base focus:border-blue-400 focus:ring-blue-400/50"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="char-gender" className="text-pink-300 font-semibold flex items-center gap-2">
+                <Icon name="Users" size={16} />
+                Пол *
+              </Label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setGender('male')}
+                  className={`h-12 rounded-lg border-2 transition-all font-semibold flex items-center justify-center gap-2 ${
+                    gender === 'male'
+                      ? 'bg-blue-500/30 border-blue-400 text-blue-300 shadow-lg shadow-blue-500/30'
+                      : 'bg-purple-900/20 border-purple-500/30 text-purple-400 hover:border-blue-400/50'
+                  }`}
+                >
+                  <Icon name="User" size={18} />
+                  Мужской
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGender('female')}
+                  className={`h-12 rounded-lg border-2 transition-all font-semibold flex items-center justify-center gap-2 ${
+                    gender === 'female'
+                      ? 'bg-pink-500/30 border-pink-400 text-pink-300 shadow-lg shadow-pink-500/30'
+                      : 'bg-purple-900/20 border-purple-500/30 text-purple-400 hover:border-pink-400/50'
+                  }`}
+                >
+                  <Icon name="User" size={18} />
+                  Женский
+                </button>
+              </div>
             </div>
 
             <div className="space-y-2">
