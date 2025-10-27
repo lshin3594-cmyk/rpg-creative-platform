@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import funcUrls from '../../backend/func2url.json';
 
 interface ImageGeneratorProps {
@@ -24,6 +25,7 @@ export const ImageGenerator = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [enhancedPrompt, setEnhancedPrompt] = useState('');
   const [isTranslating, setIsTranslating] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<'dall-e-2' | 'dall-e-3'>('dall-e-3');
   const { toast } = useToast();
 
   const handleTranslate = async () => {
@@ -82,7 +84,7 @@ export const ImageGenerator = ({
         throw new Error('Puter.js не загружен');
       }
 
-      const imageDataUrl = await puter.ai.txt2img(enhancedPrompt);
+      const imageDataUrl = await puter.ai.txt2img(enhancedPrompt, selectedModel);
       
       onImageGenerated(imageDataUrl);
       setPrompt('');
@@ -90,7 +92,7 @@ export const ImageGenerator = ({
       
       toast({
         title: "Успешно",
-        description: "Изображение сгенерировано через DALL-E 3",
+        description: `Изображение сгенерировано через ${selectedModel === 'dall-e-3' ? 'DALL-E 3' : 'DALL-E 2'}`,
       });
     } catch (error) {
       toast({
@@ -112,7 +114,7 @@ export const ImageGenerator = ({
         </div>
         <Badge variant="outline" className="gap-1">
           <Icon name="Sparkles" size={12} />
-          DALL-E 3
+          {selectedModel === 'dall-e-3' ? 'DALL-E 3' : 'DALL-E 2'}
         </Badge>
       </div>
       
@@ -131,6 +133,29 @@ export const ImageGenerator = ({
           </div>
         </div>
       )}
+
+      <div className="space-y-2">
+        <Label>Модель генерации</Label>
+        <Select value={selectedModel} onValueChange={(value: 'dall-e-2' | 'dall-e-3') => setSelectedModel(value)}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="dall-e-3">
+              <div className="flex items-center gap-2">
+                <Icon name="Sparkles" size={14} />
+                DALL-E 3 (лучшее качество)
+              </div>
+            </SelectItem>
+            <SelectItem value="dall-e-2">
+              <div className="flex items-center gap-2">
+                <Icon name="Zap" size={14} />
+                DALL-E 2 (быстрее)
+              </div>
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       <div className="space-y-2">
         <Label>Ваше описание</Label>
@@ -180,7 +205,7 @@ export const ImageGenerator = ({
         {isGenerating ? (
           <>
             <Icon name="Loader2" size={20} className="animate-spin" />
-            Генерация через DALL-E 3...
+            Генерация через {selectedModel === 'dall-e-3' ? 'DALL-E 3' : 'DALL-E 2'}...
           </>
         ) : (
           <>
