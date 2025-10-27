@@ -76,14 +76,17 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
     try {
       const timestamp = Date.now();
       
-      // Формируем короткий и чёткий промпт на английском для Flux
+      // Формируем усиленный промпт с повторениями ключевых деталей
       const genderEn = gender === 'male' ? 'man' : 'woman';
-      const ageText = age.trim() ? `, ${age} years old` : '';
-      const raceText = race.trim() ? `, ${race}` : '';
-      const roleText = role.trim() ? `, ${role}` : '';
+      const ageText = age.trim() ? `${age} years old` : '30 years old';
+      const raceText = race.trim() ? race : 'human';
+      const roleText = role.trim() || 'character';
       
-      // Строгий промпт для профессиональных портретов (без сексуализации)
-      const prompt = `Professional headshot portrait of a ${genderEn}${ageText}${raceText}${roleText}. Face details: ${appearance || 'detailed facial features'}. Clean professional photograph, formal portrait style, neutral expression, proper clothing, studio lighting, sharp focus on face, high quality photography, SFW, appropriate, respectable`;
+      // Парсим внешность и выделяем ключевые детали
+      const appearanceDetails = appearance.trim() || 'detailed face';
+      
+      // КРИТИЧЕСКИ ВАЖНО: повторяем детали внешности 2-3 раза для Flux
+      const prompt = `professional portrait photo, closeup headshot, ${genderEn}, ${ageText}, ${raceText} ${roleText}. APPEARANCE: ${appearanceDetails}. IMPORTANT DETAILS: ${appearanceDetails}. facial features: ${appearanceDetails}. Neutral expression, formal attire, professional clothing, studio portrait lighting, sharp focus, high detail face, photorealistic, 8k quality, SFW, appropriate, respectable character portrait`;
       
       console.log('🎨 Generating avatar with prompt:', prompt);
       
