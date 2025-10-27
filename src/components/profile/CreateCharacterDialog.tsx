@@ -41,6 +41,9 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
   const [role, setRole] = useState('');
   const [appearance, setAppearance] = useState('');
   const [personality, setPersonality] = useState('');
+  const [scenes, setScenes] = useState('');
+  const [quotes, setQuotes] = useState('');
+  const [ideas, setIdeas] = useState('');
   const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
   const [generatedAvatar, setGeneratedAvatar] = useState('');
   
@@ -105,9 +108,9 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
       role: role.trim() || 'Персонаж',
       personality: `${race ? `Раса: ${race}. ` : ''}${role ? `Роль: ${role}. ` : ''}${appearance ? `Внешность: ${appearance}. ` : ''}${personality}`.trim(),
       avatar: generatedAvatar || '',
-      scenes: '',
-      quotes: '',
-      ideas: '',
+      scenes: scenes.trim(),
+      quotes: quotes.trim(),
+      ideas: ideas.trim(),
       isMainCharacter: false
     });
 
@@ -116,6 +119,9 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
     setRole('');
     setAppearance('');
     setPersonality('');
+    setScenes('');
+    setQuotes('');
+    setIdeas('');
     setGeneratedAvatar('');
     onClose();
   };
@@ -241,6 +247,63 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
                 rows={6}
                 className="bg-purple-900/30 border-purple-500/40 text-purple-50 placeholder:text-purple-400/50 text-base focus:border-blue-400 focus:ring-blue-400/50 resize-none"
               />
+            </div>
+
+            <div className="p-5 rounded-2xl bg-gradient-to-br from-yellow-900/20 via-orange-900/10 to-yellow-900/20 border border-yellow-500/30 space-y-4">
+              <div className="flex items-center gap-2">
+                <Icon name="Lightbulb" size={20} className="text-yellow-400" />
+                <h3 className="text-lg font-bold text-yellow-300">ЖИВОЙ NPC — ИДЕИ ДЛЯ ИИ</h3>
+              </div>
+              <p className="text-sm text-yellow-200/80">
+                Опишите сцены, цитаты и идеи — ИИ поймёт характер NPC и создаст его реакции на ваши решения
+              </p>
+              
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="char-scenes" className="text-yellow-300 font-semibold flex items-center gap-2">
+                    <Icon name="Film" size={16} />
+                    Сцены с участием NPC
+                  </Label>
+                  <Textarea
+                    id="char-scenes"
+                    value={scenes}
+                    onChange={(e) => setScenes(e.target.value)}
+                    placeholder="Например: 'Встреча в таверне — NPC защищает игрока от бандитов' или 'Предательство — NPC уходит к врагам'"
+                    rows={4}
+                    className="bg-yellow-950/30 border-yellow-600/40 text-yellow-50 placeholder:text-yellow-300/50 text-base focus:border-yellow-400 focus:ring-yellow-400/50 resize-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="char-quotes" className="text-yellow-300 font-semibold flex items-center gap-2">
+                    <Icon name="Quote" size={16} />
+                    Фразы и цитаты NPC
+                  </Label>
+                  <Textarea
+                    id="char-quotes"
+                    value={quotes}
+                    onChange={(e) => setQuotes(e.target.value)}
+                    placeholder="Например: 'Клянусь, я отомщу!' или 'А что, так нельзя было?'"
+                    rows={4}
+                    className="bg-yellow-950/30 border-yellow-600/40 text-yellow-50 placeholder:text-yellow-300/50 text-base focus:border-yellow-400 focus:ring-yellow-400/50 resize-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="char-ideas" className="text-yellow-300 font-semibold flex items-center gap-2">
+                    <Icon name="Sparkles" size={16} />
+                    Идеи для развития
+                  </Label>
+                  <Textarea
+                    id="char-ideas"
+                    value={ideas}
+                    onChange={(e) => setIdeas(e.target.value)}
+                    placeholder="Например: 'Влюбляется в героя' или 'Имеет тайну из прошлого'"
+                    rows={4}
+                    className="bg-yellow-950/30 border-yellow-600/40 text-yellow-50 placeholder:text-yellow-300/50 text-base focus:border-yellow-400 focus:ring-yellow-400/50 resize-none"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
