@@ -76,17 +76,14 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
     try {
       const timestamp = Date.now();
       
-      // Формируем промпт по формату pollinations.ai
-      const genderRu = gender === 'male' ? 'Мужчина' : 'Девушка';
-      const ageText = age.trim() ? ` ${age} лет` : '';
-      const raceText = race.trim() ? `, ${race}` : ', человек';
+      // Формируем короткий и чёткий промпт на английском для Flux
+      const genderEn = gender === 'male' ? 'man' : 'woman';
+      const ageText = age.trim() ? `, ${age} years old` : '';
+      const raceText = race.trim() ? `, ${race}` : '';
       const roleText = role.trim() ? `, ${role}` : '';
       
-      const prompt = `${genderRu}${ageText}${raceText}${roleText}.
-
-Внешность: ${appearance || 'Выразительные черты лица, детальная проработка.'}.
-
-Стиль: Fantasy портрет, цифровая иллюстрация, профессиональное качество, яркие цвета, детализированный персонаж. Seed ${timestamp}`;
+      // Короткий и конкретный промпт (Flux лучше следует коротким описаниям)
+      const prompt = `Portrait photo of a ${genderEn}${ageText}${raceText}${roleText}. ${appearance || 'Detailed face'}. Professional photography, realistic, highly detailed face, studio lighting, sharp focus, 8k uhd, photorealistic`;
       
       console.log('🎨 Generating avatar with prompt:', prompt);
       
