@@ -24,6 +24,7 @@ export const useGameLogic = () => {
   const turnCountRef = useRef(0);
   const storyInitializedRef = useRef(false);
   const timerIntervalRef = useRef<number | null>(null);
+  const initializedGameIdRef = useRef<number | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -37,13 +38,6 @@ export const useGameLogic = () => {
       const state = location.state as { gameId?: number };
       
       if (!state?.gameId) {
-        console.log('Нет gameId, редирект на главную');
-        toast({
-          title: 'Игра не найдена',
-          description: 'Сначала создайте игру',
-          variant: 'destructive'
-        });
-        navigate('/');
         return;
       }
 
@@ -520,11 +514,13 @@ export const useGameLogic = () => {
   };
 
   useEffect(() => {
-    if (storyInitializedRef.current) return;
+    if (!currentGameId) return;
+    if (initializedGameIdRef.current === currentGameId) return;
     if (!gameSettings) return;
     if (messages.length > 0) return;
     if (isProcessing) return;
     
+    initializedGameIdRef.current = currentGameId;
     storyInitializedRef.current = true;
     
     const abortController = new AbortController();
@@ -610,7 +606,7 @@ export const useGameLogic = () => {
       abortController.abort();
       clearTimeout(timeoutId);
     };
-  }, [gameSettings, messages.length, autoIllustrations, toast]);
+  }, [currentGameId]);
 
   return {
     messages,

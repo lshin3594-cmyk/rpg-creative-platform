@@ -41,7 +41,6 @@ const App = () => (
             <Route path="/create-game" element={<CreateGame />} />
             <Route path="/play-game" element={<GameScreen />} />
             <Route path="/game-saves" element={<GameSaves />} />
-            <Route path="/story/new" element={<GameScreen />} />
             <Route path="/create-fanfic" element={<CreateFanfic />} />
 
             <Route path="/story/:id" element={<StoryView />} />
