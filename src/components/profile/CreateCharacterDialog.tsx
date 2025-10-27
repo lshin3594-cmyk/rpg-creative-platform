@@ -44,6 +44,7 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
   const [scenes, setScenes] = useState('');
   const [quotes, setQuotes] = useState('');
   const [ideas, setIdeas] = useState('');
+  const [isMainCharacter, setIsMainCharacter] = useState(false);
   const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
   const [generatedAvatar, setGeneratedAvatar] = useState('');
   
@@ -108,10 +109,10 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
       role: role.trim() || 'Персонаж',
       personality: `${race ? `Раса: ${race}. ` : ''}${role ? `Роль: ${role}. ` : ''}${appearance ? `Внешность: ${appearance}. ` : ''}${personality}`.trim(),
       avatar: generatedAvatar || '',
-      scenes: scenes.trim(),
-      quotes: quotes.trim(),
-      ideas: ideas.trim(),
-      isMainCharacter: false
+      scenes: isMainCharacter ? '' : scenes.trim(),
+      quotes: isMainCharacter ? '' : quotes.trim(),
+      ideas: isMainCharacter ? '' : ideas.trim(),
+      isMainCharacter: isMainCharacter
     });
 
     setName('');
@@ -122,6 +123,7 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
     setScenes('');
     setQuotes('');
     setIdeas('');
+    setIsMainCharacter(false);
     setGeneratedAvatar('');
     onClose();
   };
@@ -177,6 +179,40 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
           </div>
 
           <div className="space-y-5">
+            <div className="flex items-center justify-between p-4 rounded-xl bg-purple-800/30 border border-purple-500/40">
+              <div className="flex items-center gap-3">
+                <Icon name={isMainCharacter ? "Crown" : "Users"} size={20} className={isMainCharacter ? "text-yellow-400" : "text-blue-400"} />
+                <div>
+                  <p className="font-semibold text-purple-100">
+                    {isMainCharacter ? "Главный герой" : "NPC персонаж"}
+                  </p>
+                  <p className="text-xs text-purple-300/70">
+                    {isMainCharacter ? "Протагонист истории" : "Второстепенный персонаж"}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMainCharacter(!isMainCharacter);
+                  if (!isMainCharacter) {
+                    setScenes('');
+                    setQuotes('');
+                    setIdeas('');
+                  }
+                }}
+                className={`relative w-14 h-7 rounded-full transition-colors ${
+                  isMainCharacter ? 'bg-yellow-500' : 'bg-blue-500'
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full transition-transform ${
+                    isMainCharacter ? 'translate-x-7' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="char-name" className="text-blue-300 font-semibold flex items-center gap-2">
                 <Icon name="User" size={16} />
@@ -249,7 +285,8 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
               />
             </div>
 
-            <div className="p-5 rounded-2xl bg-gradient-to-br from-yellow-900/20 via-orange-900/10 to-yellow-900/20 border border-yellow-500/30 space-y-4">
+            {!isMainCharacter && (
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-yellow-900/20 via-orange-900/10 to-yellow-900/20 border border-yellow-500/30 space-y-4">
               <div className="flex items-center gap-2">
                 <Icon name="Lightbulb" size={20} className="text-yellow-400" />
                 <h3 className="text-lg font-bold text-yellow-300">ЖИВОЙ NPC — ИДЕИ ДЛЯ ИИ</h3>
@@ -305,6 +342,7 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
                 </div>
               </div>
             </div>
+            )}
           </div>
         </div>
 
