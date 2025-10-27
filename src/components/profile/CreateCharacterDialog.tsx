@@ -49,6 +49,7 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
   const [isMainCharacter, setIsMainCharacter] = useState(false);
   const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
   const [generatedAvatar, setGeneratedAvatar] = useState('');
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
   
   const { toast } = useToast();
 
@@ -173,12 +174,18 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
           <div className="flex flex-col items-center space-y-4">
             <div className="relative group">
               {generatedAvatar ? (
-                <div className="w-96 h-96 rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 p-1">
+                <div 
+                  className="w-96 h-96 rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 p-1 cursor-pointer transition-transform hover:scale-105"
+                  onClick={() => setIsFullscreenOpen(true)}
+                >
                   <img 
                     src={generatedAvatar} 
                     alt="Аватар персонажа" 
                     className="w-full h-full object-cover rounded-2xl"
                   />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-2xl flex items-center justify-center">
+                    <Icon name="Maximize2" size={32} className="text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
                 </div>
               ) : (
                 <div className="w-96 h-96 rounded-2xl bg-gradient-to-br from-purple-900/50 to-pink-900/50 border-2 border-purple-500/30 flex items-center justify-center">
@@ -444,6 +451,35 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
             Создать персонажа
           </Button>
         </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    {/* Fullscreen Avatar Dialog */}
+    <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
+      <DialogContent className="max-w-7xl h-[95vh] bg-black/95 border-purple-500/30 p-4">
+        <DialogHeader>
+          <DialogTitle className="text-purple-300 text-2xl flex items-center justify-between">
+            <span>Аватар персонажа</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsFullscreenOpen(false)}
+              className="text-purple-300 hover:text-purple-100 hover:bg-purple-800/30"
+            >
+              <Icon name="X" size={24} />
+            </Button>
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="flex-1 flex items-center justify-center overflow-hidden">
+          {generatedAvatar && (
+            <img 
+              src={generatedAvatar} 
+              alt="Аватар персонажа в полном размере" 
+              className="max-w-full max-h-full object-contain rounded-xl"
+            />
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
