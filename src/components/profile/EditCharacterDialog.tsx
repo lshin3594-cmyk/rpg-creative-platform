@@ -47,6 +47,7 @@ export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: E
   const [ideas, setIdeas] = useState('');
   const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
   const [generatedAvatar, setGeneratedAvatar] = useState('');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const { toast } = useToast();
 
   const handleGenerateAvatar = async () => {
@@ -73,13 +74,8 @@ export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: E
       const timestamp = Date.now();
       
       const genderEn = gender === 'male' ? 'man' : 'woman';
-      const ageText = age.trim() ? `${age} years old` : '30 years old';
-      const raceText = race.trim() ? race : 'human';
-      const roleText = role.trim() || 'character';
-      
-      const appearanceDetails = appearance.trim() || 'detailed face';
-      
-      const prompt = `professional portrait photo, closeup headshot, ${genderEn}, ${ageText}, ${raceText} ${roleText}. APPEARANCE: ${appearanceDetails}. IMPORTANT DETAILS: ${appearanceDetails}. facial features: ${appearanceDetails}. Neutral expression, formal attire, professional clothing, studio portrait lighting, sharp focus, high detail face, photorealistic, 8k quality, SFW, appropriate, respectable character portrait`;
+      const appearanceClean = appearance.trim() || 'face portrait';
+      const prompt = `Portrait of ${genderEn}. ${appearanceClean}. Professional headshot, neutral face, SFW`;
       
       console.log('🎨 Generating avatar with prompt:', prompt);
       
@@ -112,6 +108,44 @@ export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: E
     } finally {
       setIsGeneratingAvatar(false);
     }
+  };
+
+  const handleUploadImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Неверный формат',
+        description: 'Загрузите изображение (JPG, PNG, WebP)',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsUploadingImage(true);
+    const reader = new FileReader();
+    
+    reader.onload = (event) => {
+      const imageUrl = event.target?.result as string;
+      setGeneratedAvatar(imageUrl);
+      setIsUploadingImage(false);
+      toast({
+        title: 'Изображение загружено!',
+        description: 'Теперь можно сохранить персонажа',
+      });
+    };
+
+    reader.onerror = () => {
+      setIsUploadingImage(false);
+      toast({
+        title: 'Ошибка загрузки',
+        description: 'Не удалось загрузить изображение',
+        variant: 'destructive'
+      });
+    };
+
+    reader.readAsDataURL(file);
   };
 
   useEffect(() => {
@@ -293,24 +327,57 @@ export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: E
             </div>
           )}
 
-          <Button
-            type="button"
-            onClick={handleGenerateAvatar}
-            disabled={isGeneratingAvatar}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-          >
-            {isGeneratingAvatar ? (
-              <>
-                <Icon name="Loader2" size={16} className="mr-2 animate-spin" />
-                Генерация...
-              </>
-            ) : (
-              <>
-                <Icon name="Sparkles" size={16} className="mr-2" />
-                Перегенерировать
-              </>
-            )}
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              onClick={handleGenerateAvatar}
+              disabled={isGeneratingAvatar || isUploadingImage}
+              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+            >
+              {isGeneratingAvatar ? (
+                <>
+                  <Icon name="Loader2" size={16} className="mr-2 animate-spin" />
+                  Генерация...
+                </>
+              ) : (
+                <>
+                  <Icon name="Sparkles" size={16} className="mr-2" />
+                  Перегенерировать
+                </>
+              )}
+            </Button>
+            
+            <label className="flex-1">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleUploadImage}
+                disabled={isGeneratingAvatar || isUploadingImage}
+                className="hidden"
+              />
+              <Button 
+                type="button"
+                disabled={isGeneratingAvatar || isUploadingImage}
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                onClick={(e) => {
+                  e.preventDefault();
+                  (e.currentTarget.parentElement as HTMLLabelElement)?.querySelector('input')?.click();
+                }}
+              >
+                {isUploadingImage ? (
+                  <>
+                    <Icon name="Loader2" size={16} className="mr-2 animate-spin" />
+                    Загрузка...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="Upload" size={16} className="mr-2" />
+                    Загрузить свою
+                  </>
+                )}
+              </Button>
+            </label>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="edit-char-personality" className="text-purple-200">Описание</Label>

@@ -50,6 +50,7 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
   const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
   const [generatedAvatar, setGeneratedAvatar] = useState('');
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   
   const { toast } = useToast();
 
@@ -76,17 +77,14 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
     try {
       const timestamp = Date.now();
       
-      // Формируем усиленный промпт с повторениями ключевых деталей
+      // УПРОЩЁННЫЙ промпт — Flux работает лучше с короткими описаниями
       const genderEn = gender === 'male' ? 'man' : 'woman';
-      const ageText = age.trim() ? `${age} years old` : '30 years old';
-      const raceText = race.trim() ? race : 'human';
-      const roleText = role.trim() || 'character';
       
-      // Парсим внешность и выделяем ключевые детали
-      const appearanceDetails = appearance.trim() || 'detailed face';
+      // Берём ТОЛЬКО внешность, убираем всё лишнее
+      const appearanceClean = appearance.trim() || 'face portrait';
       
-      // КРИТИЧЕСКИ ВАЖНО: повторяем детали внешности 2-3 раза для Flux
-      const prompt = `professional portrait photo, closeup headshot, ${genderEn}, ${ageText}, ${raceText} ${roleText}. APPEARANCE: ${appearanceDetails}. IMPORTANT DETAILS: ${appearanceDetails}. facial features: ${appearanceDetails}. Neutral expression, formal attire, professional clothing, studio portrait lighting, sharp focus, high detail face, photorealistic, 8k quality, SFW, appropriate, respectable character portrait`;
+      // Короткий промпт: пол + внешность + базовые требования
+      const prompt = `Portrait of ${genderEn}. ${appearanceClean}. Professional headshot, neutral face, SFW`;
       
       console.log('🎨 Generating avatar with prompt:', prompt);
       
@@ -120,6 +118,44 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
     } finally {
       setIsGeneratingAvatar(false);
     }
+  };
+
+  const handleUploadImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Неверный формат',
+        description: 'Загрузите изображение (JPG, PNG, WebP)',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsUploadingImage(true);
+    const reader = new FileReader();
+    
+    reader.onload = (event) => {
+      const imageUrl = event.target?.result as string;
+      setGeneratedAvatar(imageUrl);
+      setIsUploadingImage(false);
+      toast({
+        title: 'Изображение загружено!',
+        description: 'Теперь можно сохранить персонажа',
+      });
+    };
+
+    reader.onerror = () => {
+      setIsUploadingImage(false);
+      toast({
+        title: 'Ошибка загрузки',
+        description: 'Не удалось загрузить изображение',
+        variant: 'destructive'
+      });
+    };
+
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = () => {
@@ -198,9 +234,9 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
             <div className="flex gap-3">
               <Button 
                 onClick={handleGenerateAvatar}
-                disabled={isGeneratingAvatar}
+                disabled={isGeneratingAvatar || isUploadingImage}
                 size="lg"
-                className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white font-semibold shadow-lg shadow-purple-500/50"
+                className="flex-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white font-semibold shadow-lg shadow-purple-500/50"
               >
                 {isGeneratingAvatar ? (
                   <>
@@ -214,6 +250,38 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
                   </>
                 )}
               </Button>
+              
+              <label className="flex-1">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleUploadImage}
+                  disabled={isGeneratingAvatar || isUploadingImage}
+                  className="hidden"
+                />
+                <Button 
+                  type="button"
+                  size="lg"
+                  disabled={isGeneratingAvatar || isUploadingImage}
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold shadow-lg shadow-green-500/50"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    (e.currentTarget.parentElement as HTMLLabelElement)?.querySelector('input')?.click();
+                  }}
+                >
+                  {isUploadingImage ? (
+                    <>
+                      <Icon name="Loader2" size={18} className="animate-spin" />
+                      Загрузка...
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="Upload" size={18} />
+                      Загрузить свою картинку
+                    </>
+                  )}
+                </Button>
+              </label>
             </div>
           </div>
 
