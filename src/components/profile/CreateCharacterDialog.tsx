@@ -179,32 +179,41 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
           </div>
 
           <div className="space-y-5">
-            <div className="flex items-center gap-3 justify-between">
-              <Label className="text-purple-200 text-sm font-medium">Тип персонажа</Label>
-              <div className="flex items-center gap-2">
-                <span className={`text-xs font-medium transition-colors ${!isMainCharacter ? 'text-blue-300' : 'text-purple-400'}`}>
-                  NPC
-                </span>
-                <label className="relative inline-block w-11 h-6 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isMainCharacter}
-                    onChange={(e) => {
-                      setIsMainCharacter(e.target.checked);
-                      if (e.target.checked) {
-                        setScenes('');
-                        setQuotes('');
-                        setIdeas('');
-                      }
-                    }}
-                    className="sr-only peer"
-                  />
-                  <div className="absolute inset-0 rounded-full bg-blue-500 peer-checked:bg-yellow-500 transition-colors shadow-inner"></div>
-                  <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform peer-checked:translate-x-5"></div>
-                </label>
-                <span className={`text-xs font-medium transition-colors ${isMainCharacter ? 'text-yellow-300' : 'text-purple-400'}`}>
-                  ГГ
-                </span>
+            <div className="p-4 rounded-xl bg-purple-800/40 border-2 border-purple-500/50">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-purple-100 font-semibold mb-1">Тип персонажа</p>
+                  <p className="text-xs text-purple-300/70">
+                    {isMainCharacter ? "Главный герой — протагонист истории" : "NPC — второстепенный персонаж"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className={`text-sm font-bold transition-colors ${!isMainCharacter ? 'text-blue-400' : 'text-purple-500'}`}>
+                    NPC
+                  </span>
+                  <label className="relative inline-block w-16 h-8 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isMainCharacter}
+                      onChange={(e) => {
+                        setIsMainCharacter(e.target.checked);
+                        if (e.target.checked) {
+                          setScenes('');
+                          setQuotes('');
+                          setIdeas('');
+                        }
+                      }}
+                      className="sr-only peer"
+                    />
+                    <div className="absolute inset-0 rounded-full bg-blue-500 peer-checked:bg-yellow-500 transition-all duration-300 shadow-lg ring-2 ring-blue-400 peer-checked:ring-yellow-400"></div>
+                    <div className="absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-lg transition-all duration-300 peer-checked:translate-x-8 flex items-center justify-center">
+                      <Icon name={isMainCharacter ? "Crown" : "Users"} size={14} className={isMainCharacter ? "text-yellow-500" : "text-blue-500"} />
+                    </div>
+                  </label>
+                  <span className={`text-sm font-bold transition-colors ${isMainCharacter ? 'text-yellow-400' : 'text-purple-500'}`}>
+                    ГГ
+                  </span>
+                </div>
               </div>
             </div>
 
