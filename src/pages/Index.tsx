@@ -1,6 +1,7 @@
 import Icon from '@/components/ui/icon';
 import { useNavigate } from 'react-router-dom';
 import { PreviewCarousel } from '@/components/PreviewCarousel';
+import { TemplateLibrary } from '@/components/TemplateLibrary';
 import { useRpgGames } from '@/hooks/useRpgGames';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -71,6 +72,8 @@ const Index = () => {
     }
   };
 
+  const [showTemplates, setShowTemplates] = useState(false);
+
   const menuItems = [
     {
       title: 'БЫСТРЫЙ СТАРТ',
@@ -79,6 +82,13 @@ const Index = () => {
       onClick: handleQuickStart,
       loading: quickStarting,
       highlight: true
+    },
+    {
+      title: 'ГОТОВЫЕ ИСТОРИИ',
+      description: 'Выберите из 8 уникальных сюжетов',
+      icon: 'Library',
+      onClick: () => setShowTemplates(!showTemplates),
+      highlight: showTemplates
     },
     {
       title: 'НАСТРОИТЬ ИГРУ',
@@ -142,6 +152,12 @@ const Index = () => {
             </button>
           ))}
         </div>
+
+        {showTemplates && (
+          <div className="animate-fade-in">
+            <TemplateLibrary />
+          </div>
+        )}
 
 
       </div>
