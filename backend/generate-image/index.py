@@ -53,8 +53,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     
+    import time
+    seed = int(time.time() * 1000)
+    
     encoded_prompt = urllib.parse.quote(prompt)
-    image_url = f'https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=1024&model=flux&nologo=true'
+    image_url = f'https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=1024&seed={seed}&model=flux&nologo=true'
     
     return {
         'statusCode': 200,
