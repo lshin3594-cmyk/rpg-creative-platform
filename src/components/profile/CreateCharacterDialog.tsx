@@ -38,6 +38,7 @@ interface CreateCharacterDialogProps {
 export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateCharacterDialogProps) => {
   const [name, setName] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | ''>('');
+  const [age, setAge] = useState('');
   const [race, setRace] = useState('');
   const [role, setRole] = useState('');
   const [appearance, setAppearance] = useState('');
@@ -74,9 +75,10 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
     try {
       const timestamp = Date.now();
       const genderText = gender === 'male' ? 'male' : 'female';
+      const ageText = age.trim() ? `, ${age} years old` : '';
       const raceText = race.trim() ? `, ${race} race` : '';
       
-      const prompt = `Portrait of a ${genderText} fantasy character${raceText}. Physical description: ${appearance}. Full body portrait, centered composition, fantasy art style, detailed character design, professional digital illustration, vibrant colors, clear features. Random seed ${timestamp}`;
+      const prompt = `Portrait of a ${genderText} fantasy character${ageText}${raceText}. Physical description: ${appearance}. Full body portrait, centered composition, fantasy art style, detailed character design, professional digital illustration, vibrant colors, clear features. Random seed ${timestamp}`;
       
       console.log('🎨 Generating avatar with prompt:', prompt);
       
@@ -130,6 +132,7 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
 
     setName('');
     setGender('');
+    setAge('');
     setRace('');
     setRole('');
     setAppearance('');
@@ -278,6 +281,20 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
                   Женский
                 </button>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="char-age" className="text-blue-300 font-semibold flex items-center gap-2">
+                <Icon name="Calendar" size={16} />
+                Возраст
+              </Label>
+              <Input
+                id="char-age"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                placeholder="Например: 25, молодой, пожилой"
+                className="bg-purple-900/30 border-purple-500/40 text-purple-50 placeholder:text-purple-400/50 h-12 text-base focus:border-blue-400 focus:ring-blue-400/50"
+              />
             </div>
 
             <div className="space-y-2">
