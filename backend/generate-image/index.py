@@ -1,5 +1,7 @@
 import json
 import urllib.parse
+import urllib.request
+import time
 from typing import Dict, Any
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
@@ -53,7 +55,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     
-    import time
     seed = int(time.time() * 1000)
     
     encoded_prompt = urllib.parse.quote(prompt)

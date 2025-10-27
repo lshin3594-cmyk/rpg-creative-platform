@@ -98,7 +98,30 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
       if (!response.ok) throw new Error('Generation failed');
       
       const data = await response.json();
-      setGeneratedAvatar(data.url);
+      const imageUrl = data.url;
+      
+      console.log('🖼️ Got image URL:', imageUrl);
+      
+      // Ждём загрузки картинки с pollinations.ai
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => {
+          console.log('✅ Image loaded successfully');
+          resolve();
+        };
+        img.onerror = () => {
+          console.error('❌ Image failed to load');
+          reject(new Error('Image loading failed'));
+        };
+        img.src = imageUrl;
+        
+        // Таймаут 60 секунд на генерацию
+        setTimeout(() => reject(new Error('Image generation timeout')), 60000);
+      });
+      
+      setGeneratedAvatar(imageUrl);
       
       toast({
         title: 'Аватар готов!',
