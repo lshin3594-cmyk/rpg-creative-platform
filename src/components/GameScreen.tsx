@@ -7,12 +7,16 @@ import { StoryMessages } from '@/components/game/StoryMessages';
 import { StoryInput } from '@/components/game/StoryInput';
 import { EpisodesTimeline } from '@/components/game/EpisodesTimeline';
 import { useGameLogic } from '@/components/game/useGameLogic';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 interface GameScreenProps {
   gameId?: string;
 }
 
 export const GameScreen = ({ gameId }: GameScreenProps) => {
+  const [showMobilePanel, setShowMobilePanel] = useState(false);
+  
   const {
     messages,
     characters,
@@ -50,18 +54,41 @@ export const GameScreen = ({ gameId }: GameScreenProps) => {
 
   return (
     <div className="h-screen w-screen flex overflow-hidden bg-transparent relative">
+      {/* Мобильная кнопка открытия панели */}
+      <Button
+        onClick={() => setShowMobilePanel(!showMobilePanel)}
+        className="md:hidden fixed top-4 left-4 z-50 w-12 h-12 rounded-full p-0 bg-primary/20 hover:bg-primary/30 border border-primary/40"
+      >
+        <Icon name={showMobilePanel ? 'X' : 'Menu'} size={24} />
+      </Button>
+
       <div className="relative z-10 flex w-full h-full">
-        <CharactersPanel
-          characters={characters}
-          agentsEnabled={agentsEnabled}
-          autoIllustrations={autoIllustrations}
-          gameSettings={gameSettings}
-          onAgentsToggle={setAgentsEnabled}
-          onIllustrationsToggle={setAutoIllustrations}
-          onCreateCharacter={() => setShowCreateChar(true)}
-          onOpenJournal={() => setShowJournal(true)}
-          onKickAI={handleKickAI}
-        />
+        {/* Оверлей для мобилки */}
+        {showMobilePanel && (
+          <div 
+            className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+            onClick={() => setShowMobilePanel(false)}
+          />
+        )}
+        
+        {/* Панель персонажей */}
+        <div className={`
+          fixed md:relative z-40 md:z-auto
+          transition-transform duration-300 ease-in-out
+          ${showMobilePanel ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        `}>
+          <CharactersPanel
+            characters={characters}
+            agentsEnabled={agentsEnabled}
+            autoIllustrations={autoIllustrations}
+            gameSettings={gameSettings}
+            onAgentsToggle={setAgentsEnabled}
+            onIllustrationsToggle={setAutoIllustrations}
+            onCreateCharacter={() => setShowCreateChar(true)}
+            onOpenJournal={() => setShowJournal(true)}
+            onKickAI={handleKickAI}
+          />
+        </div>
 
         <div className="flex-1 flex flex-col h-full overflow-hidden">
           <GameHeader
