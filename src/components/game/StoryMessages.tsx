@@ -41,16 +41,6 @@ export const StoryMessages = forwardRef<HTMLDivElement, StoryMessagesProps>(
                     </div>
                   )}
                   <div className={`flex-1 max-w-4xl ${message.type === 'user' ? 'ml-16' : 'mr-16'}`}>
-                    {message.illustration && message.type === 'ai' && (
-                      <div className="mb-4 rounded-lg overflow-hidden border-2 border-primary/30">
-                        <img 
-                          src={message.illustration} 
-                          alt="Episode illustration"
-                          className="w-full aspect-[21/9] object-cover"
-                          loading="lazy"
-                        />
-                      </div>
-                    )}
                     <div
                       className={`rounded-lg p-6 ${
                         message.type === 'user'
@@ -60,6 +50,16 @@ export const StoryMessages = forwardRef<HTMLDivElement, StoryMessagesProps>(
                     >
                       <p className="whitespace-pre-wrap leading-relaxed text-foreground">{message.content}</p>
                     </div>
+                    {message.illustration && message.type === 'ai' && (
+                      <div className="mt-4 rounded-lg overflow-hidden border-2 border-primary/30">
+                        <img 
+                          src={message.illustration} 
+                          alt="Episode illustration"
+                          className="w-full aspect-[21/9] object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    )}
                   </div>
                   {message.type === 'user' && (
                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center flex-shrink-0 border-2 border-primary">

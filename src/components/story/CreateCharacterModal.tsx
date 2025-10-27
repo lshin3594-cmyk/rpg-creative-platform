@@ -6,6 +6,9 @@ import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import func2url from '../../../backend/func2url.json';
+
+const IMAGE_GEN_URL = func2url['generate-image'];
 
 interface Character {
   name: string;
@@ -59,7 +62,7 @@ export const CreateCharacterModal = ({
       
       const prompt = `Half-body portrait of ${genderText} character named ${name}${ageText}, ${appearance}, ${settingText}, professional character art, highly detailed, 8k quality, cinematic lighting, sharp focus, artstation quality`;
       
-      const response = await fetch('https://functions.poehali.dev/16a136ce-ff21-4430-80df-ad1caa87a3a7', {
+      const response = await fetch(IMAGE_GEN_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })
