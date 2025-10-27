@@ -80,11 +80,15 @@ export const ImageGenerator = ({
     try {
       const puter = (window as any).puter;
       
-      if (!puter) {
-        throw new Error('Puter.js не загружен');
+      if (!puter || !puter.ai || !puter.ai.txt2img) {
+        throw new Error('Puter.js не загружен или недоступен');
       }
 
       const imageDataUrl = await puter.ai.txt2img(enhancedPrompt, selectedModel);
+      
+      if (!imageDataUrl) {
+        throw new Error('Не удалось получить изображение');
+      }
       
       onImageGenerated(imageDataUrl);
       setPrompt('');
@@ -95,8 +99,9 @@ export const ImageGenerator = ({
         description: `Изображение сгенерировано через ${selectedModel === 'dall-e-3' ? 'DALL-E 3' : 'DALL-E 2'}`,
       });
     } catch (error) {
+      console.error('Image generation error:', error);
       toast({
-        title: "Ошибка",
+        title: "Ошибка генерации",
         description: error instanceof Error ? error.message : "Не удалось сгенерировать изображение",
         variant: "destructive"
       });
