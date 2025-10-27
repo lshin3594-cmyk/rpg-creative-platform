@@ -62,11 +62,14 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
 
     setIsGeneratingAvatar(true);
     try {
-      const characterName = name.trim() || 'fantasy character';
-      const raceText = race ? `, ${race} race` : '';
-      const roleText = role ? `, ${role}` : '';
+      const timestamp = Date.now();
+      const characterName = name.trim() || 'character';
+      const raceInfo = race ? `Race: ${race}.` : '';
+      const roleInfo = role ? `Role: ${role}.` : '';
       
-      const prompt = `Professional fantasy RPG character portrait: ${characterName}${raceText}${roleText}. Physical appearance: ${appearance}. Style: square format, head and shoulders shot, facing camera, detailed facial features, fantasy art style, digital painting, sharp focus, dramatic lighting, high quality, artstation quality, character concept art`;
+      const prompt = `Fantasy RPG character portrait. ${raceInfo} ${roleInfo} EXACT physical features: ${appearance}. Style: square portrait format, front-facing headshot, professional character concept art, detailed realistic face, digital painting, sharp focus, high quality. Seed: ${timestamp}`;
+      
+      console.log('Generating avatar with prompt:', prompt);
       
       const response = await fetch(IMAGE_GEN_URL, {
         method: 'POST',
