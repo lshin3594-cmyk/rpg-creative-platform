@@ -173,7 +173,7 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
           <div className="flex flex-col items-center space-y-4">
             <div className="relative group">
               {generatedAvatar ? (
-                <div className="w-48 h-48 rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 p-1">
+                <div className="w-96 h-96 rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 p-1">
                   <img 
                     src={generatedAvatar} 
                     alt="Аватар персонажа" 
@@ -181,7 +181,7 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
                   />
                 </div>
               ) : (
-                <div className="w-48 h-48 rounded-2xl bg-gradient-to-br from-purple-900/50 to-pink-900/50 border-2 border-purple-500/30 flex items-center justify-center">
+                <div className="w-96 h-96 rounded-2xl bg-gradient-to-br from-purple-900/50 to-pink-900/50 border-2 border-purple-500/30 flex items-center justify-center">
                   <Icon name="User" size={64} className="text-purple-400/50" />
                 </div>
               )}
