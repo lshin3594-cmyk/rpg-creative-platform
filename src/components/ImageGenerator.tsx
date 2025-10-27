@@ -5,7 +5,6 @@ import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import funcUrls from '../../backend/func2url.json';
 
 interface ImageGeneratorProps {
@@ -25,7 +24,6 @@ export const ImageGenerator = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [enhancedPrompt, setEnhancedPrompt] = useState('');
   const [isTranslating, setIsTranslating] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<'dall-e-2' | 'dall-e-3'>('dall-e-3');
   const { toast } = useToast();
 
   const handleTranslate = async () => {
@@ -78,31 +76,27 @@ export const ImageGenerator = ({
 
     setIsGenerating(true);
     try {
-      const puter = (window as any).puter;
-      
-      if (!puter || !puter.ai || !puter.ai.txt2img) {
-        throw new Error('Puter.js не загружен или недоступен');
-      }
+      const response = await fetch(funcUrls['generate-image'], {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: enhancedPrompt })
+      });
 
-      const imageDataUrl = await puter.ai.txt2img(enhancedPrompt, selectedModel);
-      
-      if (!imageDataUrl) {
-        throw new Error('Не удалось получить изображение');
-      }
-      
-      onImageGenerated(imageDataUrl);
+      if (!response.ok) throw new Error('Ошибка генерации');
+
+      const data = await response.json();
+      onImageGenerated(data.url);
       setPrompt('');
       setEnhancedPrompt('');
       
       toast({
         title: "Успешно",
-        description: `Изображение сгенерировано через ${selectedModel === 'dall-e-3' ? 'DALL-E 3' : 'DALL-E 2'}`,
+        description: "Изображение сгенерировано",
       });
     } catch (error) {
-      console.error('Image generation error:', error);
       toast({
-        title: "Ошибка генерации",
-        description: error instanceof Error ? error.message : "Не удалось сгенерировать изображение",
+        title: "Ошибка",
+        description: "Не удалось сгенерировать изображение",
         variant: "destructive"
       });
     } finally {
@@ -119,7 +113,7 @@ export const ImageGenerator = ({
         </div>
         <Badge variant="outline" className="gap-1">
           <Icon name="Sparkles" size={12} />
-          {selectedModel === 'dall-e-3' ? 'DALL-E 3' : 'DALL-E 2'}
+          FLUX AI
         </Badge>
       </div>
       
@@ -138,29 +132,6 @@ export const ImageGenerator = ({
           </div>
         </div>
       )}
-
-      <div className="space-y-2">
-        <Label>Модель генерации</Label>
-        <Select value={selectedModel} onValueChange={(value: 'dall-e-2' | 'dall-e-3') => setSelectedModel(value)}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="dall-e-3">
-              <div className="flex items-center gap-2">
-                <Icon name="Sparkles" size={14} />
-                DALL-E 3 (лучшее качество)
-              </div>
-            </SelectItem>
-            <SelectItem value="dall-e-2">
-              <div className="flex items-center gap-2">
-                <Icon name="Zap" size={14} />
-                DALL-E 2 (быстрее)
-              </div>
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
 
       <div className="space-y-2">
         <Label>Ваше описание</Label>
@@ -195,7 +166,7 @@ export const ImageGenerator = ({
         <div className="space-y-2 p-3 border-2 border-primary/30 rounded-lg bg-primary/5">
           <div className="flex items-center gap-2">
             <Icon name="Sparkles" size={16} className="text-primary" />
-            <Label className="text-sm font-semibold">Улучшенный промпт для DALL-E</Label>
+            <Label className="text-sm font-semibold">Улучшенный промпт для FLUX</Label>
           </div>
           <p className="text-sm text-foreground/80 leading-relaxed">{enhancedPrompt}</p>
         </div>
@@ -210,7 +181,7 @@ export const ImageGenerator = ({
         {isGenerating ? (
           <>
             <Icon name="Loader2" size={20} className="animate-spin" />
-            Генерация через {selectedModel === 'dall-e-3' ? 'DALL-E 3' : 'DALL-E 2'}...
+            Генерация...
           </>
         ) : (
           <>
