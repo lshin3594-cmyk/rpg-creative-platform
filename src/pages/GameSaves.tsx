@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,72 +7,35 @@ import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
-
-interface GameSave {
-  id: string;
-  gameSettings: {
-    name: string;
-    genre: string;
-    rating: string;
-    setting?: string;
-    initialCharacters?: Array<{
-      name: string;
-      role?: string;
-    }>;
-  };
-  history: any[];
-  currentStory: string;
-  episodeCount: number;
-  savedAt: string;
-  lastAction: string;
-  coverUrl?: string;
-}
+import { useRpgGames } from '@/hooks/useRpgGames';
 
 export default function GameSaves() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [saves, setSaves] = useState<GameSave[]>([]);
+  const { games, loading, deleteGame, loadGames } = useRpgGames();
 
   useEffect(() => {
-    loadSaves();
+    loadGames();
   }, []);
 
-  const loadSaves = () => {
-    const savedGames = JSON.parse(localStorage.getItem('game-saves') || '[]');
-    
-    const validSaves = savedGames.filter((save: any) => {
-      return save.currentStory && save.currentStory.length > 0;
-    });
-    
-    if (validSaves.length !== savedGames.length) {
-      console.log(`🧹 Cleaned ${savedGames.length - validSaves.length} invalid saves`);
-      localStorage.setItem('game-saves', JSON.stringify(validSaves));
+  const handleDelete = async (id: number) => {
+    const success = await deleteGame(id);
+    if (success) {
+      toast({
+        title: 'Удалено',
+        description: 'Игра удалена'
+      });
+    } else {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось удалить игру',
+        variant: 'destructive'
+      });
     }
-    
-    const normalizedSaves = validSaves.map((save: any) => ({
-      ...save,
-      gameSettings: save.gameSettings || save.settings || {},
-      episodeCount: save.episodeCount || save.history?.length || 0,
-      lastAction: save.lastAction || 'Начало игры'
-    }));
-    setSaves(normalizedSaves.sort((a: GameSave, b: GameSave) => 
-      new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
-    ));
   };
 
-  const handleDelete = (id: string) => {
-    const savedGames = JSON.parse(localStorage.getItem('game-saves') || '[]');
-    const updated = savedGames.filter((g: GameSave) => g.id !== id);
-    localStorage.setItem('game-saves', JSON.stringify(updated));
-    loadSaves();
-    toast({
-      title: 'Удалено',
-      description: 'Сохранение игры удалено'
-    });
-  };
-
-  const handleContinue = (save: GameSave) => {
-    navigate('/play-game', { state: { gameSettings: save.gameSettings, existingSave: save } });
+  const handleContinue = (game: any) => {
+    navigate('/play-game', { state: { gameId: game.id } });
   };
 
   return (
@@ -94,7 +57,14 @@ export default function GameSaves() {
           </Button>
         </div>
 
-        {saves.length === 0 ? (
+        {loading ? (
+          <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
+            <CardContent className="py-16 text-center">
+              <Icon name="Loader2" size={64} className="mx-auto text-muted-foreground mb-4 animate-spin" />
+              <h3 className="text-xl font-semibold mb-2">Загрузка...</h3>
+            </CardContent>
+          </Card>
+        ) : games.length === 0 ? (
           <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
             <CardContent className="py-16 text-center">
               <Icon name="GamepadIcon" size={64} className="mx-auto text-muted-foreground mb-4" />
@@ -108,77 +78,59 @@ export default function GameSaves() {
           </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {saves.map((save) => (
-              <Card key={save.id} className="bg-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all group overflow-hidden">
-                {save.coverUrl && (
-                  <div className="relative w-full h-40 overflow-hidden">
-                    <img 
-                      src={save.coverUrl} 
-                      alt={save.gameSettings.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-                  </div>
-                )}
+            {games.map((game) => (
+              <Card key={game.id} className="bg-card/50 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all group overflow-hidden">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 line-clamp-1">
                     <Icon name="Gamepad2" size={18} className="flex-shrink-0 text-primary" />
-                    <span className="truncate">{save.gameSettings?.name || 'Игра'}</span>
+                    <span className="truncate">{game.title || 'Игра'}</span>
                   </CardTitle>
                   <CardDescription className="flex flex-wrap gap-2">
-                    <Badge variant="secondary" className="text-xs">
-                      {save.gameSettings?.genre || 'Фэнтези'}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {save.gameSettings?.rating || '18+'}
-                    </Badge>
+                    {game.genre && (
+                      <Badge variant="secondary" className="text-xs">
+                        {game.genre}
+                      </Badge>
+                    )}
+                    {game.difficulty && (
+                      <Badge variant="outline" className="text-xs">
+                        {game.difficulty}
+                      </Badge>
+                    )}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {save.gameSettings?.setting && (
+                    {game.setting && (
                       <div className="text-xs text-muted-foreground bg-primary/5 p-2 rounded border border-primary/10">
                         <Icon name="Map" size={12} className="inline mr-1" />
-                        {save.gameSettings.setting.slice(0, 80)}{save.gameSettings.setting.length > 80 ? '...' : ''}
-                      </div>
-                    )}
-                    
-                    {save.gameSettings?.initialCharacters && Array.isArray(save.gameSettings.initialCharacters) && save.gameSettings.initialCharacters.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {save.gameSettings.initialCharacters.filter(char => char && char.name).slice(0, 3).map((char, idx) => (
-                          <Badge key={idx} variant="outline" className="text-xs">
-                            <Icon name="User" size={10} className="mr-1" />
-                            {char.name}
-                          </Badge>
-                        ))}
-                        {save.gameSettings.initialCharacters.filter(char => char && char.name).length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{save.gameSettings.initialCharacters.filter(char => char && char.name).length - 3}
-                          </Badge>
-                        )}
+                        {game.setting.slice(0, 80)}{game.setting.length > 80 ? '...' : ''}
                       </div>
                     )}
                     
                     <div className="text-sm space-y-1">
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Icon name="BookMarked" size={14} />
-                        <span>Эпизод {save.episodeCount}</span>
+                        <span>Эпизодов: {game.actions_log?.length || 0}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Icon name="Clock" size={14} />
-                        <span className="text-xs">
-                          {formatDistanceToNow(new Date(save.savedAt), { addSuffix: true, locale: ru })}
-                        </span>
-                      </div>
+                      {game.last_played && (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Icon name="Clock" size={14} />
+                          <span className="text-xs">
+                            {formatDistanceToNow(new Date(game.last_played), { addSuffix: true, locale: ru })}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     
-                    <p className="text-sm text-muted-foreground line-clamp-2 min-h-[40px]">
-                      {save.lastAction}
-                    </p>
+                    {game.current_chapter && (
+                      <p className="text-sm text-muted-foreground line-clamp-2 min-h-[40px]">
+                        {game.current_chapter}
+                      </p>
+                    )}
                     
                     <div className="flex gap-2">
                       <Button 
-                        onClick={() => handleContinue(save)}
+                        onClick={() => handleContinue(game)}
                         size="sm" 
                         className="flex-1 gap-2"
                       >
@@ -186,7 +138,7 @@ export default function GameSaves() {
                         Продолжить
                       </Button>
                       <Button
-                        onClick={() => handleDelete(save.id)}
+                        onClick={() => handleDelete(game.id)}
                         variant="destructive"
                         size="sm"
                         className="gap-2"
