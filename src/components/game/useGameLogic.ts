@@ -246,6 +246,8 @@ export const useGameLogic = () => {
 
       const data = await response.json();
       
+      const decisionAnalysis = data.decisionAnalysis || {};
+      
       const aiMessage: Message = {
         type: 'ai',
         content: data.text,
@@ -254,7 +256,19 @@ export const useGameLogic = () => {
         episode: data.episode || currentEpisode
       };
 
-      setMessages(prev => [...prev, aiMessage]);
+      setMessages(prev => {
+        const updated = [...prev, aiMessage];
+        
+        if (decisionAnalysis.isMajorChoice) {
+          const lastUserMsg = updated.filter(m => m.type === 'user').pop();
+          if (lastUserMsg) {
+            lastUserMsg.emotionalTone = decisionAnalysis.emotionalTone;
+            lastUserMsg.keyDecisions = [decisionAnalysis.playerWords];
+          }
+        }
+        
+        return updated;
+      });
       
       const aiTextLength = data.text.length;
       const newTotalSymbols = totalSymbolsInEpisode + aiTextLength;
@@ -333,31 +347,73 @@ export const useGameLogic = () => {
     setCharacters(prev => [...prev, character]);
   };
 
-  // Автосохранение игры
+  // Автосохранение игры с памятью
   useEffect(() => {
-    if (!gameSettings || messages.length === 0) return;
+    if (!gameSettings || messages.length === 0 || !currentGameId) return;
 
-    try {
-      const gameSave = {
-        id: gameSettings.name + '-' + Date.now(),
-        gameSettings,
-        history: messages.map(m => ({ type: m.type, content: m.content })),
-        currentStory: messages[messages.length - 1]?.content || '',
-        episodeCount: currentEpisode,
-        savedAt: new Date().toISOString(),
-        lastAction: messages.filter(m => m.type === 'user').slice(-1)[0]?.content || 'Начало игры'
+    const updateStoryMemory = () => {
+      const keyMoments = messages
+        .filter(m => m.type === 'user' && m.keyDecisions && m.keyDecisions.length > 0)
+        .map((m, idx) => ({
+          turn: idx + 1,
+          playerAction: m.keyDecisions![0],
+          consequence: messages[messages.indexOf(m) + 1]?.content.slice(0, 200) || '',
+          emotionalWeight: m.emotionalTone === 'romantic' ? 100 : m.emotionalTone === 'aggressive' ? -50 : 0
+        }));
+      
+      const characterRelationships: Record<string, number> = {};
+      characters.forEach(char => {
+        const romanticMoments = messages.filter(
+          m => m.type === 'user' && m.emotionalTone === 'romantic' && 
+          m.content.toLowerCase().includes(char.name.toLowerCase())
+        ).length;
+        const aggressiveMoments = messages.filter(
+          m => m.type === 'user' && m.emotionalTone === 'aggressive' && 
+          m.content.toLowerCase().includes(char.name.toLowerCase())
+        ).length;
+        const friendlyMoments = messages.filter(
+          m => m.type === 'user' && m.emotionalTone === 'friendly' && 
+          m.content.toLowerCase().includes(char.name.toLowerCase())
+        ).length;
+        
+        characterRelationships[char.name] = (romanticMoments * 20 + friendlyMoments * 10 - aggressiveMoments * 15);
+      });
+      
+      return {
+        keyMoments: keyMoments.slice(-5),
+        characterRelationships,
+        worldChanges: []
       };
+    };
 
-      const existingSaves = JSON.parse(localStorage.getItem('game-saves') || '[]');
-      const updatedSaves = existingSaves.filter((s: any) => 
-        s.gameSettings?.name !== gameSettings.name
-      );
-      updatedSaves.unshift(gameSave);
-      localStorage.setItem('game-saves', JSON.stringify(updatedSaves.slice(0, 50)));
-    } catch (error) {
-      console.error('Ошибка автосохранения:', error);
-    }
-  }, [messages, currentEpisode, gameSettings]);
+    const saveGameToDB = async () => {
+      try {
+        const storyMemory = updateStoryMemory();
+        
+        await updateGame(currentGameId, {
+          actions_log: messages.map(m => ({
+            type: m.type,
+            content: m.content,
+            timestamp: m.timestamp.toISOString(),
+            id: m.id,
+            episode: m.episode,
+            illustration: m.illustration,
+            keyDecisions: m.keyDecisions,
+            emotionalTone: m.emotionalTone
+          })),
+          story_context: JSON.stringify({
+            ...gameSettings,
+            storyMemory
+          })
+        });
+      } catch (error) {
+        console.error('Ошибка автосохранения в БД:', error);
+      }
+    };
+
+    const timeoutId = setTimeout(saveGameToDB, 2000);
+    return () => clearTimeout(timeoutId);
+  }, [messages, currentEpisode, gameSettings, characters, currentGameId, updateGame]);
 
   const handleDiceRoll = () => {
     const actions = [

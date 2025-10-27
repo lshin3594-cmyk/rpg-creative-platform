@@ -13,6 +13,8 @@ export interface Message {
   id: string;
   episode: number;
   illustration?: string;
+  keyDecisions?: string[];
+  emotionalTone?: 'aggressive' | 'friendly' | 'cautious' | 'romantic' | 'neutral';
 }
 
 export interface GameSettings {
@@ -25,6 +27,18 @@ export interface GameSettings {
   rating?: string;
   eloquenceLevel?: number;
   aiModel?: 'deepseek';
+  aiInstructions?: string;
+  initialCharacters?: Character[];
+  storyMemory?: {
+    keyMoments: Array<{
+      turn: number;
+      playerAction: string;
+      consequence: string;
+      emotionalWeight: number;
+    }>;
+    characterRelationships: Record<string, number>;
+    worldChanges: string[];
+  };
 }
 
 import func2url from '../../../backend/func2url.json';

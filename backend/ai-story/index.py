@@ -79,8 +79,36 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         'body': json.dumps({
             'text': ai_response['text'],
             'characters': ai_response['characters'],
-            'episode': ai_response['episode']
+            'episode': ai_response['episode'],
+            'decisionAnalysis': ai_response.get('decisionAnalysis', {})
         }, ensure_ascii=False)
+    }
+
+def analyze_player_decision(action: str, history: List[Dict]) -> Dict[str, Any]:
+    """
+    Анализирует слова игрока и определяет ключевые решения/тон
+    """
+    action_lower = action.lower()
+    
+    emotional_tone = 'neutral'
+    if any(word in action_lower for word in ['атакую', 'убью', 'нападаю', 'бью', 'уничтожу']):
+        emotional_tone = 'aggressive'
+    elif any(word in action_lower for word in ['помогаю', 'спасаю', 'поддержу', 'друг', 'согласен']):
+        emotional_tone = 'friendly'
+    elif any(word in action_lower for word in ['осторожно', 'прячусь', 'жду', 'проверю', 'подозреваю']):
+        emotional_tone = 'cautious'
+    elif any(word in action_lower for word in ['целую', 'обнимаю', 'люблю', 'признаюсь', 'флиртую', 'нравишься']):
+        emotional_tone = 'romantic'
+    
+    is_major_choice = any(word in action_lower for word in [
+        'решаю', 'выбираю', 'приезжаю', 'уезжаю', 'соглашаюсь', 'отказываюсь',
+        'убиваю', 'спасаю', 'предаю', 'доверяю', 'люблю', 'ненавижу'
+    ])
+    
+    return {
+        'emotionalTone': emotional_tone,
+        'isMajorChoice': is_major_choice,
+        'playerWords': action
     }
 
 def generate_story_continuation(action: str, settings: Dict, history: List[Dict]) -> Dict[str, Any]:
@@ -92,7 +120,10 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
     narrative_mode = settings.get('narrativeMode', 'third')
     setting_description = settings.get('setting', '')
     game_name = settings.get('name', 'Приключение')
+    story_memory = settings.get('storyMemory', {'keyMoments': [], 'characterRelationships': {}, 'worldChanges': []})
     print('AI Model: DeepSeek')
+    
+    decision_analysis = analyze_player_decision(action, history)
     
     # Формируем системный промт
     system_prompt = build_system_prompt(role, narrative_mode, setting_description, game_name)
@@ -148,9 +179,25 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
             enhanced_action += "- 800-1200 символов"
         messages.append({'role': 'user', 'content': enhanced_action})
     else:
+        memory_context = ""
+        if story_memory.get('keyMoments') and len(story_memory['keyMoments']) > 0:
+            memory_context += "\n\n🧠 ПАМЯТЬ ИГРЫ (ключевые моменты):\n"
+            for moment in story_memory['keyMoments'][-3:]:
+                memory_context += f"• Ход {moment['turn']}: Игрок {moment['playerAction']} → {moment['consequence']}\n"
+        
+        if story_memory.get('characterRelationships'):
+            memory_context += "\n💞 ОТНОШЕНИЯ С ПЕРСОНАЖАМИ:\n"
+            for char_name, relation in story_memory['characterRelationships'].items():
+                relation_text = "враждебные" if relation < -50 else "напряженные" if relation < 0 else "нейтральные" if relation < 50 else "дружеские" if relation < 80 else "романтические"
+                memory_context += f"• {char_name}: {relation_text} ({relation})\n"
+        
+        if decision_analysis['isMajorChoice']:
+            memory_context += f"\n⚡ ВАЖНОЕ РЕШЕНИЕ ИГРОКА (тон: {decision_analysis['emotionalTone']})\n"
+            memory_context += "ОБЯЗАТЕЛЬНО учти это решение и сделай ЗНАЧИМЫЕ последствия!\n"
+        
         # В процессе игры ПОСТОЯННО напоминаем про сеттинг (каждые 2 хода)
         if setting_description and len(history) % 2 == 0:
-            action_with_reminder = f"{action}\n\n🚨 НАПОМИНАНИЕ О СЕТТИНГЕ:\n"
+            action_with_reminder = f"{action}{memory_context}\n\n🚨 НАПОМИНАНИЕ О СЕТТИНГЕ:\n"
             action_with_reminder += f"Игра идёт в мире: {setting_description}\n"
             action_with_reminder += "❌ НЕ СМЕЙ добавлять элементы из других вселенных\n"
             action_with_reminder += "❌ НЕ СМЕЙ менять правила этого мира\n"
@@ -158,7 +205,7 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
             action_with_reminder += "✅ NPC действуют согласно ЭТОМУ миру"
             messages.append({'role': 'user', 'content': action_with_reminder})
         else:
-            messages.append({'role': 'user', 'content': action})
+            messages.append({'role': 'user', 'content': action + memory_context})
     
     # Проверяем кеш
     cache_key = get_cache_key(json.dumps(messages, ensure_ascii=False))
@@ -199,7 +246,8 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
             result = {
                 'text': ai_text,
                 'characters': characters,
-                'episode': len(history) // 2 + 1
+                'episode': len(history) // 2 + 1,
+                'decisionAnalysis': decision_analysis
             }
             
             # Сохраняем в кеш

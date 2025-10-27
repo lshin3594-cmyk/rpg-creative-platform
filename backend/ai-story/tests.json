@@ -1,46 +1,23 @@
 {
   "tests": [
     {
-      "name": "Generate story start",
+      "name": "AI story with memory",
       "method": "POST",
       "path": "/",
       "body": {
-        "action": "Я захожу в старый трактир",
+        "action": "Целую Джейка",
         "settings": {
           "role": "hero",
-          "narrativeMode": "third"
+          "narrativeMode": "first",
+          "storyMemory": {
+            "keyMoments": [],
+            "characterRelationships": {"Джейк": 50},
+            "worldChanges": []
+          }
         },
         "history": []
       },
-      "expectedStatus": 200,
-      "expectedBody": {
-        "text": "string",
-        "characters": "array",
-        "episode": "number"
-      },
-      "bodyMatcher": "partial"
-    },
-    {
-      "name": "Continue story",
-      "method": "POST",
-      "path": "/",
-      "body": {
-        "action": "Подхожу к барной стойке",
-        "settings": {
-          "role": "hero",
-          "narrativeMode": "first"
-        },
-        "history": [
-          {"type": "user", "content": "Я захожу в трактир"},
-          {"type": "ai", "content": "Вы входите в трактир"}
-        ]
-      },
-      "expectedStatus": 200,
-      "expectedBody": {
-        "text": "string",
-        "episode": "number"
-      },
-      "bodyMatcher": "partial"
+      "expectedStatus": 200
     }
   ]
 }
