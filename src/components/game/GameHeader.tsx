@@ -52,53 +52,35 @@ export const GameHeader = ({ gameSettings, currentEpisode, messages = [], onBack
 
   return (
     <>
-      <div className="relative p-4 border-b border-primary/30 bg-black/80 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <div className="relative p-2 md:p-4 border-b border-primary/30 bg-black/80 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
           <Button 
             variant="ghost" 
             size="sm" 
             onClick={() => setShowSettings(true)}
-            className="border border-primary/50 hover:border-primary hover:bg-primary/10 transition-all"
+            className="border border-primary/50 hover:border-primary hover:bg-primary/10 transition-all text-xs md:text-sm px-2 md:px-4"
           >
-            <Icon name="FileText" size={16} className="mr-2" />
-            Саммари партии
+            <Icon name="FileText" size={14} className="md:mr-2" />
+            <span className="hidden md:inline">Саммари партии</span>
           </Button>
 
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent blur-xl" />
-              <div className="relative flex items-center gap-4 px-8 py-3 bg-black/60 border-2 border-primary/60 clip-hexagon">
-                <button className="text-primary hover:text-primary/80 transition-colors">
-                  <Icon name="ChevronLeft" size={24} />
-                </button>
-                
-                <div className="flex items-center gap-2">
-                  <Icon name="Zap" size={20} className="text-primary" />
-                  <span className="text-lg font-bold text-foreground">Эпизод: {currentEpisode}</span>
-                </div>
-
-                <button className="text-primary hover:text-primary/80 transition-colors">
-                  <Icon name="ChevronRight" size={24} />
-                </button>
-              </div>
-            </div>
+          <div className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1 md:py-2 bg-black/60 border border-primary/60 rounded-lg">
+            <Icon name="Zap" size={16} className="text-primary md:w-5 md:h-5" />
+            <span className="text-sm md:text-lg font-bold text-foreground">Эп. {currentEpisode}</span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 md:gap-3">
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={handleSaveToLibrary}
-              className="border border-green-500/50 hover:border-green-500 hover:bg-green-500/10 transition-all"
+              className="border border-green-500/50 hover:border-green-500 hover:bg-green-500/10 transition-all text-xs md:text-sm px-2 md:px-4"
             >
-              <Icon name="Save" size={16} className="mr-2" />
-              Сохранить
+              <Icon name="Save" size={14} className="md:mr-2" />
+              <span className="hidden md:inline">Сохранить</span>
             </Button>
-            <div className="text-right mr-4">
-              <div className="text-xs text-muted-foreground">{gameSettings.role === 'author' ? 'Автор' : 'Герой'}</div>
-            </div>
-            <Button variant="ghost" size="icon" onClick={onBack} className="hover:bg-primary/10">
-              <Icon name="X" size={20} />
+            <Button variant="ghost" size="icon" onClick={onBack} className="hover:bg-primary/10 w-8 h-8 md:w-10 md:h-10">
+              <Icon name="X" size={16} className="md:w-5 md:h-5" />
             </Button>
           </div>
         </div>
