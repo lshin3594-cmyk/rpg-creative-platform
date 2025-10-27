@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,15 +8,40 @@ import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { useRpgGames } from '@/hooks/useRpgGames';
+import { useAuth } from '@/contexts/AuthContext';
+import { migrateLocalStorageToDb } from '@/utils/migrateLocalStorageToDb';
 
 export default function GameSaves() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { games, loading, deleteGame, loadGames } = useRpgGames();
+  const { games, loading, deleteGame, loadGames, createGame } = useRpgGames();
+  const { token, user } = useAuth();
+  const [migrating, setMigrating] = useState(false);
 
   useEffect(() => {
-    loadGames();
-  }, []);
+    const runMigration = async () => {
+      if (user && token && !migrating) {
+        const oldSaves = localStorage.getItem('game-saves');
+        if (oldSaves) {
+          setMigrating(true);
+          toast({
+            title: 'Миграция данных',
+            description: 'Переносим старые игры в облако...'
+          });
+          await migrateLocalStorageToDb(createGame, token);
+          setMigrating(false);
+          toast({
+            title: 'Готово!',
+            description: 'Все игры перенесены в облако'
+          });
+          loadGames();
+        } else {
+          loadGames();
+        }
+      }
+    };
+    runMigration();
+  }, [user, token]);
 
   const handleDelete = async (id: number) => {
     const success = await deleteGame(id);

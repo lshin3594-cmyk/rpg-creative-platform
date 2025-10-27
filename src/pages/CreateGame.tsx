@@ -9,12 +9,17 @@ import { RoleSelector } from '@/components/create-game/RoleSelector';
 import { NarrativeSelector } from '@/components/create-game/NarrativeSelector';
 import { GameSettings } from '@/components/create-game/GameSettings';
 import { CharacterSelector } from '@/components/create-game/CharacterSelector';
+import { useRpgGames } from '@/hooks/useRpgGames';
+import { useAuth } from '@/contexts/AuthContext';
 
 const GAME_ENTITIES_URL = 'https://functions.poehali.dev/f3c359fd-06ee-4643-bf4c-c6d7a7155696';
 
 const CreateGame = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { createGame } = useRpgGames();
+  const { user } = useAuth();
+  const [isCreating, setIsCreating] = useState(false);
   
   const [gameName, setGameName] = useState('');
   const [setting, setSetting] = useState('');
@@ -63,7 +68,16 @@ const CreateGame = () => {
     setGameName(names[Math.floor(Math.random() * names.length)]);
   };
 
-  const handleStart = () => {
+  const handleStart = async () => {
+    if (!user) {
+      toast({
+        title: 'Требуется авторизация',
+        description: 'Войдите, чтобы создать игру',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     if (!gameName.trim()) {
       toast({
         title: 'Ошибка',
@@ -91,34 +105,59 @@ const CreateGame = () => {
       return;
     }
 
-    const selectedChars = availableCharacters.filter(c => selectedCharacterIds.includes(c.id));
-    
-    const gameSettings = {
-      name: gameName,
-      setting,
-      aiInstructions,
-      role,
-      narrativeMode,
-      playerCount: 1,
-      genre: genres.join(', '),
-      rating,
-      aiModel,
-      initialCharacters: selectedChars.map(c => ({
-        name: c.name,
-        role: c.role,
-        description: c.personality || c.backstory || '',
-        scenes: c.scenes || '',
-        quotes: c.quotes || '',
-        ideas: c.ideas || ''
-      })),
-      createdAt: new Date().toISOString()
-    };
+    setIsCreating(true);
 
-    // Сохраняем настройки в localStorage перед переходом
-    localStorage.setItem('current-game-settings', JSON.stringify(gameSettings));
-    localStorage.removeItem('current-game-progress'); // Очищаем прогресс старой игры
+    try {
+      const selectedChars = availableCharacters.filter(c => selectedCharacterIds.includes(c.id));
+      
+      const gameSettings = {
+        role,
+        narrativeMode,
+        playerCount: 1,
+        genre: genres.join(', '),
+        rating,
+        aiModel,
+        aiInstructions,
+        initialCharacters: selectedChars.map(c => ({
+          name: c.name,
+          role: c.role,
+          description: c.personality || c.backstory || '',
+          scenes: c.scenes || '',
+          quotes: c.quotes || '',
+          ideas: c.ideas || ''
+        }))
+      };
 
-    navigate('/play-game', { state: { gameSettings } });
+      const newGame = await createGame({
+        title: gameName,
+        genre: genres.join(', '),
+        setting: setting,
+        difficulty: rating,
+        story_context: JSON.stringify(gameSettings)
+      });
+
+      if (newGame) {
+        toast({
+          title: 'Игра создана',
+          description: 'Начинаем приключение!'
+        });
+        navigate('/play-game', { state: { gameId: newGame.id } });
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: 'Не удалось создать игру',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось создать игру',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const toggleCharacter = (id: number) => {
@@ -199,10 +238,20 @@ const CreateGame = () => {
           <Button
             onClick={handleStart}
             size="lg"
+            disabled={isCreating}
             className="w-full gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-none text-lg py-6"
           >
-            <Icon name="Rocket" size={24} />
-            Начать игру
+            {isCreating ? (
+              <>
+                <Icon name="Loader2" size={24} className="animate-spin" />
+                Создаю игру...
+              </>
+            ) : (
+              <>
+                <Icon name="Rocket" size={24} />
+                Начать игру
+              </>
+            )}
           </Button>
         </div>
       </div>

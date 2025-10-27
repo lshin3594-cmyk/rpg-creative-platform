@@ -169,7 +169,9 @@ export function useRpgGames() {
   };
 
   useEffect(() => {
-    loadGames();
+    if (user && token) {
+      loadGames();
+    }
   }, [user, token]);
 
   return {

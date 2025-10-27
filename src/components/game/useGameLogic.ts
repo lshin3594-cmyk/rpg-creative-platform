@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Character, Message, GameSettings, AI_STORY_URL, IMAGE_GEN_URL, SAVE_STORY_URL } from './types';
+import { useRpgGames } from '@/hooks/useRpgGames';
 
 export const useGameLogic = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -19,6 +20,7 @@ export const useGameLogic = () => {
   const [agentsEnabled, setAgentsEnabled] = useState(true);
   const [autoIllustrations, setAutoIllustrations] = useState(true);
   const [generatingIllustration, setGeneratingIllustration] = useState(false);
+  const [currentGameId, setCurrentGameId] = useState<number | null>(null);
   const turnCountRef = useRef(0);
   const storyInitializedRef = useRef(false);
   const timerIntervalRef = useRef<number | null>(null);
@@ -26,68 +28,91 @@ export const useGameLogic = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const { getGame, updateGame } = useRpgGames();
 
   useEffect(() => {
-    const settingsJson = localStorage.getItem('current-game-settings');
-    if (!settingsJson) {
-      console.log('Нет настроек игры, редирект на главную');
-      toast({
-        title: 'Настройки игры не найдены',
-        description: 'Сначала создайте игру',
-        variant: 'destructive'
-      });
-      navigate('/');
-      return;
-    }
-
-    try {
-      const settings = JSON.parse(settingsJson);
-      setGameSettings({
-        ...settings,
-        genre: settings.genre || 'Фэнтези',
-        rating: settings.rating || '18+',
-        eloquenceLevel: settings.eloquenceLevel || 3,
-        aiModel: 'deepseek'
-      });
+    const loadGameFromDB = async () => {
+      const state = location.state as { gameId?: number };
       
-      if (settings.initialCharacters && settings.initialCharacters.length > 0) {
-        const validChars = settings.initialCharacters.filter((c: any) => c.name && c.role);
-        if (validChars.length > 0) {
-          setCharacters(validChars);
-        }
+      if (!state?.gameId) {
+        console.log('Нет gameId, редирект на главную');
+        toast({
+          title: 'Игра не найдена',
+          description: 'Сначала создайте игру',
+          variant: 'destructive'
+        });
+        navigate('/');
+        return;
       }
-      
-      storyInitializedRef.current = false;
-    } catch (e) {
-      console.error('Ошибка парсинга настроек', e);
-      navigate('/');
-      return;
-    }
 
-    const savedGameJson = localStorage.getItem('current-game-progress');
-    if (savedGameJson) {
       try {
-        const savedGame = JSON.parse(savedGameJson);
-        if (savedGame.messages && savedGame.messages.length > 0) {
-          setMessages(savedGame.messages.map((m: any) => ({
+        const game = await getGame(state.gameId);
+        
+        if (!game) {
+          toast({
+            title: 'Игра не найдена',
+            description: 'Не удалось загрузить игру',
+            variant: 'destructive'
+          });
+          navigate('/');
+          return;
+        }
+
+        setCurrentGameId(game.id);
+
+        let settings: any = {};
+        try {
+          if (game.story_context) {
+            settings = JSON.parse(game.story_context);
+          }
+        } catch (e) {
+          console.error('Failed to parse story_context', e);
+        }
+
+        setGameSettings({
+          name: game.title,
+          setting: game.setting || '',
+          genre: game.genre || 'Фэнтези',
+          rating: game.difficulty || '18+',
+          eloquenceLevel: settings.eloquenceLevel || 3,
+          aiModel: 'deepseek',
+          role: settings.role || 'hero',
+          narrativeMode: settings.narrativeMode || 'third',
+          playerCount: settings.playerCount || 1,
+          aiInstructions: settings.aiInstructions || '',
+          initialCharacters: settings.initialCharacters || []
+        });
+
+        if (settings.initialCharacters && settings.initialCharacters.length > 0) {
+          const validChars = settings.initialCharacters.filter((c: any) => c.name && c.role);
+          if (validChars.length > 0) {
+            setCharacters(validChars);
+          }
+        }
+
+        if (game.actions_log && Array.isArray(game.actions_log) && game.actions_log.length > 0) {
+          setMessages(game.actions_log.map((m: any) => ({
             ...m,
             timestamp: new Date(m.timestamp)
           })));
-          setCurrentEpisode(savedGame.currentEpisode || 1);
-          setTurnsInEpisode(savedGame.turnsInEpisode || 0);
-          setImagesInEpisode(savedGame.imagesInEpisode || 0);
-          setTotalSymbolsInEpisode(savedGame.totalSymbolsInEpisode || 0);
-          if (savedGame.characters) {
-            setCharacters(savedGame.characters);
-          }
           storyInitializedRef.current = true;
+        } else {
+          storyInitializedRef.current = false;
+        }
+
+        if (game.current_chapter) {
+          setCurrentEpisode(parseInt(game.current_chapter) || 1);
         }
       } catch (e) {
-        console.error('Failed to restore game progress', e);
+        console.error('Ошибка загрузки игры', e);
+        navigate('/');
       }
-    }
-  }, [navigate, toast]);
+    };
+
+    loadGameFromDB();
+  }, [location.state, navigate, toast, getGame]);
 
 
 
@@ -98,37 +123,27 @@ export const useGameLogic = () => {
   }, [messages]);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      localStorage.setItem('current-game-progress', JSON.stringify({
-        messages,
-        characters,
-        currentEpisode,
-        turnsInEpisode,
-        imagesInEpisode,
-        totalSymbolsInEpisode
-      }));
-    }
-
-    if (messages.length > 0 && messages.length % 5 === 0 && gameSettings) {
-      const saveGame = async () => {
+    if (messages.length > 0 && currentGameId && gameSettings) {
+      const saveGameToDB = async () => {
         try {
-          const storyContent = messages.map(m => `[${m.type === 'user' ? 'Игрок' : 'ИИ'}]: ${m.content}`).join('\n\n');
-          await fetch(SAVE_STORY_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              title: gameSettings.name,
-              content: storyContent,
-              genre: gameSettings.genre || 'Фэнтези',
-              story_context: storyContent
-            })
+          const lastMessage = messages[messages.length - 1];
+          await updateGame(currentGameId, {
+            actions_log: messages,
+            current_chapter: lastMessage.content.slice(0, 200),
+            story_context: JSON.stringify(gameSettings)
           });
         } catch (error) {
+          console.error('Failed to save game progress', error);
         }
       };
-      saveGame();
+
+      const timeoutId = setTimeout(() => {
+        saveGameToDB();
+      }, 2000);
+
+      return () => clearTimeout(timeoutId);
     }
-  }, [messages.length, gameSettings, characters, currentEpisode, turnsInEpisode, imagesInEpisode, totalSymbolsInEpisode]);
+  }, [messages, currentGameId, gameSettings, updateGame]);
 
   const getAgentPrompt = () => {
     turnCountRef.current += 1;
