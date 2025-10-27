@@ -37,14 +37,19 @@ const Index = () => {
         rating: '18+',
         aiModel: 'deepseek',
         aiInstructions: '',
-        initialCharacters: []
+        initialCharacters: [],
+        storyMemory: {
+          keyMoments: [],
+          characterRelationships: {},
+          worldChanges: []
+        }
       };
 
       const newGame = await createGame({
         title: `Приключение ${new Date().toLocaleDateString('ru-RU')}`,
         genre: 'Фэнтези',
         setting: 'Средневековый мир, полный магии и опасностей',
-        difficulty: 'normal',
+        difficulty: '18+',
         story_context: JSON.stringify(quickGameSettings)
       });
 

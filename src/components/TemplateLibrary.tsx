@@ -327,14 +327,19 @@ export const TemplateLibrary = () => {
         rating: template.rating,
         aiModel: 'deepseek',
         aiInstructions: template.aiInstructions,
-        initialCharacters: []
+        initialCharacters: [],
+        storyMemory: {
+          keyMoments: [],
+          characterRelationships: {},
+          worldChanges: []
+        }
       };
 
       const newGame = await createGame({
         title: template.title,
         genre: template.genre,
         setting: template.setting,
-        difficulty: 'normal',
+        difficulty: template.rating,
         story_context: JSON.stringify(gameSettings)
       });
 

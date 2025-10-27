@@ -224,6 +224,40 @@ export const useGameLogic = () => {
     }, 1000);
 
     try {
+      const keyMoments = messages
+        .filter(m => m.type === 'user' && m.keyDecisions && m.keyDecisions.length > 0)
+        .map((m, idx) => ({
+          turn: idx + 1,
+          playerAction: m.keyDecisions![0],
+          consequence: messages[messages.indexOf(m) + 1]?.content.slice(0, 200) || '',
+          emotionalWeight: m.emotionalTone === 'romantic' ? 100 : m.emotionalTone === 'aggressive' ? -50 : 0
+        }))
+        .slice(-5);
+      
+      const characterRelationships: Record<string, number> = {};
+      characters.forEach(char => {
+        const romanticMoments = messages.filter(
+          m => m.type === 'user' && m.emotionalTone === 'romantic' && 
+          m.content.toLowerCase().includes(char.name.toLowerCase())
+        ).length;
+        const aggressiveMoments = messages.filter(
+          m => m.type === 'user' && m.emotionalTone === 'aggressive' && 
+          m.content.toLowerCase().includes(char.name.toLowerCase())
+        ).length;
+        const friendlyMoments = messages.filter(
+          m => m.type === 'user' && m.emotionalTone === 'friendly' && 
+          m.content.toLowerCase().includes(char.name.toLowerCase())
+        ).length;
+        
+        characterRelationships[char.name] = (romanticMoments * 20 + friendlyMoments * 10 - aggressiveMoments * 15);
+      });
+      
+      const currentStoryMemory = {
+        keyMoments,
+        characterRelationships,
+        worldChanges: []
+      };
+      
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 90000);
       
@@ -234,7 +268,10 @@ export const useGameLogic = () => {
         },
         body: JSON.stringify({
           action: userAction + agentPrompt,
-          settings: gameSettings,
+          settings: {
+            ...gameSettings,
+            storyMemory: currentStoryMemory
+          },
           history: messages.map(m => ({ type: m.type, content: m.content }))
         }),
         signal: controller.signal
@@ -257,17 +294,20 @@ export const useGameLogic = () => {
       };
 
       setMessages(prev => {
-        const updated = [...prev, aiMessage];
+        const allMessages = [...prev, aiMessage];
         
         if (decisionAnalysis.isMajorChoice) {
-          const lastUserMsg = updated.filter(m => m.type === 'user').pop();
-          if (lastUserMsg) {
-            lastUserMsg.emotionalTone = decisionAnalysis.emotionalTone;
-            lastUserMsg.keyDecisions = [decisionAnalysis.playerWords];
+          const userMsgIndex = allMessages.map((m, i) => m.type === 'user' ? i : -1).filter(i => i >= 0).pop();
+          if (userMsgIndex !== undefined && userMsgIndex >= 0) {
+            allMessages[userMsgIndex] = {
+              ...allMessages[userMsgIndex],
+              emotionalTone: decisionAnalysis.emotionalTone,
+              keyDecisions: [decisionAnalysis.playerWords]
+            };
           }
         }
         
-        return updated;
+        return allMessages;
       });
       
       const aiTextLength = data.text.length;
