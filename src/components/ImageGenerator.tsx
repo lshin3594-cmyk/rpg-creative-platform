@@ -76,28 +76,26 @@ export const ImageGenerator = ({
 
     setIsGenerating(true);
     try {
+      const puter = (window as any).puter;
+      
+      if (!puter) {
+        throw new Error('Puter.js не загружен');
+      }
 
-      const response = await fetch(funcUrls['generate-image'], {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: enhancedPrompt })
-      });
-
-      if (!response.ok) throw new Error('Ошибка генерации');
-
-      const data = await response.json();
-      onImageGenerated(data.url);
+      const imageDataUrl = await puter.ai.txt2img(enhancedPrompt);
+      
+      onImageGenerated(imageDataUrl);
       setPrompt('');
       setEnhancedPrompt('');
       
       toast({
         title: "Успешно",
-        description: "Изображение сгенерировано через FLUX",
+        description: "Изображение сгенерировано через DALL-E 3",
       });
     } catch (error) {
       toast({
         title: "Ошибка",
-        description: "Не удалось сгенерировать изображение",
+        description: error instanceof Error ? error.message : "Не удалось сгенерировать изображение",
         variant: "destructive"
       });
     } finally {
@@ -114,7 +112,7 @@ export const ImageGenerator = ({
         </div>
         <Badge variant="outline" className="gap-1">
           <Icon name="Sparkles" size={12} />
-          FLUX AI
+          DALL-E 3
         </Badge>
       </div>
       
@@ -167,7 +165,7 @@ export const ImageGenerator = ({
         <div className="space-y-2 p-3 border-2 border-primary/30 rounded-lg bg-primary/5">
           <div className="flex items-center gap-2">
             <Icon name="Sparkles" size={16} className="text-primary" />
-            <Label className="text-sm font-semibold">Улучшенный промпт для FLUX</Label>
+            <Label className="text-sm font-semibold">Улучшенный промпт для DALL-E</Label>
           </div>
           <p className="text-sm text-foreground/80 leading-relaxed">{enhancedPrompt}</p>
         </div>
@@ -182,7 +180,7 @@ export const ImageGenerator = ({
         {isGenerating ? (
           <>
             <Icon name="Loader2" size={20} className="animate-spin" />
-            Генерация через FLUX...
+            Генерация через DALL-E 3...
           </>
         ) : (
           <>
