@@ -102,25 +102,7 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
       
       console.log('🖼️ Got image URL:', imageUrl);
       
-      // Ждём загрузки картинки с pollinations.ai
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => {
-          console.log('✅ Image loaded successfully');
-          resolve();
-        };
-        img.onerror = () => {
-          console.error('❌ Image failed to load');
-          reject(new Error('Image loading failed'));
-        };
-        img.src = imageUrl;
-        
-        // Таймаут 60 секунд на генерацию
-        setTimeout(() => reject(new Error('Image generation timeout')), 60000);
-      });
-      
+      // Просто показываем URL сразу - pollinations.ai сгенерирует при первом запросе
       setGeneratedAvatar(imageUrl);
       
       toast({
