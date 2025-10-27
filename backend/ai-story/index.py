@@ -13,7 +13,6 @@ from typing import Dict, Any, List
 from openai import OpenAI
 import httpx
 
-CLAUDE_API_KEY = os.environ.get('CLAUDE_API_KEY', '')
 DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
 
 # Кеш
@@ -93,11 +92,7 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
     narrative_mode = settings.get('narrativeMode', 'third')
     setting_description = settings.get('setting', '')
     game_name = settings.get('name', 'Приключение')
-    ai_model = settings.get('aiModel', 'gpt4o')  # По умолчанию GPT-4o
-    
-    # Определяем какую модель использовать
-    use_gpt = ai_model == 'gpt4o'
-    print(f'AI Model selected: {"GPT-4o via air.fail" if use_gpt else "DeepSeek"}')
+    print('AI Model: DeepSeek')
     
     # Формируем системный промт
     system_prompt = build_system_prompt(role, narrative_mode, setting_description, game_name)
@@ -174,88 +169,29 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
     max_retries = 3
     for attempt in range(max_retries):
         try:
-            if use_gpt:
-                # GPT-4o через air.fail прокси
-                print(f"GPT-4o API attempt {attempt + 1}/{max_retries}")
-                
-                # Извлекаем system prompt и формируем правильную структуру
-                system_content = ""
-                conversation_parts = []
-                
-                for msg in messages:
-                    if msg['role'] == 'system':
-                        system_content = msg['content']
-                    else:
-                        role_label = "USER" if msg['role'] == 'user' else "ASSISTANT"
-                        conversation_parts.append(f"{role_label}: {msg['content']}")
-                
-                # Формируем финальный промпт: system сверху, потом диалог
-                full_prompt = f"SYSTEM INSTRUCTION (CRITICAL - MUST FOLLOW):\n{system_content}\n\n{'=' * 80}\n\nCONVERSATION:\n" + "\n\n".join(conversation_parts)
-                
-                # Запрос к air.fail GPT-4o
-                import urllib.request
-                import urllib.error
-                import urllib.parse
-                
-                api_url = "https://api.air.fail/public/text/chatgpt"
-                form_data = {
-                    "content": full_prompt,
-                    "info": json.dumps({
-                        "version": "gpt-4o",
-                        "temperature": 0.7,
-                        "max_tokens": 1200
-                    })
-                }
-                
-                data = urllib.parse.urlencode(form_data).encode('utf-8')
-                headers = {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Authorization': CLAUDE_API_KEY  # Используем тот же ключ для air.fail
-                }
-                
-                req = urllib.request.Request(api_url, data=data, headers=headers, method='POST')
-                
-                with urllib.request.urlopen(req, timeout=25) as response:
-                    result = json.loads(response.read().decode('utf-8'))
-                    
-                    # air.fail возвращает список сообщений
-                    if isinstance(result, list) and result:
-                        ai_text = result[-1].get('content', '') if isinstance(result[-1], dict) else str(result[-1])
-                    elif isinstance(result, dict):
-                        ai_text = result.get('content') or result.get('response') or result.get('text', '')
-                    else:
-                        ai_text = str(result)
-                    
-                    if not ai_text or len(ai_text.strip()) < 10:
-                        raise Exception(f"Empty response from GPT-4o API")
-                    
-                    print(f"GPT-4o success, response length: {len(ai_text)}")
-                
-            else:
-                # Fallback на DeepSeek
-                print(f"DeepSeek API attempt {attempt + 1}/{max_retries}")
-                
-                timeout_config = httpx.Timeout(connect=10.0, read=45.0, write=10.0, pool=5.0)
-                http_client = httpx.Client(timeout=timeout_config)
-                
-                client = OpenAI(
-                    api_key=DEEPSEEK_API_KEY,
-                    base_url="https://api.deepseek.com",
-                    http_client=http_client,
-                    timeout=45.0,
-                    max_retries=0
-                )
-                
-                response = client.chat.completions.create(
-                    model="deepseek-chat",
-                    messages=messages,
-                    max_tokens=2000,
-                    temperature=0.7,
-                    stream=False
-                )
-                
-                ai_text = response.choices[0].message.content
-                print(f"DeepSeek API success, response length: {len(ai_text)}")
+            print(f"DeepSeek API attempt {attempt + 1}/{max_retries}")
+            
+            timeout_config = httpx.Timeout(connect=10.0, read=45.0, write=10.0, pool=5.0)
+            http_client = httpx.Client(timeout=timeout_config)
+            
+            client = OpenAI(
+                api_key=DEEPSEEK_API_KEY,
+                base_url="https://api.deepseek.com",
+                http_client=http_client,
+                timeout=45.0,
+                max_retries=0
+            )
+            
+            response = client.chat.completions.create(
+                model="deepseek-chat",
+                messages=messages,
+                max_tokens=2000,
+                temperature=0.7,
+                stream=False
+            )
+            
+            ai_text = response.choices[0].message.content
+            print(f"DeepSeek API success, response length: {len(ai_text)}")
             
             # Извлекаем персонажей из текста
             characters = extract_characters(ai_text)
@@ -274,8 +210,7 @@ def generate_story_continuation(action: str, settings: Dict, history: List[Dict]
         except Exception as e:
             error_name = type(e).__name__
             error_msg = str(e)
-            provider = "Claude" if USE_CLAUDE else "DeepSeek"
-            print(f"{provider} API attempt {attempt + 1} failed: {error_name} - {error_msg}")
+            print(f"DeepSeek API attempt {attempt + 1} failed: {error_name} - {error_msg}")
             
             if attempt < max_retries - 1:
                 print(f"Retrying... ({attempt + 2}/{max_retries})")

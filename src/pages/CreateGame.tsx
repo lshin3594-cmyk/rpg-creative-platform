@@ -23,7 +23,7 @@ const CreateGame = () => {
   const [narrativeMode, setNarrativeMode] = useState<'first' | 'third' | 'love-interest'>('third');
   const [genres, setGenres] = useState<string[]>(['Фэнтези']);
   const [rating, setRating] = useState('18+');
-  const [aiModel, setAiModel] = useState<'deepseek' | 'gpt4o'>('gpt4o');
+  const [aiModel] = useState<'deepseek'>('deepseek');
 
   const [availableCharacters, setAvailableCharacters] = useState<any[]>([]);
   const [selectedCharacterIds, setSelectedCharacterIds] = useState<number[]>([]);
@@ -185,8 +185,6 @@ const CreateGame = () => {
             setGenres={setGenres}
             rating={rating}
             setRating={setRating}
-            aiModel={aiModel}
-            setAiModel={setAiModel}
           />
 
           <CharacterSelector 

@@ -47,7 +47,8 @@ export const useGameLogic = () => {
         ...settings,
         genre: settings.genre || 'Фэнтези',
         rating: settings.rating || '18+',
-        eloquenceLevel: settings.eloquenceLevel || 3
+        eloquenceLevel: settings.eloquenceLevel || 3,
+        aiModel: 'deepseek'
       });
       
       if (settings.initialCharacters && settings.initialCharacters.length > 0) {
