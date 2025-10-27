@@ -74,11 +74,18 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
     setIsGeneratingAvatar(true);
     try {
       const timestamp = Date.now();
-      const genderText = gender === 'male' ? 'male' : 'female';
-      const ageText = age.trim() ? `, ${age} years old` : '';
-      const raceText = race.trim() ? `, ${race} race` : '';
       
-      const prompt = `Portrait of a ${genderText} fantasy character${ageText}${raceText}. Physical description: ${appearance}. Full body portrait, centered composition, fantasy art style, detailed character design, professional digital illustration, vibrant colors, clear features. Random seed ${timestamp}`;
+      // Формируем промпт по формату pollinations.ai
+      const genderRu = gender === 'male' ? 'Мужчина' : 'Девушка';
+      const ageText = age.trim() ? ` ${age} лет` : '';
+      const raceText = race.trim() ? `, ${race}` : ', человек';
+      const roleText = role.trim() ? `, ${role}` : '';
+      
+      const prompt = `${genderRu}${ageText}${raceText}${roleText}.
+
+Внешность: ${appearance || 'Выразительные черты лица, детальная проработка.'}.
+
+Стиль: Fantasy портрет, цифровая иллюстрация, профессиональное качество, яркие цвета, детализированный персонаж. Seed ${timestamp}`;
       
       console.log('🎨 Generating avatar with prompt:', prompt);
       
