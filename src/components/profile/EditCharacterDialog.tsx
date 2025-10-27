@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import Icon from '@/components/ui/icon';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +21,9 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import type { Character } from './CharactersList';
+import func2url from '../../../backend/func2url.json';
+
+const IMAGE_GEN_URL = func2url['generate-image'];
 
 interface EditCharacterDialogProps {
   character: Character | null;
@@ -32,21 +36,95 @@ const ROLES = ['Главный герой', 'Второстепенный пер
 
 export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: EditCharacterDialogProps) => {
   const [name, setName] = useState('');
+  const [gender, setGender] = useState<'male' | 'female' | ''>('');
+  const [age, setAge] = useState('');
+  const [race, setRace] = useState('');
   const [role, setRole] = useState('');
+  const [appearance, setAppearance] = useState('');
   const [personality, setPersonality] = useState('');
   const [scenes, setScenes] = useState('');
   const [quotes, setQuotes] = useState('');
   const [ideas, setIdeas] = useState('');
+  const [isGeneratingAvatar, setIsGeneratingAvatar] = useState(false);
+  const [generatedAvatar, setGeneratedAvatar] = useState('');
   const { toast } = useToast();
+
+  const handleGenerateAvatar = async () => {
+    if (!gender) {
+      toast({
+        title: 'Укажите пол',
+        description: 'Выберите пол персонажа для генерации',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    if (!appearance.trim()) {
+      toast({
+        title: 'Заполните внешность',
+        description: 'Опишите внешность персонажа для генерации аватара',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsGeneratingAvatar(true);
+    try {
+      const timestamp = Date.now();
+      
+      const genderEn = gender === 'male' ? 'man' : 'woman';
+      const ageText = age.trim() ? `, ${age} years old` : '';
+      const raceText = race.trim() ? `, ${race}` : '';
+      const roleText = role.trim() ? `, ${role}` : '';
+      
+      const prompt = `Professional headshot portrait of a ${genderEn}${ageText}${raceText}${roleText}. Face details: ${appearance || 'detailed facial features'}. Clean professional photograph, formal portrait style, neutral expression, proper clothing, studio lighting, sharp focus on face, high quality photography, SFW, appropriate, respectable`;
+      
+      console.log('🎨 Generating avatar with prompt:', prompt);
+      
+      const response = await fetch(IMAGE_GEN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate image');
+      }
+
+      const data = await response.json();
+      const imageUrl = data.url;
+      
+      setGeneratedAvatar(imageUrl);
+      
+      toast({
+        title: 'Аватар сгенерирован!',
+        description: 'Теперь можно сохранить персонажа',
+      });
+    } catch (error) {
+      console.error('❌ Avatar generation error:', error);
+      toast({
+        title: 'Ошибка генерации',
+        description: 'Не удалось сгенерировать аватар. Попробуйте ещё раз.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsGeneratingAvatar(false);
+    }
+  };
 
   useEffect(() => {
     if (character) {
       setName(character.name);
+      setGender((character as any).gender || '');
+      setAge((character as any).age || '');
+      setRace((character as any).race || '');
       setRole(character.role);
+      setAppearance((character as any).appearance || '');
       setPersonality(character.personality || '');
       setScenes((character as any).scenes || '');
       setQuotes((character as any).quotes || '');
       setIdeas((character as any).ideas || '');
+      setGeneratedAvatar(character.avatar || '');
     }
   }, [character]);
 
@@ -68,7 +146,20 @@ export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: E
     const characters = JSON.parse(savedCharacters);
     const updatedCharacters = characters.map((c: Character) =>
       c.id === character.id
-        ? { ...c, name: name.trim(), role: role, personality: personality.trim(), scenes: scenes.trim(), quotes: quotes.trim(), ideas: ideas.trim() }
+        ? { 
+            ...c, 
+            name: name.trim(), 
+            gender,
+            age: age.trim(),
+            race: race.trim(),
+            role: role, 
+            appearance: appearance.trim(),
+            personality: personality.trim(), 
+            scenes: scenes.trim(), 
+            quotes: quotes.trim(), 
+            ideas: ideas.trim(),
+            avatar: generatedAvatar || c.avatar
+          }
         : c
     );
 
@@ -93,7 +184,7 @@ export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: E
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto pr-2">
           <div className="space-y-2">
             <Label htmlFor="edit-char-name" className="text-purple-200">Имя персонажа *</Label>
             <Input
@@ -105,21 +196,119 @@ export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: E
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="edit-char-role" className="text-purple-200">Роль</Label>
-            <Select value={role} onValueChange={setRole}>
-              <SelectTrigger id="edit-char-role" className="bg-black/20 border-purple-500/30 text-purple-100">
-                <SelectValue placeholder="Выберите роль" />
-              </SelectTrigger>
-              <SelectContent>
-                {ROLES.map((r) => (
-                  <SelectItem key={r} value={r}>
-                    {r}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label className="text-purple-200">Пол</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={gender === 'male' ? 'default' : 'outline'}
+                  onClick={() => setGender('male')}
+                  className={gender === 'male' 
+                    ? 'flex-1 bg-purple-600 hover:bg-purple-700' 
+                    : 'flex-1 border-purple-500/30 text-purple-300 hover:bg-purple-500/20'}
+                >
+                  <Icon name="User" size={16} className="mr-1" />
+                  Муж.
+                </Button>
+                <Button
+                  type="button"
+                  variant={gender === 'female' ? 'default' : 'outline'}
+                  onClick={() => setGender('female')}
+                  className={gender === 'female' 
+                    ? 'flex-1 bg-pink-600 hover:bg-pink-700' 
+                    : 'flex-1 border-purple-500/30 text-purple-300 hover:bg-purple-500/20'}
+                >
+                  <Icon name="User" size={16} className="mr-1" />
+                  Жен.
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-char-age" className="text-purple-200">Возраст</Label>
+              <Input
+                id="edit-char-age"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                placeholder="25"
+                className="bg-black/20 border-purple-500/30 text-purple-100"
+              />
+            </div>
           </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="edit-char-race" className="text-purple-200">Раса</Label>
+              <Input
+                id="edit-char-race"
+                value={race}
+                onChange={(e) => setRace(e.target.value)}
+                placeholder="Например: эльф"
+                className="bg-black/20 border-purple-500/30 text-purple-100"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-char-role" className="text-purple-200">Роль</Label>
+              <Select value={role} onValueChange={setRole}>
+                <SelectTrigger id="edit-char-role" className="bg-black/20 border-purple-500/30 text-purple-100">
+                  <SelectValue placeholder="Выберите роль" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ROLES.map((r) => (
+                    <SelectItem key={r} value={r}>
+                      {r}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-char-appearance" className="text-purple-200">Внешность</Label>
+            <Textarea
+              id="edit-char-appearance"
+              value={appearance}
+              onChange={(e) => setAppearance(e.target.value)}
+              placeholder="Опишите внешность: волосы, глаза, одежда, особенности..."
+              rows={3}
+              className="bg-black/20 border-purple-500/30 text-purple-100 resize-none"
+            />
+          </div>
+
+          {generatedAvatar && (
+            <div className="space-y-2">
+              <Label className="text-purple-200">Сгенерированный аватар</Label>
+              <div className="relative w-full aspect-square rounded-lg overflow-hidden border-2 border-purple-500/30">
+                <img 
+                  src={generatedAvatar} 
+                  alt="Аватар персонажа" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          )}
+
+          <Button
+            type="button"
+            onClick={handleGenerateAvatar}
+            disabled={isGeneratingAvatar}
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+          >
+            {isGeneratingAvatar ? (
+              <>
+                <Icon name="Loader2" size={16} className="mr-2 animate-spin" />
+                Генерация...
+              </>
+            ) : (
+              <>
+                <Icon name="Sparkles" size={16} className="mr-2" />
+                Перегенерировать
+              </>
+            )}
+          </Button>
 
           <div className="space-y-2">
             <Label htmlFor="edit-char-personality" className="text-purple-200">Описание</Label>
@@ -127,9 +316,9 @@ export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: E
               id="edit-char-personality"
               value={personality}
               onChange={(e) => setPersonality(e.target.value)}
-              placeholder="Опишите персонажа: внешность, характер..."
+              placeholder="Опишите персонажа: характер, мотивы..."
               rows={3}
-              className="bg-black/20 border-purple-500/30 text-purple-100"
+              className="bg-black/20 border-purple-500/30 text-purple-100 resize-none"
             />
           </div>
 
@@ -144,7 +333,7 @@ export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: E
                 onChange={(e) => setScenes(e.target.value)}
                 placeholder="Например: 'Встреча в таверне — защищает игрока'"
                 rows={2}
-                className="bg-black/20 border-purple-500/30 text-purple-100 text-sm"
+                className="bg-black/20 border-purple-500/30 text-purple-100 text-sm resize-none"
               />
             </div>
 
@@ -156,7 +345,7 @@ export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: E
                 onChange={(e) => setQuotes(e.target.value)}
                 placeholder="Например: 'Клянусь, я отомщу!'"
                 rows={2}
-                className="bg-black/20 border-purple-500/30 text-purple-100 text-sm"
+                className="bg-black/20 border-purple-500/30 text-purple-100 text-sm resize-none"
               />
             </div>
 
@@ -168,7 +357,7 @@ export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: E
                 onChange={(e) => setIdeas(e.target.value)}
                 placeholder="Например: 'Влюбляется в героя'"
                 rows={2}
-                className="bg-black/20 border-purple-500/30 text-purple-100 text-sm"
+                className="bg-black/20 border-purple-500/30 text-purple-100 text-sm resize-none"
               />
             </div>
           </div>
