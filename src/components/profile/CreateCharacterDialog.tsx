@@ -159,6 +159,7 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[85vh] bg-gradient-to-br from-purple-950/95 via-purple-900/90 to-purple-950/95 border border-purple-500/30 backdrop-blur-xl overflow-hidden flex flex-col">
         <DialogHeader className="border-b border-purple-500/20 pb-4">
@@ -482,5 +483,6 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 };
