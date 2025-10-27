@@ -179,40 +179,33 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
           </div>
 
           <div className="space-y-5">
-            <div className="flex items-center justify-between p-4 rounded-xl bg-purple-800/30 border border-purple-500/40">
-              <div className="flex items-center gap-3">
-                <Icon name={isMainCharacter ? "Crown" : "Users"} size={20} className={isMainCharacter ? "text-yellow-400" : "text-blue-400"} />
-                <div>
-                  <p className="font-semibold text-purple-100">
-                    {isMainCharacter ? "Главный герой" : "NPC персонаж"}
-                  </p>
-                  <p className="text-xs text-purple-300/70">
-                    {isMainCharacter ? "Протагонист истории" : "Второстепенный персонаж"}
-                  </p>
-                </div>
+            <div className="flex items-center gap-3 justify-between">
+              <Label className="text-purple-200 text-sm font-medium">Тип персонажа</Label>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs font-medium transition-colors ${!isMainCharacter ? 'text-blue-300' : 'text-purple-400'}`}>
+                  NPC
+                </span>
+                <label className="relative inline-block w-11 h-6 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isMainCharacter}
+                    onChange={(e) => {
+                      setIsMainCharacter(e.target.checked);
+                      if (e.target.checked) {
+                        setScenes('');
+                        setQuotes('');
+                        setIdeas('');
+                      }
+                    }}
+                    className="sr-only peer"
+                  />
+                  <div className="absolute inset-0 rounded-full bg-blue-500 peer-checked:bg-yellow-500 transition-colors shadow-inner"></div>
+                  <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform peer-checked:translate-x-5"></div>
+                </label>
+                <span className={`text-xs font-medium transition-colors ${isMainCharacter ? 'text-yellow-300' : 'text-purple-400'}`}>
+                  ГГ
+                </span>
               </div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setIsMainCharacter(!isMainCharacter);
-                  if (!isMainCharacter) {
-                    setScenes('');
-                    setQuotes('');
-                    setIdeas('');
-                  }
-                }}
-                className={`relative w-14 h-7 rounded-full transition-colors shadow-lg ${
-                  isMainCharacter ? 'bg-yellow-500' : 'bg-blue-500'
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200 ${
-                    isMainCharacter ? 'translate-x-7' : 'translate-x-0'
-                  }`}
-                />
-              </button>
             </div>
 
             <div className="space-y-2">
