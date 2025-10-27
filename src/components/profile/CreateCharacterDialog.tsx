@@ -64,8 +64,9 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
     try {
       const characterName = name.trim() || 'fantasy character';
       const raceText = race ? `, ${race} race` : '';
+      const roleText = role ? `, ${role}` : '';
       
-      const prompt = `Square portrait of ${characterName}${raceText}, ${appearance}, fantasy RPG character art, professional digital painting, highly detailed, 8k quality, cinematic lighting, sharp focus, epic composition, artstation trending`;
+      const prompt = `Professional fantasy RPG character portrait: ${characterName}${raceText}${roleText}. Physical appearance: ${appearance}. Style: square format, head and shoulders shot, facing camera, detailed facial features, fantasy art style, digital painting, sharp focus, dramatic lighting, high quality, artstation quality, character concept art`;
       
       const response = await fetch(IMAGE_GEN_URL, {
         method: 'POST',
@@ -158,24 +159,26 @@ export const CreateCharacterDialog = ({ isOpen, onClose, onSubmit }: CreateChara
               )}
             </div>
             
-            <Button 
-              onClick={handleGenerateAvatar}
-              disabled={isGeneratingAvatar}
-              size="lg"
-              className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white font-semibold shadow-lg shadow-purple-500/50"
-            >
-              {isGeneratingAvatar ? (
-                <>
-                  <Icon name="Loader2" size={18} className="animate-spin" />
-                  Генерация...
-                </>
-              ) : (
-                <>
-                  <Icon name="Sparkles" size={18} />
-                  Сгенерировать аватар
-                </>
-              )}
-            </Button>
+            <div className="flex gap-3">
+              <Button 
+                onClick={handleGenerateAvatar}
+                disabled={isGeneratingAvatar}
+                size="lg"
+                className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white font-semibold shadow-lg shadow-purple-500/50"
+              >
+                {isGeneratingAvatar ? (
+                  <>
+                    <Icon name="Loader2" size={18} className="animate-spin" />
+                    Генерация...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="Sparkles" size={18} />
+                    {generatedAvatar ? 'Перегенерировать' : 'Сгенерировать аватар'}
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-5">

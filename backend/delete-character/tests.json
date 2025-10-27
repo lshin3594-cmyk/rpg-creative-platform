@@ -1,0 +1,11 @@
+{
+  "tests": [
+    {
+      "name": "DELETE character requires auth",
+      "method": "DELETE",
+      "path": "/?character_id=1",
+      "expectedStatus": 401,
+      "bodyMatcher": "partial"
+    }
+  ]
+}
