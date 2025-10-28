@@ -9,7 +9,7 @@ import Icon from '@/components/ui/icon';
 
 export const Navigation = () => {
   const location = useLocation();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, logout } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { isPlaying, toggle } = useBackgroundMusic();
   
@@ -41,7 +41,7 @@ export const Navigation = () => {
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => {/* TODO: logout */}}
+                      onClick={logout}
                       className="gap-2"
                     >
                       <Icon name="LogOut" size={18} />

@@ -20,7 +20,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Access-Control-Allow-Headers': 'Content-Type',
                 'Access-Control-Max-Age': '86400'
             },
-            'body': ''
+            'body': '',
+            'isBase64Encoded': False
         }
     
     api_key = os.environ.get('CLAUDE_API_KEY')
@@ -28,7 +29,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         return {
             'statusCode': 500,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': 'CLAUDE_API_KEY not configured'})
+            'body': json.dumps({'error': 'CLAUDE_API_KEY not configured'}),
+            'isBase64Encoded': False
         }
     
     api_url = "https://api.air.fail/public/text"
@@ -53,11 +55,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps(deepseek_models, ensure_ascii=False)
+                'body': json.dumps(deepseek_models, ensure_ascii=False),
+                'isBase64Encoded': False
             }
     except Exception as e:
         return {
             'statusCode': 500,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': str(e)})
+            'body': json.dumps({'error': str(e)}),
+            'isBase64Encoded': False
         }

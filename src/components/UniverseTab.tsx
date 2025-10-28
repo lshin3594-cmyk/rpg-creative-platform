@@ -108,7 +108,7 @@ ${formData.lore ? `История: ${formData.lore}` : ''}
             }));
           }
         } catch (e) {
-          console.error('Failed to parse plot data:', e);
+          // Failed to parse plot data
         }
       }
     } finally {

@@ -62,7 +62,6 @@ const CreateFanfic = () => {
   };
 
   const handleUniverseCreate = async (data: UniverseData) => {
-    console.log('CreateFanfic handleUniverseCreate called', data);
     setIsCreatingUniverse(true);
     
     try {

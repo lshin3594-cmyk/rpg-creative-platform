@@ -101,19 +101,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         conn = psycopg2.connect(database_url)
         cur = conn.cursor(cursor_factory=RealDictCursor)
         
-        tags_str = ','.join([f"'{tag}'" for tag in tags]) if tags else ''
-        tags_array = f"ARRAY[{tags_str}]" if tags else "ARRAY[]::text[]"
-        
-        query = f"""UPDATE universes 
-               SET name = '{name.replace("'", "''")}', 
-                   description = '{description.replace("'", "''")}', 
-                   canon_source = '{canon_source.replace("'", "''")}', 
-                   source_type = '{source_type}', 
-                   genre = '{genre.replace("'", "''")}', 
-                   tags = {tags_array}
-               WHERE id = {universe_id}
-               RETURNING *"""
-        cur.execute(query)
+        cur.execute("""UPDATE universes 
+               SET name = %s, 
+                   description = %s, 
+                   canon_source = %s, 
+                   source_type = %s, 
+                   genre = %s, 
+                   tags = %s
+               WHERE id = %s
+               RETURNING *""",
+               (name, description, canon_source, source_type, genre, tags, universe_id))
         updated_universe = cur.fetchone()
         
         if not updated_universe:

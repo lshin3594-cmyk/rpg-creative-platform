@@ -63,10 +63,19 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Access-Control-Allow-Headers': 'Content-Type, X-Auth-Token',
                 'Access-Control-Max-Age': '86400'
             },
-            'body': ''
+            'body': '',
+            'isBase64Encoded': False
         }
     
     dsn = os.environ.get('DATABASE_URL')
+    if not dsn:
+        return {
+            'statusCode': 500,
+            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+            'body': json.dumps({'error': 'Database configuration error'}),
+            'isBase64Encoded': False
+        }
+    
     conn = psycopg2.connect(dsn, cursor_factory=RealDictCursor)
     
     try:
@@ -83,14 +92,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     return {
                         'statusCode': 400,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'error': 'Все поля обязательны'})
+                        'body': json.dumps({'error': 'Все поля обязательны'}),
+                        'isBase64Encoded': False
                     }
                 
                 if len(password) < 6:
                     return {
                         'statusCode': 400,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'error': 'Пароль должен быть минимум 6 символов'})
+                        'body': json.dumps({'error': 'Пароль должен быть минимум 6 символов'}),
+                        'isBase64Encoded': False
                     }
                 
                 cursor = conn.cursor()
@@ -99,7 +110,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     return {
                         'statusCode': 409,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'error': 'Email или имя пользователя уже заняты'})
+                        'body': json.dumps({'error': 'Email или имя пользователя уже заняты'}),
+                        'isBase64Encoded': False
                     }
                 
                 password_hash = hash_password(password)
@@ -124,7 +136,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                             'display_name': user['display_name'],
                             'created_at': user['created_at'].isoformat() if user['created_at'] else None
                         }
-                    })
+                    }),
+                    'isBase64Encoded': False
                 }
             
             elif action == 'login':
@@ -135,7 +148,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     return {
                         'statusCode': 400,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'error': 'Введите логин и пароль'})
+                        'body': json.dumps({'error': 'Введите логин и пароль'}),
+                        'isBase64Encoded': False
                     }
                 
                 cursor = conn.cursor()
@@ -149,7 +163,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     return {
                         'statusCode': 401,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'error': 'Неверный логин или пароль'})
+                        'body': json.dumps({'error': 'Неверный логин или пароль'}),
+                        'isBase64Encoded': False
                     }
                 
                 cursor.execute("UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = %s", (user['id'],))
@@ -169,7 +184,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                             'display_name': user['display_name'],
                             'avatar_url': user['avatar_url']
                         }
-                    })
+                    }),
+                    'isBase64Encoded': False
                 }
             
             elif action == 'verify':
@@ -180,7 +196,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     return {
                         'statusCode': 401,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'error': 'Недействительный токен'})
+                        'body': json.dumps({'error': 'Недействительный токен'}),
+                        'isBase64Encoded': False
                     }
                 
                 cursor = conn.cursor()
@@ -194,7 +211,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     return {
                         'statusCode': 404,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'error': 'Пользователь не найден'})
+                        'body': json.dumps({'error': 'Пользователь не найден'}),
+                        'isBase64Encoded': False
                     }
                 
                 return {
@@ -208,13 +226,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                             'display_name': user['display_name'],
                             'avatar_url': user['avatar_url']
                         }
-                    })
+                    }),
+                    'isBase64Encoded': False
                 }
         
         return {
             'statusCode': 405,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'error': 'Метод не поддерживается'})
+            'body': json.dumps({'error': 'Метод не поддерживается'}),
+            'isBase64Encoded': False
         }
     
     finally:

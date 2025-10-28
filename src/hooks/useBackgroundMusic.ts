@@ -37,7 +37,7 @@ export const useBackgroundMusic = () => {
         setIsPlaying(true);
         localStorage.setItem('background-music-enabled', 'true');
       } catch (error) {
-        console.error('Music play failed:', error);
+        // Music play failed
       }
     }
   };

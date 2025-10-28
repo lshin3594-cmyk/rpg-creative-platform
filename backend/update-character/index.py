@@ -106,28 +106,25 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         conn = psycopg2.connect(database_url)
         cur = conn.cursor(cursor_factory=RealDictCursor)
         
-        def escape(s: str) -> str:
-            return s.replace("'", "''") if s else ''
-        
-        universe_part = f"universe_id = {universe_id}" if universe_id else "universe_id = NULL"
-        
-        query = f"""UPDATE characters 
-               SET name = '{escape(name)}', 
-                   {universe_part}, 
-                   age = '{escape(age)}', 
-                   gender = '{escape(gender)}', 
-                   appearance = '{escape(appearance)}', 
-                   personality = '{escape(personality)}', 
-                   backstory = '{escape(backstory)}',
-                   abilities = '{escape(abilities)}', 
-                   strengths = '{escape(strengths)}', 
-                   weaknesses = '{escape(weaknesses)}', 
-                   goals = '{escape(goals)}', 
-                   character_role = '{escape(character_role)}', 
-                   role = '{escape(character_role)}'
-               WHERE id = {character_id}
-               RETURNING *"""
-        cur.execute(query)
+        cur.execute("""UPDATE characters 
+               SET name = %s, 
+                   universe_id = %s, 
+                   age = %s, 
+                   gender = %s, 
+                   appearance = %s, 
+                   personality = %s, 
+                   backstory = %s,
+                   abilities = %s, 
+                   strengths = %s, 
+                   weaknesses = %s, 
+                   goals = %s, 
+                   character_role = %s, 
+                   role = %s
+               WHERE id = %s
+               RETURNING *""",
+               (name, universe_id, age, gender, appearance, personality,
+                backstory, abilities, strengths, weaknesses, goals,
+                character_role, character_role, character_id))
         updated_character = cur.fetchone()
         
         if not updated_character:

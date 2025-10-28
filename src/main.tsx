@@ -9,16 +9,13 @@ try {
   localStorage.setItem(testKey, testKey);
   localStorage.removeItem(testKey);
 } catch (e) {
-  console.error('localStorage недоступен', e);
+  // localStorage недоступен
 }
-
-console.log('🎬 Starting React app...');
 
 try {
   createRoot(document.getElementById("root")!).render(<App />);
-  console.log('✅ React app mounted');
 } catch (error) {
-  console.error('❌ CRITICAL: React mount failed:', error);
+  console.error('CRITICAL: React mount failed:', error);
   document.body.innerHTML = `
     <div style="display: flex; align-items: center; justify-content: center; height: 100vh; background: #1a1a2e; color: white; font-family: sans-serif; flex-direction: column; gap: 20px;">
       <h1>Ошибка загрузки приложения</h1>

@@ -99,7 +99,7 @@ ${formData.description ? `Краткое описание: ${formData.descriptio
             }));
           }
         } catch (e) {
-          console.error('Failed to parse plot data:', e);
+          // Failed to parse plot data
         }
       }
     } finally {

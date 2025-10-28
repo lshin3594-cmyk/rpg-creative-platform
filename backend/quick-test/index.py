@@ -127,7 +127,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Access-Control-Allow-Headers': 'Content-Type',
                 'Access-Control-Max-Age': '86400'
             },
-            'body': ''
+            'body': '',
+            'isBase64Encoded': False
         }
     
     try:
@@ -163,24 +164,37 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'Content-Type': 'application/json',
                         'Access-Control-Allow-Origin': '*'
                     },
-                    'body': json.dumps(result, ensure_ascii=False)
+                    'body': json.dumps(result, ensure_ascii=False),
+                    'isBase64Encoded': False
                 }
             else:
                 return {
                     'statusCode': 500,
-                    'headers': {'Content-Type': 'application/json'},
-                    'body': json.dumps({'error': 'No story generated'})
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps({'error': 'No story generated'}),
+                    'isBase64Encoded': False
                 }
         else:
             return {
                 'statusCode': response.status_code,
-                'headers': {'Content-Type': 'application/json'},
-                'body': json.dumps({'error': f'API error: {response.text}'})
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({'error': f'API error: {response.text}'}),
+                'isBase64Encoded': False
             }
     
     except Exception as e:
         return {
             'statusCode': 500,
-            'headers': {'Content-Type': 'application/json'},
-            'body': json.dumps({'error': str(e)})
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'error': str(e)}),
+            'isBase64Encoded': False
         }

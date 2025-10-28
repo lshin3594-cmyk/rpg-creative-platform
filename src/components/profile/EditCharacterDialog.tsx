@@ -77,8 +77,6 @@ export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: E
       const appearanceClean = appearance.trim() || 'face portrait';
       const prompt = `Portrait of ${genderEn}. ${appearanceClean}. Professional headshot, neutral face, SFW`;
       
-      console.log('🎨 Generating avatar with prompt:', prompt);
-      
       const response = await fetch(IMAGE_GEN_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -99,7 +97,6 @@ export const EditCharacterDialog = ({ character, open, onOpenChange, onSave }: E
         description: 'Теперь можно сохранить персонажа',
       });
     } catch (error) {
-      console.error('❌ Avatar generation error:', error);
       toast({
         title: 'Ошибка генерации',
         description: 'Не удалось сгенерировать аватар. Попробуйте ещё раз.',

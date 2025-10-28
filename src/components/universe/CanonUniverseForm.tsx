@@ -48,7 +48,7 @@ export const CanonUniverseForm = ({
       try {
         setFavorites(JSON.parse(saved));
       } catch (e) {
-        console.error('Failed to load favorites:', e);
+        // Failed to load favorites
       }
     }
   }, []);

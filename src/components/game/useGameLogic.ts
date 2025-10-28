@@ -309,17 +309,9 @@ export const useGameLogic = () => {
       const newTurns = Math.floor(newTotalSymbols / 600);
       const episodeChanged = newTurns >= 5;
       
-      // Проверяем ПЕРЕД обновлением состояния
       const shouldGenImage = autoIllustrations && 
                             imagesInEpisode < 4 && 
                             (turnsInEpisode % Math.max(Math.floor(5 / 4), 1) === 0 || turnsInEpisode === 0);
-      
-      console.log('Image generation check:', { 
-        autoIllustrations, 
-        imagesInEpisode, 
-        turnsInEpisode,
-        shouldGenImage 
-      });
       
       setTotalSymbolsInEpisode(newTotalSymbols);
       setTurnsInEpisode(newTurns);
@@ -332,7 +324,6 @@ export const useGameLogic = () => {
       }
 
       if (shouldGenImage) {
-        console.log('Starting image generation for message:', aiMessage.id);
         setGeneratingIllustration(true);
         setImagesInEpisode(prev => prev + 1);
         generateIllustration(data.text).then(illustrationUrl => {

@@ -78,7 +78,6 @@ export const CreateCharacterModal = ({
         description: 'Аватар персонажа сгенерирован'
       });
     } catch (error) {
-      console.error('Avatar generation error:', error);
       toast({
         title: 'Ошибка генерации',
         description: 'Не удалось создать изображение. Попробуйте ещё раз.',

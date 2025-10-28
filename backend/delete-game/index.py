@@ -49,7 +49,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Access-Control-Allow-Headers': 'Content-Type, X-User-Id, X-Auth-Token',
                 'Access-Control-Max-Age': '86400'
             },
-            'body': ''
+            'body': '',
+            'isBase64Encoded': False
         }
     
     if method != 'DELETE':
@@ -59,7 +60,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Access-Control-Allow-Origin': '*',
                 'Content-Type': 'application/json'
             },
-            'body': json.dumps({'error': 'Method not allowed'})
+            'body': json.dumps({'error': 'Method not allowed'}),
+            'isBase64Encoded': False
         }
     
     user, error = require_auth(event)
@@ -76,7 +78,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Access-Control-Allow-Origin': '*',
                 'Content-Type': 'application/json'
             },
-            'body': json.dumps({'error': 'story_id required'})
+            'body': json.dumps({'error': 'story_id required'}),
+            'isBase64Encoded': False
         }
     
     database_url = os.environ.get('DATABASE_URL')
@@ -98,5 +101,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'Access-Control-Allow-Origin': '*',
             'Content-Type': 'application/json'
         },
-        'body': json.dumps({'success': deleted, 'message': 'Game deleted' if deleted else 'Not found'})
+        'body': json.dumps({'success': deleted, 'message': 'Game deleted' if deleted else 'Not found'}),
+        'isBase64Encoded': False
     }

@@ -298,7 +298,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'Access-Control-Allow-Headers': 'Content-Type',
                     'Access-Control-Max-Age': '86400'
                 },
-                'body': ''
+                'body': '',
+                'isBase64Encoded': False
             }
         
         results = []
@@ -381,7 +382,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Content-Type': 'application/json; charset=utf-8',
                 'Access-Control-Allow-Origin': '*'
             },
-            'body': json.dumps(report, ensure_ascii=False, indent=2)
+            'body': json.dumps(report, ensure_ascii=False, indent=2),
+            'isBase64Encoded': False
         }
     
     except Exception as e:
@@ -391,5 +393,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*'
             },
-            'body': json.dumps({'error': f'Критическая ошибка: {str(e)}'})
+            'body': json.dumps({'error': f'Критическая ошибка: {str(e)}'}),
+            'isBase64Encoded': False
         }
