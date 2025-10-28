@@ -85,21 +85,21 @@ export function CharacterCreation({ templateTitle, templateSetting, onComplete, 
               <label className="block text-sm font-medium text-foreground mb-3">
                 Пол *
               </label>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2 md:gap-3">
                 {genderOptions.map((option) => (
                   <button
                     key={option.value}
                     onClick={() => setGender(option.value)}
                     className={`
-                      p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2
+                      p-3 md:p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-1 md:gap-2
                       ${gender === option.value
                         ? 'bg-primary/20 border-primary text-primary'
                         : 'bg-black/20 border-primary/30 text-muted-foreground hover:border-primary/50 hover:bg-primary/5'
                       }
                     `}
                   >
-                    <Icon name={option.icon} size={24} />
-                    <span className="text-sm font-medium">{option.label}</span>
+                    <Icon name={option.icon} size={20} className="md:w-6 md:h-6" />
+                    <span className="text-xs md:text-sm font-medium">{option.label}</span>
                   </button>
                 ))}
               </div>

@@ -90,7 +90,7 @@ const Index = () => {
     },
     {
       title: 'ГОТОВЫЕ ИСТОРИИ',
-      description: 'Выберите из 8 уникальных сюжетов',
+      description: 'Выберите из 10 уникальных сюжетов',
       icon: 'Library',
       onClick: () => setShowTemplates(!showTemplates),
       highlight: showTemplates
@@ -120,6 +120,17 @@ const Index = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 py-12">
       <div className="w-full max-w-6xl space-y-8">
+        <div className="max-w-3xl mx-auto mb-6 p-4 bg-black/40 border border-yellow-500/30 rounded-lg backdrop-blur-sm">
+          <div className="flex items-start gap-3">
+            <Icon name="AlertCircle" size={20} className="text-yellow-500 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-yellow-200/90 leading-relaxed">
+              <strong className="font-semibold">Дисклеймер:</strong> Все персонажи, события и сюжеты в историях являются вымышленными. 
+              Любые совпадения с реальными людьми, событиями или произведениями являются случайными. 
+              Контент генерируется искусственным интеллектом и не является официальным продолжением каких-либо франшиз.
+            </p>
+          </div>
+        </div>
+
         <PreviewCarousel />
         
         <div className="grid gap-4 md:gap-6 max-w-2xl mx-auto">
