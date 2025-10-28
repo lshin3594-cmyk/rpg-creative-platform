@@ -5,6 +5,7 @@ import { useRpgGames } from '@/hooks/useRpgGames';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { CharacterCreation, CharacterData } from './CharacterCreation';
 
 interface GameTemplate {
   id: string;
@@ -300,13 +301,14 @@ const gameTemplates: GameTemplate[] = [
 
 export const TemplateLibrary = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<GameTemplate | null>(null);
+  const [showCharacterCreation, setShowCharacterCreation] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const { createGame } = useRpgGames();
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleStartTemplate = async (template: GameTemplate) => {
+  const handleSelectTemplate = (template: GameTemplate) => {
     if (!user) {
       toast({
         title: 'Требуется авторизация',
@@ -315,18 +317,36 @@ export const TemplateLibrary = () => {
       });
       return;
     }
+    setSelectedTemplate(template);
+    setShowCharacterCreation(true);
+  };
+
+  const handleCharacterComplete = async (character: CharacterData) => {
+    if (!selectedTemplate) return;
 
     setIsStarting(true);
 
     try {
+      const genderText = character.gender === 'male' ? 'мужчина' : character.gender === 'female' ? 'женщина' : 'небинарная персона';
+      
+      const characterInfo = `Главный герой: ${character.name} (${genderText}). ${character.description}`;
+      
+      const enhancedInstructions = `${selectedTemplate.aiInstructions}
+
+ИНФОРМАЦИЯ О ГЛАВНОМ ГЕРОЕ:
+${characterInfo}
+
+ВАЖНО: Обращайся к игроку как "${character.name}" и используй соответствующие местоимения согласно полу (${genderText}). Учитывай описание персонажа в повествовании.`;
+
       const gameSettings = {
         role: 'hero',
         narrativeMode: 'first',
         playerCount: 1,
-        genre: template.genre,
-        rating: template.rating,
+        genre: selectedTemplate.genre,
+        rating: selectedTemplate.rating,
         aiModel: 'deepseek',
-        aiInstructions: template.aiInstructions,
+        aiInstructions: enhancedInstructions,
+        playerCharacter: character,
         initialCharacters: [],
         storyMemory: {
           keyMoments: [],
@@ -336,17 +356,17 @@ export const TemplateLibrary = () => {
       };
 
       const newGame = await createGame({
-        title: template.title,
-        genre: template.genre,
-        setting: template.setting,
-        difficulty: template.rating,
+        title: selectedTemplate.title,
+        genre: selectedTemplate.genre,
+        setting: selectedTemplate.setting,
+        difficulty: selectedTemplate.rating,
         story_context: JSON.stringify(gameSettings)
       });
 
       if (newGame) {
         toast({
           title: 'Поехали! 🚀',
-          description: `Начинаем "${template.title}"`
+          description: `${character.name} начинает приключение!`
         });
         navigate('/play-game', { state: { gameId: newGame.id } });
       } else {
@@ -366,6 +386,20 @@ export const TemplateLibrary = () => {
       setIsStarting(false);
     }
   };
+
+  if (showCharacterCreation && selectedTemplate) {
+    return (
+      <CharacterCreation
+        templateTitle={selectedTemplate.title}
+        templateSetting={selectedTemplate.setting}
+        onComplete={handleCharacterComplete}
+        onBack={() => {
+          setShowCharacterCreation(false);
+          setSelectedTemplate(null);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -423,22 +457,13 @@ export const TemplateLibrary = () => {
                   <Button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleStartTemplate(template);
+                      handleSelectTemplate(template);
                     }}
                     disabled={isStarting}
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white"
                   >
-                    {isStarting ? (
-                      <>
-                        <Icon name="Loader2" className="mr-2 animate-spin" size={18} />
-                        Создаём...
-                      </>
-                    ) : (
-                      <>
-                        <Icon name="Play" className="mr-2" size={18} />
-                        Начать игру
-                      </>
-                    )}
+                    <Icon name="UserCircle" className="mr-2" size={18} />
+                    Создать персонажа
                   </Button>
                 </div>
               )}
